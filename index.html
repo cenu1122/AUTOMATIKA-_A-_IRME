@@ -85,19 +85,39 @@
             .catch(error => alert("Greška: " + error));
         }
 
-        function handleLogin() {
-            const id = document.getElementById('companyId').value;
-            const pass = document.getElementById('password').value;
-            
-            // Privremena provjera (dok ne povežemo puni GET zahtjev ka Sheet-u)
-            if(id === "admin" && pass === "1234") { 
+        async function handleLogin() {
+    const uneseniId = document.getElementById('companyId').value;
+    const unesenaSifra = document.getElementById('password').value;
+    const statusMsg = document.getElementById('statusMsg');
+
+    try {
+        // 1. Prvo dobavljamo sve korisnike iz Google Sheeta preko tvog URL-a
+        // Napomena: Tvoj Apps Script mora podržavati GET metodu
+        const response = await fetch(scriptURL);
+        const korisnici = await response.json();
+
+        // 2. Tražimo da li postoji korisnik sa tim ID-om i Šifrom
+        const pronadjenKorisnik = korisnici.find(k => 
+            String(k.user_id) === uneseniId && String(k.password) === unesenaSifra
+        );
+
+        if (pronadjenKorisnik) {
+            // Ako je pronađen, provjeravamo status
+            if(pronadjenKorisnik.status === "aktivan") {
                 document.getElementById('login-section').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
-                document.getElementById('displayFirma').innerText = id;
+                document.getElementById('displayFirma').innerText = uneseniId;
             } else {
-                alert("Neispravni podaci. Za test koristite admin / 1234");
+                alert("Vaš nalog nije aktivan. Kontaktirajte admina.");
             }
+        } else {
+            alert("Pogrešan ID ili Lozinka! Provjerite tabelu.");
         }
+    } catch (error) {
+        console.error("Greška pri prijavi:", error);
+        alert("Sistem trenutno ne može provjeriti bazu. Provjerite Google Apps Script.");
+    }
+}
 
         function sendToAI() {
             alert("Sistem spreman za automatsko zapisivanje govora!");
