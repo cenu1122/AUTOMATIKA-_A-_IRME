@@ -106,7 +106,39 @@
             document.getElementById('statusMsg').innerText = "Podaci su filtrirani i poslani Gazdi!";
             document.getElementById('userInput').value = "";
         }
-    </script>
+        <!-- ADMIN PANEL (Samo za Gazdu) -->
+<div id="admin-panel" style="display:none; margin-top: 20px; border-top: 2px dashed #4a5568; padding-top: 20px;">
+    <h2 style="color: #f6ad55;">NH Admin Panel</h2>
+    <input type="text" id="newFirmaName" placeholder="Naziv nove firme">
+    <input type="text" id="newFirmaID" placeholder="ID (npr. FIRMA003)">
+    <input type="password" id="newFirmaPass" placeholder="Lozinka za klijenta">
+    <button onclick="saveNewCompany()" style="background-color: #f6ad55;">Dodaj Firmu u Bazu</button>
+</div>
+
+<script>
+    // Funkcija kojom vi kao Gazda otvarate Admin Panel (npr. klikom na logo 5 puta)
+    let clickCount = 0;
+    function openAdmin() {
+        clickCount++;
+        if(clickCount === 5) {
+            document.getElementById('admin-panel').style.display = 'block';
+            alert("Admin mod aktiviran!");
+        }
+    }
+
+    function saveNewCompany() {
+        const naziv = document.getElementById('newFirmaName').value;
+        const id = document.getElementById('newFirmaID').value;
+        const pass = document.getElementById('newFirmaPass').value;
+
+        if(!naziv || !id || !pass) return alert("Popunite sva polja!");
+
+        // Ovdje ide poziv ka Google Apps Script-u koji upisuje u Sheet
+        console.log("Dodajem u Google Sheet: ", {naziv, id, pass});
+        
+        alert("Firma " + naziv + " je uspješno dodana u bazu!");
+    }
+</script>
 
 </body>
 </html>
