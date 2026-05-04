@@ -1,0 +1,7 @@
+// DODAJ OVU LINIJU ODMAH ISPOD const app = express();
+app.use(express.static("public"));
+
+// IZMIJENI POSTOJEĆU app.get("/") RUTU DA IZGLEDA OVAKO:
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
