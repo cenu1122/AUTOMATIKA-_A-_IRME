@@ -7,7 +7,7 @@
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #1a202c; color: #e2e8f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
         .card { background: #2d3748; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; max-width: 500px; border: 1px solid #4a5568; }
-        h1 { color: #63b3ed; text-align: center; cursor: pointer; } /* Kliknite 5 puta na naslov za Admin mod */
+        h1 { color: #63b3ed; text-align: center; cursor: pointer; } 
         input, textarea { width: 100%; padding: 12px; margin-bottom: 1rem; border-radius: 6px; border: 1px solid #4a5568; background: #1a202c; color: white; box-sizing: border-box; }
         button { width: 100%; padding: 12px; background-color: #4299e1; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
         button:hover { background-color: #3182ce; }
@@ -23,77 +23,84 @@
         <!-- LOGIN SEKCIJA -->
         <div id="login-section">
             <p style="text-align: center;">Prijava za klijente</p>
-            <input type="text" id="companyId" placeholder="ID Firme ili Email">
-            <input type="password" id="password" placeholder="Lozinka">
+            <input type="text" id="companyId" placeholder="Korisnički ID (user_id)">
+            <input type="password" id="password" placeholder="Lozinka (password)">
             <button onclick="handleLogin()">Prijavi se</button>
         </div>
 
-        <!-- DASHBOARD ZA RADNIKE -->
+        <!-- DASHBOARD -->
         <div id="dashboard">
             <h3>Dobrodošli, <span id="displayFirma" style="color: #63b3ed;"></span></h3>
-            <label>Izvještaj za Gazdu:</label>
-            <textarea id="userInput" rows="4" placeholder="Unesite važne informacije (npr. fali materijala)..."></textarea>
+            <label>Izvještaj za sistem:</label>
+            <textarea id="userInput" rows="4" placeholder="Unesite podatke za automatsko zapisivanje..."></textarea>
             <button onclick="sendToAI()">Pošalji na Analizu</button>
             <p id="statusMsg" style="color: #68d391; text-align: center;"></p>
         </div>
 
-        <!-- ADMIN PANEL ZA VAS (GAZDU) -->
+        <!-- ADMIN PANEL -->
         <div id="admin-panel">
             <h2 class="admin-header">Admin Panel</h2>
-            <p>Dodajte novu firmu u Google Sheet:</p>
-            <input type="text" id="newFirmaName" placeholder="Naziv Firme">
-            <input type="text" id="newFirmaID" placeholder="ID za Login (npr. firma_01)">
-            <input type="text" id="newFirmaPass" placeholder="Lozinka">
+            <p>Dodajte novog korisnika u Google Sheet:</p>
+            <input type="text" id="newFirmaID" placeholder="Novi user_id">
+            <input type="text" id="newFirmaPass" placeholder="Nova lozinka (password)">
+            <input type="text" id="newFirmaStatus" placeholder="Status (npr. aktivan)">
             <button onclick="saveNewCompany()" style="background-color: #f6ad55;">Spremi u Google Sheet</button>
         </div>
     </div>
 
     <script>
+        // URL tvog Google Apps Scripta
         const scriptURL = "https://script.google.com/macros/s/AKfycbyG9TXfwNfUnIK2D3yEJCupmsrDqqyXIHYs2aBQxWUbZ3zHR0VQeZyabdvArDxjEEM/exec";
 
-        // Admin aktivacija (5 klikova na naslov)
         let clicks = 0;
         function openAdmin() {
             clicks++;
             if(clicks === 5) {
                 document.getElementById('admin-panel').style.display = 'block';
-                alert("Admin mod je otvoren!");
+                alert("Admin mod aktiviran!");
             }
         }
 
-        // Slanje nove firme u Google Sheet
+        // Slanje podataka sa novim nazivima kolona
         function saveNewCompany() {
             const data = {
-                naziv: document.getElementById('newFirmaName').value,
-                id: document.getElementById('newFirmaID').value,
-                pass: document.getElementById('newFirmaPass').value
+                user_id: document.getElementById('newFirmaID').value,
+                password: document.getElementById('newFirmaPass').value,
+                status: document.getElementById('newFirmaStatus').value
             };
 
-            fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) })
+            fetch(scriptURL, { 
+                method: 'POST', 
+                mode: 'no-cors', 
+                cache: 'no-cache',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data) 
+            })
             .then(() => {
-                alert("Uspješno spremljeno u Sheet!");
-                document.getElementById('newFirmaName').value = "";
+                alert("Podaci poslani! Provjerite Google Sheet.");
                 document.getElementById('newFirmaID').value = "";
                 document.getElementById('newFirmaPass').value = "";
+                document.getElementById('newFirmaStatus').value = "";
             })
             .catch(error => alert("Greška: " + error));
         }
 
-        // Login Logika (Trenutno fiksna, kasnije ćemo je povezati da čita iz Sheeta)
         function handleLogin() {
             const id = document.getElementById('companyId').value;
             const pass = document.getElementById('password').value;
-            if(id === "admin" && pass === "1234") { // Primjer logina
+            
+            // Privremena provjera (dok ne povežemo puni GET zahtjev ka Sheet-u)
+            if(id === "admin" && pass === "1234") { 
                 document.getElementById('login-section').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
-                document.getElementById('displayFirma').innerText = "NH Test";
+                document.getElementById('displayFirma').innerText = id;
             } else {
-                alert("Pogrešan login! (Admin mod aktivirate sa 5 klikova na naslov NH)");
+                alert("Neispravni podaci. Za test koristite admin / 1234");
             }
         }
 
         function sendToAI() {
-            alert("Ovaj dio ćemo povezati sa AI analizom u sljedećem koraku!");
+            alert("Sistem spreman za automatsko zapisivanje govora!");
         }
     </script>
 </body>
