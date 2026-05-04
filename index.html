@@ -9,10 +9,12 @@
         .card { background: #2d3748; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; max-width: 500px; border: 1px solid #4a5568; }
         h1 { color: #63b3ed; text-align: center; cursor: pointer; } 
         input, textarea { width: 100%; padding: 12px; margin-bottom: 1rem; border-radius: 6px; border: 1px solid #4a5568; background: #1a202c; color: white; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background-color: #4299e1; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        button { width: 100%; padding: 12px; background-color: #4299e1; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
         button:hover { background-color: #3182ce; }
         #dashboard, #admin-panel { display: none; margin-top: 20px; }
         .admin-header { color: #f6ad55; border-top: 1px solid #4a5568; padding-top: 20px; margin-top: 20px; }
+        #mic-btn { background-color: #e53e3e; }
+        #mic-btn:hover { background-color: #c53030; }
     </style>
 </head>
 <body>
@@ -31,8 +33,11 @@
         <!-- DASHBOARD -->
         <div id="dashboard">
             <h3>Dobrodošli, <span id="displayFirma" style="color: #63b3ed;"></span></h3>
-            <label>Izvještaj za sistem:</label>
-            <textarea id="userInput" rows="4" placeholder="Unesite podatke za automatsko zapisivanje..."></textarea>
+            
+            <label>Glasovni izvještaj:</label>
+            <button id="mic-btn" onclick="startDictation()">🎤 Klikni i pričaj</button>
+
+            <textarea id="userInput" rows="4" placeholder="Vaš govor će se ovdje pojaviti..."></textarea>
             <button onclick="sendToAI()">Pošalji na Analizu</button>
             <p id="statusMsg" style="color: #68d391; text-align: center;"></p>
         </div>
@@ -40,16 +45,15 @@
         <!-- ADMIN PANEL -->
         <div id="admin-panel">
             <h2 class="admin-header">Admin Panel</h2>
-            <p>Dodajte novog korisnika u Google Sheet:</p>
+            <p>Dodajte novog korisnika:</p>
             <input type="text" id="newFirmaID" placeholder="Novi user_id">
-            <input type="text" id="newFirmaPass" placeholder="Nova lozinka (password)">
-            <input type="text" id="newFirmaStatus" placeholder="Status (npr. aktivan)">
+            <input type="text" id="newFirmaPass" placeholder="Nova lozinka">
+            <input type="text" id="newFirmaStatus" placeholder="Status (aktivan)">
             <button onclick="saveNewCompany()" style="background-color: #f6ad55;">Spremi u Google Sheet</button>
         </div>
     </div>
 
     <script>
-        // URL tvog Google Apps Scripta
         const scriptURL = "https://script.google.com/macros/s/AKfycbzy3PnLobMFqIVCeH5ZtPXs6QDNjEJqz3xaN_htgyrp8zY3r12QG7deORyp-ysZFXdB/exec";
 
         let clicks = 0;
@@ -61,66 +65,79 @@
             }
         }
 
-        // Slanje podataka sa novim nazivima kolona
+        // FUNKCIJA ZA PREPOZNAVANJE GOVORA
+        function startDictation() {
+            if (window.hasOwnProperty('webkitSpeechRecognition')) {
+                const recognition = new webkitSpeechRecognition();
+                const micBtn = document.getElementById('mic-btn');
+
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = "hr-HR"; 
+                
+                recognition.start();
+                micBtn.innerText = "🔴 Slušam vas...";
+
+                recognition.onresult = function(e) {
+                    document.getElementById('userInput').value = e.results[0][0].transcript;
+                    recognition.stop();
+                    micBtn.innerText = "🎤 Klikni i pričaj";
+                };
+
+                recognition.onerror = function(e) {
+                    recognition.stop();
+                    micBtn.innerText = "🎤 Greška, probaj opet";
+                };
+            } else {
+                alert("Vaš browser ne podržava glasovni unos. Koristite Chrome.");
+            }
+        }
+
+        async function handleLogin() {
+            const uneseniId = document.getElementById('companyId').value;
+            const unesenaSifra = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(scriptURL);
+                const korisnici = await response.json();
+
+                const pronadjenKorisnik = korisnici.find(k => 
+                    String(k.user_id) === uneseniId && String(k.password) === unesenaSifra
+                );
+
+                if (pronadjenKorisnik) {
+                    if(pronadjenKorisnik.status === "aktivan") {
+                        document.getElementById('login-section').style.display = 'none';
+                        document.getElementById('dashboard').style.display = 'block';
+                        document.getElementById('displayFirma').innerText = uneseniId;
+                    } else {
+                        alert("Nalog nije aktivan.");
+                    }
+                } else {
+                    alert("Pogrešan ID ili Lozinka!");
+                }
+            } catch (error) {
+                alert("Greška pri povezivanju sa bazom.");
+            }
+        }
+
+        function sendToAI() {
+            const tekst = document.getElementById('userInput').value;
+            if(tekst) {
+                alert("Izvještaj poslan na analizu: " + tekst);
+            } else {
+                alert("Prvo unesite ili izdiktirajte tekst.");
+            }
+        }
+
         function saveNewCompany() {
             const data = {
                 user_id: document.getElementById('newFirmaID').value,
                 password: document.getElementById('newFirmaPass').value,
                 status: document.getElementById('newFirmaStatus').value
             };
-
-            fetch(scriptURL, { 
-                method: 'POST', 
-                mode: 'no-cors', 
-                cache: 'no-cache',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data) 
-            })
-            .then(() => {
-                alert("Podaci poslani! Provjerite Google Sheet.");
-                document.getElementById('newFirmaID').value = "";
-                document.getElementById('newFirmaPass').value = "";
-                document.getElementById('newFirmaStatus').value = "";
-            })
-            .catch(error => alert("Greška: " + error));
-        }
-
-        async function handleLogin() {
-    const uneseniId = document.getElementById('companyId').value;
-    const unesenaSifra = document.getElementById('password').value;
-    const statusMsg = document.getElementById('statusMsg');
-
-    try {
-        // 1. Prvo dobavljamo sve korisnike iz Google Sheeta preko tvog URL-a
-        // Napomena: Tvoj Apps Script mora podržavati GET metodu
-        const response = await fetch(scriptURL);
-        const korisnici = await response.json();
-
-        // 2. Tražimo da li postoji korisnik sa tim ID-om i Šifrom
-        const pronadjenKorisnik = korisnici.find(k => 
-            String(k.user_id) === uneseniId && String(k.password) === unesenaSifra
-        );
-
-        if (pronadjenKorisnik) {
-            // Ako je pronađen, provjeravamo status
-            if(pronadjenKorisnik.status === "aktivan") {
-                document.getElementById('login-section').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-                document.getElementById('displayFirma').innerText = uneseniId;
-            } else {
-                alert("Vaš nalog nije aktivan. Kontaktirajte admina.");
-            }
-        } else {
-            alert("Pogrešan ID ili Lozinka! Provjerite tabelu.");
-        }
-    } catch (error) {
-        console.error("Greška pri prijavi:", error);
-        alert("Sistem trenutno ne može provjeriti bazu. Provjerite Google Apps Script.");
-    }
-}
-
-        function sendToAI() {
-            alert("Sistem spreman za automatsko zapisivanje govora!");
+            fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) })
+            .then(() => alert("Korisnik dodan!"));
         }
     </script>
 </body>
