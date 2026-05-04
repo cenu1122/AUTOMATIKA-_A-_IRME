@@ -1,7 +1,112 @@
-// DODAJ OVU LINIJU ODMAH ISPOD const app = express();
-app.use(express.static("public"));
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NH AI-Automation | Poslovni Portal</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a202c;
+            color: #e2e8f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: #2d3748;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #4a5568;
+        }
+        h1 { color: #63b3ed; text-align: center; margin-bottom: 1.5rem; }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 1rem;
+            border-radius: 6px;
+            border: 1px solid #4a5568;
+            background: #1a202c;
+            color: white;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover { background-color: #3182ce; }
+        #dashboard { display: none; }
+        .success-msg { color: #68d391; text-align: center; margin-top: 10px; }
+    </style>
+</head>
+<body>
 
-// IZMIJENI POSTOJEĆU app.get("/") RUTU DA IZGLEDA OVAKO:
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
-});
+    <div class="card">
+        <h1>NH AI-Automation</h1>
+
+        <!-- LOGIN SEKCIJA -->
+        <div id="login-section">
+            <p style="text-align: center;">Prijava za klijente</p>
+            <input type="text" id="companyId" placeholder="ID Firme (npr. FIRMA001)">
+            <input type="password" id="password" placeholder="Lozinka">
+            <button onclick="handleLogin()">Prijavi se</button>
+        </div>
+
+        <!-- DASHBOARD SEKCIJA -->
+        <div id="dashboard">
+            <h3>Dobrodošli, <span id="displayFirma" style="color: #63b3ed;"></span></h3>
+            <label>Unesite važan podatak za Gazdu:</label>
+            <textarea id="userInput" rows="4" placeholder="Npr: Potrošeno 20 vreća ljepila, fali nam još 5 za sutra..."></textarea>
+            <button onclick="sendToAI()">Analiziraj i Pošalji</button>
+            <p id="statusMsg" class="success-msg"></p>
+        </div>
+    </div>
+
+    <script>
+        // Simulacija baze podataka firmi i šifri
+        const FIRME_DB = {
+            "FIRMA001": { sifra: "gazda123", naziv: "NH Gradnja" },
+            "FIRMA002": { sifra: "automatika99", naziv: "AI Solutions" }
+        };
+
+        function handleLogin() {
+            const id = document.getElementById('companyId').value;
+            const pass = document.getElementById('password').value;
+
+            if(FIRME_DB[id] && FIRME_DB[id].sifra === pass) {
+                document.getElementById('login-section').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                document.getElementById('displayFirma').innerText = FIRME_DB[id].naziv;
+            } else {
+                alert("Pogrešan ID ili šifra! Pokušajte sa FIRMA001 / gazda123");
+            }
+        }
+
+        function sendToAI() {
+            const tekst = document.getElementById('userInput').value;
+            if(!tekst) {
+                alert("Molimo unesite podatke.");
+                return;
+            }
+            
+            // Ovdje će ići tvoj API poziv ka Google Sheets/AI
+            console.log("Šaljem na analizu: " + tekst);
+            
+            document.getElementById('statusMsg').innerText = "Podaci su filtrirani i poslani Gazdi!";
+            document.getElementById('userInput').value = "";
+        }
+    </script>
+
+</body>
+</html>
