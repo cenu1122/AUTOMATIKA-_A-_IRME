@@ -15,6 +15,7 @@
         .admin-header { color: #f6ad55; border-top: 1px solid #4a5568; padding-top: 20px; margin-top: 20px; }
         #mic-btn { background-color: #e53e3e; }
         #mic-btn:hover { background-color: #c53030; }
+        #statusMsg { font-size: 0.9rem; margin-top: 10px; min-height: 20px; }
     </style>
 </head>
 <body>
@@ -27,7 +28,7 @@
             <p style="text-align: center;">Prijava za klijente</p>
             <input type="text" id="companyId" placeholder="Korisnički ID (user_id)">
             <input type="password" id="password" placeholder="Lozinka (password)">
-            <button onclick="handleLogin()">Prijavi se</button>
+            <button id="loginBtn" onclick="handleLogin()">Prijavi se</button>
         </div>
 
         <!-- DASHBOARD -->
@@ -38,7 +39,7 @@
             <button id="mic-btn" onclick="startDictation()">🎤 Klikni i pričaj</button>
 
             <textarea id="userInput" rows="4" placeholder="Vaš govor će se ovdje pojaviti..."></textarea>
-            <button onclick="sendToAI()">Pošalji na Analizu</button>
+            <button id="sendBtn" onclick="sendToAI()">Pošalji na Analizu</button>
             <p id="statusMsg" style="color: #68d391; text-align: center;"></p>
         </div>
 
@@ -54,7 +55,10 @@
     </div>
 
     <script>
-        const scriptURL = "https://script.google.com/macros/s/AKfycbzy3PnLobMFqIVCeH5ZtPXs6QDNjEJqz3xaN_htgyrp8zY3r12QG7deORyp-ysZFXdB/exec";
+        // TVOJ NOVI URL KOJI SI DOBIO NAKON DEPLOYMENTA
+        const scriptURL = "https://script.google.com/macros/s/AKfycbzXUWN8eNrykUn_OZ-aF239l-2RrpFiNxSfGoS8oe92VMXX8x8jNX6ykZxegXHT5FE_/exec";
+
+        let loggedInUserId = ""; // Ovdje čuvamo ID za kasnije slanje izvještaja
 
         let clicks = 0;
         function openAdmin() {
@@ -67,8 +71,9 @@
 
         // FUNKCIJA ZA PREPOZNAVANJE GOVORA
         function startDictation() {
-            if (window.hasOwnProperty('webkitSpeechRecognition')) {
-                const recognition = new webkitSpeechRecognition();
+            if (window.hasOwnProperty('webkitSpeechRecognition') || window.hasOwnProperty('SpeechRecognition')) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                const recognition = new SpeechRecognition();
                 const micBtn = document.getElementById('mic-btn');
 
                 recognition.continuous = false;
@@ -96,6 +101,12 @@
         async function handleLogin() {
             const uneseniId = document.getElementById('companyId').value;
             const unesenaSifra = document.getElementById('password').value;
+            const btn = document.getElementById('loginBtn');
+
+            if(!uneseniId || !unesenaSifra) return alert("Popunite sva polja!");
+
+            btn.innerText = "Provjera...";
+            btn.disabled = true;
 
             try {
                 const response = await fetch(scriptURL);
@@ -107,37 +118,91 @@
 
                 if (pronadjenKorisnik) {
                     if(pronadjenKorisnik.status === "aktivan") {
+                        loggedInUserId = uneseniId; // Spasimo ID za slanje izvještaja
                         document.getElementById('login-section').style.display = 'none';
                         document.getElementById('dashboard').style.display = 'block';
                         document.getElementById('displayFirma').innerText = uneseniId;
                     } else {
                         alert("Nalog nije aktivan.");
+                        btn.disabled = false;
+                        btn.innerText = "Prijavi se";
                     }
                 } else {
                     alert("Pogrešan ID ili Lozinka!");
+                    btn.disabled = false;
+                    btn.innerText = "Prijavi se";
                 }
             } catch (error) {
+                console.error(error);
                 alert("Greška pri povezivanju sa bazom.");
+                btn.disabled = false;
+                btn.innerText = "Prijavi se";
             }
         }
 
-        function sendToAI() {
+        // SLANJE IZVJEŠTAJA U NOVU BAZU
+        async function sendToAI() {
             const tekst = document.getElementById('userInput').value;
-            if(tekst) {
-                alert("Izvještaj poslan na analizu: " + tekst);
-            } else {
-                alert("Prvo unesite ili izdiktirajte tekst.");
+            const statusMsg = document.getElementById('statusMsg');
+            const sendBtn = document.getElementById('sendBtn');
+
+            if(!tekst) return alert("Prvo unesite ili izdiktirajte tekst.");
+
+            const data = {
+                tip: "izvjestaj",
+                user_id: loggedInUserId,
+                tekst: tekst
+            };
+
+            statusMsg.innerText = "Slanje u bazu...";
+            statusMsg.style.color = "#f6ad55";
+            sendBtn.disabled = true;
+
+            try {
+                // Koristimo mode: 'no-cors' za Google Apps Script POST zahtjeve
+                await fetch(scriptURL, {
+                    method: 'POST',
+                    mode: 'no-cors', 
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                statusMsg.innerText = "✅ Izvještaj uspješno spremljen!";
+                statusMsg.style.color = "#68d391";
+                document.getElementById('userInput').value = ""; // Očisti polje
+                
+            } catch (error) {
+                console.error(error);
+                statusMsg.innerText = "❌ Greška pri slanju!";
+                statusMsg.style.color = "#e53e3e";
+            } finally {
+                sendBtn.disabled = false;
             }
         }
 
-        function saveNewCompany() {
+        async function saveNewCompany() {
             const data = {
+                tip: "novi_korisnik",
                 user_id: document.getElementById('newFirmaID').value,
                 password: document.getElementById('newFirmaPass').value,
                 status: document.getElementById('newFirmaStatus').value
             };
-            fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) })
-            .then(() => alert("Korisnik dodan!"));
+
+            if(!data.user_id || !data.password) return alert("Popunite ID i Lozinku!");
+
+            try {
+                await fetch(scriptURL, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    body: JSON.stringify(data) 
+                });
+                alert("Korisnik poslan u bazu!");
+                document.getElementById('newFirmaID').value = "";
+                document.getElementById('newFirmaPass').value = "";
+            } catch (e) {
+                alert("Greška!");
+            }
         }
     </script>
 </body>
