@@ -108,42 +108,53 @@
             btn.disabled = true;
 
             try {
-                // Dodajemo timestamp (?t=...) da izbjegnemo keširanje starih podataka
+                // Dodajemo timestamp da uvijek vuče svježe podatke iz tabele
                 const response = await fetch(scriptURL + "?t=" + new Date().getTime());
                 const korisnici = await response.json();
 
-                // Pronalazak korisnika uz podršku za različite nazive kolona
-                const pronadjenKorisnik = korisnici.find(k => {
-                    const idIzTabele = (k.user_id || k.userid || k.id || "").toString().trim();
-                    const lozinkaIzTabele = (k.password || k.lozinka || k.sifra || "").toString().trim();
-                    return idIzTabele === uneseniId && lozinkaIzTabele === unesenaSifra;
-                });
+                // 1. KORAK: Tražimo da li uopšte postoji taj USER_ID
+                const korisnikPoId = korisnici.find(k => 
+                    (k.user_id || "").toString().trim() === uneseniId
+                );
 
-                if (pronadjenKorisnik) {
-                    const status = (pronadjenKorisnik.status || pronadjenKorisnik.aktivan || "").toString().toLowerCase().trim();
-                    if(status === "aktivan") {
-                        loggedInUserId = uneseniId;
-                        document.getElementById('login-section').style.display = 'none';
-                        document.getElementById('dashboard').style.display = 'block';
-                        document.getElementById('displayFirma').innerText = uneseniId;
-                    } else {
-                        alert("Nalog nije aktivan. Trenutni status: " + status);
-                        btn.disabled = false;
-                        btn.innerText = "Prijavi se";
-                    }
-                } else {
-                    alert("Pogrešan ID ili Lozinka!");
+                if (!korisnikPoId) {
+                    alert("DIJAGNOSTIKA: Korisnički ID '" + uneseniId + "' ne postoji u tabeli!");
                     btn.disabled = false;
                     btn.innerText = "Prijavi se";
+                    return;
                 }
+
+                // 2. KORAK: Ako ID postoji, provjeravamo LOZINKU
+                if ((korisnikPoId.password || "").toString().trim() !== unesenaSifra) {
+                    alert("DIJAGNOSTIKA: ID je tačan, ali LOZINKA nije ispravna!");
+                    btn.disabled = false;
+                    btn.innerText = "Prijavi se";
+                    return;
+                }
+
+                // 3. KORAK: Ako je lozinka tačna, provjeravamo STATUS
+                const trenutniStatus = (korisnikPoId.status || "").toString().toLowerCase().trim();
+                if (trenutniStatus !== "aktivan") {
+                    alert("DIJAGNOSTIKA: Podaci su tačni, ali nalog NIJE AKTIVAN. Status u tabeli: " + trenutniStatus);
+                    btn.disabled = false;
+                    btn.innerText = "Prijavi se";
+                    return;
+                }
+
+                // Ako je sve prošlo (Uspješan login)
+                loggedInUserId = uneseniId;
+                document.getElementById('login-section').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                document.getElementById('displayFirma').innerText = uneseniId;
+                alert("Dobrodošli! Prijava uspješna.");
+
             } catch (error) {
                 console.error(error);
-                alert("Greška pri povezivanju sa bazom.");
+                alert("SISTEMSKA GREŠKA: " + error.message);
                 btn.disabled = false;
                 btn.innerText = "Prijavi se";
             }
         }
-
         async function sendToAI() {
             const tekst = document.getElementById('userInput').value;
             const statusMsg = document.getElementById('statusMsg');
