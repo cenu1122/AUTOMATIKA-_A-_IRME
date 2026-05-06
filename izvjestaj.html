@@ -1,1 +1,203 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NH AI-Automation | Glasovni Izvještaj</title>
+    <style>
+        :root {
+            --primary-color: #00ffcc;
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #ffffff;
+        }
 
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+            text-align: center;
+            width: 90%;
+            max-width: 450px;
+            border: 1px solid #333;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 26px;
+            letter-spacing: 1px;
+        }
+
+        p.subtitle {
+            color: #888;
+            margin-bottom: 30px;
+        }
+
+        .mic-section {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .mic-btn {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            border: none;
+            background: #333;
+            color: var(--primary-color);
+            font-size: 60px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            outline: none;
+            margin: 0 auto;
+        }
+
+        .mic-btn:hover {
+            background: #444;
+            transform: scale(1.05);
+        }
+
+        .mic-btn.active {
+            background: #ff4b2b;
+            color: white;
+            box-shadow: 0 0 30px rgba(255, 75, 43, 0.6);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        #status {
+            font-weight: 500;
+            color: var(--primary-color);
+            margin-top: 15px;
+            height: 24px;
+        }
+
+        #result-container {
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #444;
+            margin-top: 20px;
+            min-height: 100px;
+            text-align: left;
+        }
+
+        #result-text {
+            color: #ddd;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .footer-note {
+            font-size: 12px;
+            color: #555;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>NH AI-Automation</h1>
+    <p class="subtitle">Digitalizacija procesa glasom</p>
+
+    <div class="mic-section">
+        <button id="micBtn" class="mic-btn">🎤</button>
+        <div id="status">Pritisnite za početak</div>
+    </div>
+
+    <div id="result-container">
+        <p id="result-text">Vaš govor će biti pretvoren u tekst i automatski spremljen u tabelu...</p>
+    </div>
+
+    <p class="footer-note">Powered by NH AI-Automation Bosnia</p>
+</div>
+
+<script>
+    const micBtn = document.getElementById('micBtn');
+    const status = document.getElementById('status');
+    const resultText = document.getElementById('result-text');
+
+    // Provjera podrške za SpeechRecognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+        status.innerText = "Vaš preglednik ne podržava govor.";
+        micBtn.disabled = true;
+    } else {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'bs-BA';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        micBtn.onclick = () => {
+            recognition.start();
+            micBtn.classList.add('active');
+            status.innerText = "Slušam vas...";
+        };
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            resultText.innerText = transcript;
+            posaljiIzvjestaj(transcript);
+        };
+
+        recognition.onspeechend = () => {
+            recognition.stop();
+            micBtn.classList.remove('active');
+            status.innerText = "Slanje u bazu...";
+        };
+
+        recognition.onerror = (event) => {
+            micBtn.classList.remove('active');
+            status.innerText = "Greška: " + event.error;
+        };
+    }
+
+    function posaljiIzvjestaj(tekst) {
+        // Tvoj novi Web App URL
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbyYvAft7j0Gl4z5gap1BgdyVN4HsJ0TX5MOHn0DOQ9yrDFQP7maKYt3kskqxDAU2Dp3nQ/exec';
+
+        fetch(scriptUrl, {
+            method: 'POST',
+            mode: 'no-cors', // Neophodno za Google Apps Script cross-domain
+            body: JSON.stringify({
+                korisnik: "Nusret Halilović",
+                tekst: tekst
+            })
+        })
+        .then(() => {
+            status.innerText = "Spremljeno u tabelu! ✅";
+            setTimeout(() => { status.innerText = "Pritisnite za novi unos"; }, 3000);
+        })
+        .catch(error => {
+            console.error('Greška:', error);
+            status.innerText = "Greška pri spremanju.";
+        });
+    }
+</script>
+
+</body>
+</html>
