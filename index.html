@@ -58,7 +58,7 @@
         // TVOJ NOVI URL KOJI SI DOBIO NAKON DEPLOYMENTA
         const scriptURL = "https://script.google.com/macros/s/AKfycbzXUWN8eNrykUn_OZ-aF239l-2RrpFiNxSfGoS8oe92VMXX8x8jNX6ykZxegXHT5FE_/exec";
 
-        let loggedInUserId = ""; // Ovdje čuvamo ID za kasnije slanje izvještaja
+        let loggedInUserId = ""; 
 
         let clicks = 0;
         function openAdmin() {
@@ -69,7 +69,6 @@
             }
         }
 
-        // FUNKCIJA ZA PREPOZNAVANJE GOVORA
         function startDictation() {
             if (window.hasOwnProperty('webkitSpeechRecognition') || window.hasOwnProperty('SpeechRecognition')) {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -99,8 +98,8 @@
         }
 
         async function handleLogin() {
-            const uneseniId = document.getElementById('companyId').value;
-            const unesenaSifra = document.getElementById('password').value;
+            const uneseniId = document.getElementById('companyId').value.trim();
+            const unesenaSifra = document.getElementById('password').value.trim();
             const btn = document.getElementById('loginBtn');
 
             if(!uneseniId || !unesenaSifra) return alert("Popunite sva polja!");
@@ -109,21 +108,26 @@
             btn.disabled = true;
 
             try {
-                const response = await fetch(scriptURL);
+                // Dodajemo timestamp (?t=...) da izbjegnemo keširanje starih podataka
+                const response = await fetch(scriptURL + "?t=" + new Date().getTime());
                 const korisnici = await response.json();
 
-                const pronadjenKorisnik = korisnici.find(k => 
-                    String(k.user_id) === uneseniId && String(k.password) === unesenaSifra
-                );
+                // Pronalazak korisnika uz podršku za različite nazive kolona
+                const pronadjenKorisnik = korisnici.find(k => {
+                    const idIzTabele = (k.user_id || k.userid || k.id || "").toString().trim();
+                    const lozinkaIzTabele = (k.password || k.lozinka || k.sifra || "").toString().trim();
+                    return idIzTabele === uneseniId && lozinkaIzTabele === unesenaSifra;
+                });
 
                 if (pronadjenKorisnik) {
-                    if(pronadjenKorisnik.status === "aktivan") {
-                        loggedInUserId = uneseniId; // Spasimo ID za slanje izvještaja
+                    const status = (pronadjenKorisnik.status || pronadjenKorisnik.aktivan || "").toString().toLowerCase().trim();
+                    if(status === "aktivan") {
+                        loggedInUserId = uneseniId;
                         document.getElementById('login-section').style.display = 'none';
                         document.getElementById('dashboard').style.display = 'block';
                         document.getElementById('displayFirma').innerText = uneseniId;
                     } else {
-                        alert("Nalog nije aktivan.");
+                        alert("Nalog nije aktivan. Trenutni status: " + status);
                         btn.disabled = false;
                         btn.innerText = "Prijavi se";
                     }
@@ -140,7 +144,6 @@
             }
         }
 
-        // SLANJE IZVJEŠTAJA U NOVU BAZU
         async function sendToAI() {
             const tekst = document.getElementById('userInput').value;
             const statusMsg = document.getElementById('statusMsg');
@@ -159,7 +162,6 @@
             sendBtn.disabled = true;
 
             try {
-                // Koristimo mode: 'no-cors' za Google Apps Script POST zahtjeve
                 await fetch(scriptURL, {
                     method: 'POST',
                     mode: 'no-cors', 
@@ -170,7 +172,7 @@
 
                 statusMsg.innerText = "✅ Izvještaj uspješno spremljen!";
                 statusMsg.style.color = "#68d391";
-                document.getElementById('userInput').value = ""; // Očisti polje
+                document.getElementById('userInput').value = ""; 
                 
             } catch (error) {
                 console.error(error);
