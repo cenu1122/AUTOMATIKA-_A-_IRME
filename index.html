@@ -55,7 +55,6 @@
     </div>
 
     <script>
-        // TVOJ NOVI URL KOJI SI DOBIO NAKON DEPLOYMENTA
         const scriptURL = "https://script.google.com/macros/s/AKfycbytMiRN9sX-bxtK6Al4lWbXe-HvTIRz19x5i8IO68lLVO42uTntYpDsn53hI0hxWPQi/exec";
 
         let loggedInUserId = ""; 
@@ -108,45 +107,51 @@
             btn.disabled = true;
 
             try {
-                // Dodajemo timestamp da uvijek vuče svježe podatke iz tabele
                 const response = await fetch(scriptURL + "?t=" + new Date().getTime());
-                const korisnici = await response.json();
+                const rezultat = await response.json();
+                
+                console.log("Podaci iz skripte:", rezultat);
 
-                // 1. KORAK: Tražimo da li uopšte postoji taj USER_ID
+                if (rezultat.error) {
+                    alert("GREŠKA U SKRIPTI: " + rezultat.error);
+                    btn.disabled = false;
+                    btn.innerText = "Prijavi se";
+                    return;
+                }
+
+                const korisnici = Array.isArray(rezultat) ? rezultat : [];
+
                 const korisnikPoId = korisnici.find(k => 
                     (k.user_id || "").toString().trim() === uneseniId
                 );
 
                 if (!korisnikPoId) {
-                    alert("DIJAGNOSTIKA: Korisnički ID '" + uneseniId + "' ne postoji u tabeli!");
+                    alert("Korisnički ID '" + uneseniId + "' ne postoji!");
                     btn.disabled = false;
                     btn.innerText = "Prijavi se";
                     return;
                 }
 
-                // 2. KORAK: Ako ID postoji, provjeravamo LOZINKU
                 if ((korisnikPoId.password || "").toString().trim() !== unesenaSifra) {
-                    alert("DIJAGNOSTIKA: ID je tačan, ali LOZINKA nije ispravna!");
+                    alert("Pogrešna lozinka!");
                     btn.disabled = false;
                     btn.innerText = "Prijavi se";
                     return;
                 }
 
-                // 3. KORAK: Ako je lozinka tačna, provjeravamo STATUS
                 const trenutniStatus = (korisnikPoId.status || "").toString().toLowerCase().trim();
                 if (trenutniStatus !== "aktivan") {
-                    alert("DIJAGNOSTIKA: Podaci su tačni, ali nalog NIJE AKTIVAN. Status u tabeli: " + trenutniStatus);
+                    alert("Nalog nije aktivan. Status: " + trenutniStatus);
                     btn.disabled = false;
                     btn.innerText = "Prijavi se";
                     return;
                 }
 
-                // Ako je sve prošlo (Uspješan login)
                 loggedInUserId = uneseniId;
                 document.getElementById('login-section').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
                 document.getElementById('displayFirma').innerText = uneseniId;
-                alert("Dobrodošli! Prijava uspješna.");
+                alert("Prijava uspješna!");
 
             } catch (error) {
                 console.error(error);
@@ -155,6 +160,7 @@
                 btn.innerText = "Prijavi se";
             }
         }
+
         async function sendToAI() {
             const tekst = document.getElementById('userInput').value;
             const statusMsg = document.getElementById('statusMsg');
