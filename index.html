@@ -6,16 +6,14 @@
     <title>NH AI-Automation | Poslovni Portal</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #1a202c; color: #e2e8f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        .card { background: #2d3748; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; max-width: 500px; border: 1px solid #4a5568; }
-        h1 { color: #63b3ed; text-align: center; cursor: pointer; } 
-        input, textarea { width: 100%; padding: 12px; margin-bottom: 1rem; border-radius: 6px; border: 1px solid #4a5568; background: #1a202c; color: white; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background-color: #4299e1; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
+        .card { background: #2d3748; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; max-width: 400px; border: 1px solid #4a5568; }
+        h1 { color: #63b3ed; text-align: center; cursor: pointer; margin-bottom: 30px; } 
+        input { width: 100%; padding: 12px; margin-bottom: 1rem; border-radius: 6px; border: 1px solid #4a5568; background: #1a202c; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #4299e1; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
         button:hover { background-color: #3182ce; }
-        #dashboard, #admin-panel { display: none; margin-top: 20px; }
-        .admin-header { color: #f6ad55; border-top: 1px solid #4a5568; padding-top: 20px; margin-top: 20px; }
-        #mic-btn { background-color: #e53e3e; }
-        #mic-btn:hover { background-color: #c53030; }
-        #statusMsg { font-size: 0.9rem; margin-top: 10px; min-height: 20px; }
+        button:disabled { background-color: #4a5568; cursor: not-allowed; }
+        #admin-panel { display: none; margin-top: 20px; border-top: 1px solid #4a5568; padding-top: 20px; }
+        .admin-header { color: #f6ad55; font-size: 1.2rem; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -25,39 +23,25 @@
 
         <!-- LOGIN SEKCIJA -->
         <div id="login-section">
-            <p style="text-align: center;">Prijava za klijente</p>
-            <input type="text" id="companyId" placeholder="Korisnički ID (user_id)">
-            <input type="password" id="password" placeholder="Lozinka (password)">
+            <p style="text-align: center; margin-bottom: 20px;">Prijava za klijente</p>
+            <input type="text" id="companyId" placeholder="Korisnički ID">
+            <input type="password" id="password" placeholder="Lozinka">
             <button id="loginBtn" onclick="handleLogin()">Prijavi se</button>
         </div>
 
-        <!-- DASHBOARD -->
-        <div id="dashboard">
-            <h3>Dobrodošli, <span id="displayFirma" style="color: #63b3ed;"></span></h3>
-            
-            <label>Glasovni izvještaj:</label>
-            <button id="mic-btn" onclick="startDictation()">🎤 Klikni i pričaj</button>
-
-            <textarea id="userInput" rows="4" placeholder="Vaš govor će se ovdje pojaviti..."></textarea>
-            <button id="sendBtn" onclick="sendToAI()">Pošalji na Analizu</button>
-            <p id="statusMsg" style="color: #68d391; text-align: center;"></p>
-        </div>
-
-        <!-- ADMIN PANEL -->
+        <!-- ADMIN PANEL (Skriven, aktivira se na 5 klikova na naslov) -->
         <div id="admin-panel">
             <h2 class="admin-header">Admin Panel</h2>
-            <p>Dodajte novog korisnika:</p>
             <input type="text" id="newFirmaID" placeholder="Novi user_id">
             <input type="text" id="newFirmaPass" placeholder="Nova lozinka">
-            <input type="text" id="newFirmaStatus" placeholder="Status (aktivan)">
-            <button onclick="saveNewCompany()" style="background-color: #f6ad55;">Spremi u Google Sheet</button>
+            <input type="text" id="newFirmaStatus" placeholder="Status (aktivan)" value="aktivan">
+            <button onclick="saveNewCompany()" style="background-color: #f6ad55;">Spremi u bazu</button>
         </div>
     </div>
 
     <script>
+        // Tvoj URL skripte za provjeru korisnika
         const scriptURL = "https://script.google.com/macros/s/AKfycbweiMSOZNQI8UFdwTaB8Lf93WHAO5Ev7co_t-PmFkQ8chU9ngtuJxx-2KO-q_G65xQO/exec";
-
-        let loggedInUserId = ""; 
 
         let clicks = 0;
         function openAdmin() {
@@ -65,34 +49,6 @@
             if(clicks === 5) {
                 document.getElementById('admin-panel').style.display = 'block';
                 alert("Admin mod aktiviran!");
-            }
-        }
-
-        function startDictation() {
-            if (window.hasOwnProperty('webkitSpeechRecognition') || window.hasOwnProperty('SpeechRecognition')) {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                const recognition = new SpeechRecognition();
-                const micBtn = document.getElementById('mic-btn');
-
-                recognition.continuous = false;
-                recognition.interimResults = false;
-                recognition.lang = "hr-HR"; 
-                
-                recognition.start();
-                micBtn.innerText = "🔴 Slušam vas...";
-
-                recognition.onresult = function(e) {
-                    document.getElementById('userInput').value = e.results[0][0].transcript;
-                    recognition.stop();
-                    micBtn.innerText = "🎤 Klikni i pričaj";
-                };
-
-                recognition.onerror = function(e) {
-                    recognition.stop();
-                    micBtn.innerText = "🎤 Greška, probaj opet";
-                };
-            } else {
-                alert("Vaš browser ne podržava glasovni unos. Koristite Chrome.");
             }
         }
 
@@ -107,97 +63,50 @@
             btn.disabled = true;
 
             try {
+                // Dodajemo timestamp da izbjegnemo caching (osvježavanje podataka)
                 const response = await fetch(scriptURL + "?t=" + new Date().getTime());
                 const rezultat = await response.json();
                 
-                console.log("Podaci iz skripte:", rezultat);
-
-                if (rezultat.error) {
-                    alert("GREŠKA U SKRIPTI: " + rezultat.error);
-                    btn.disabled = false;
-                    btn.innerText = "Prijavi se";
-                    return;
-                }
-
                 const korisnici = Array.isArray(rezultat) ? rezultat : [];
 
+                // Traženje korisnika u bazi
                 const korisnikPoId = korisnici.find(k => 
                     (k.user_id || "").toString().trim() === uneseniId
                 );
 
                 if (!korisnikPoId) {
-                    alert("Korisnički ID '" + uneseniId + "' ne postoji!");
-                    btn.disabled = false;
-                    btn.innerText = "Prijavi se";
+                    alert("Korisnički ID ne postoji!");
+                    resetBtn(btn);
                     return;
                 }
 
                 if ((korisnikPoId.password || "").toString().trim() !== unesenaSifra) {
                     alert("Pogrešna lozinka!");
-                    btn.disabled = false;
-                    btn.innerText = "Prijavi se";
+                    resetBtn(btn);
                     return;
                 }
 
                 const trenutniStatus = (korisnikPoId.status || "").toString().toLowerCase().trim();
                 if (trenutniStatus !== "aktivan") {
-                    alert("Nalog nije aktivan. Status: " + trenutniStatus);
-                    btn.disabled = false;
-                    btn.innerText = "Prijavi se";
+                    alert("Nalog nije aktivan.");
+                    resetBtn(btn);
                     return;
                 }
 
-                loggedInUserId = uneseniId;
-                document.getElementById('login-section').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-                document.getElementById('displayFirma').innerText = uneseniId;
-                alert("Prijava uspješna!");
+                // --- AKCIJA: PREBACIVANJE NA IZVJESTAJ ---
+                alert("Prijava uspješna! Prebacivanje na izvještaj...");
+                window.location.href = "izvjestaj.html"; 
 
             } catch (error) {
                 console.error(error);
-                alert("SISTEMSKA GREŠKA: " + error.message);
-                btn.disabled = false;
-                btn.innerText = "Prijavi se";
+                alert("Greška pri povezivanju sa serverom.");
+                resetBtn(btn);
             }
         }
 
-        async function sendToAI() {
-            const tekst = document.getElementById('userInput').value;
-            const statusMsg = document.getElementById('statusMsg');
-            const sendBtn = document.getElementById('sendBtn');
-
-            if(!tekst) return alert("Prvo unesite ili izdiktirajte tekst.");
-
-            const data = {
-                tip: "izvjestaj",
-                user_id: loggedInUserId,
-                tekst: tekst
-            };
-
-            statusMsg.innerText = "Slanje u bazu...";
-            statusMsg.style.color = "#f6ad55";
-            sendBtn.disabled = true;
-
-            try {
-                await fetch(scriptURL, {
-                    method: 'POST',
-                    mode: 'no-cors', 
-                    cache: 'no-cache',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-
-                statusMsg.innerText = "✅ Izvještaj uspješno spremljen!";
-                statusMsg.style.color = "#68d391";
-                document.getElementById('userInput').value = ""; 
-                
-            } catch (error) {
-                console.error(error);
-                statusMsg.innerText = "❌ Greška pri slanju!";
-                statusMsg.style.color = "#e53e3e";
-            } finally {
-                sendBtn.disabled = false;
-            }
+        function resetBtn(btn) {
+            btn.disabled = false;
+            btn.innerText = "Prijavi se";
         }
 
         async function saveNewCompany() {
@@ -208,7 +117,7 @@
                 status: document.getElementById('newFirmaStatus').value
             };
 
-            if(!data.user_id || !data.password) return alert("Popunite ID i Lozinku!");
+            if(!data.user_id || !data.password) return alert("Popunite podatke!");
 
             try {
                 await fetch(scriptURL, { 
