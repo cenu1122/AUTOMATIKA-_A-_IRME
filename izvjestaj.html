@@ -24,18 +24,16 @@
 
         <textarea id="output" placeholder="Vaš izvještaj će se ovdje pojaviti nakon govora ili ga možete sami upisati..."></textarea>
         
-        <!-- OVO JE DUGME KOJE TI NEDOSTAJE -->
         <button id="sendBtn" class="btn-send" onclick="posaljiIzvjestaj()">POŠALJI NA ANALIZU</button>
         
         <div id="successLabel" class="success-msg">✅ Izvještaj uspješno spremljen u Vaš list!</div>
     </div>
 
     <script>
-        // 1. ZAMIJENI OVOG SA SVOJIM NOVIM DEPLOY URL-om
-        const scriptURL = "https://script.google.com/macros/s/AKfycbweiMSOZNQI8UFdwTaB8Lf93WHAO5Ev7co_t-PmFkQ8chU9ngtuJxx-2KO-q_G65xQO/exec";
+        // TVOJ PROVJERENI URL ZA GOOGLE APPS SCRIPT
+        const scriptURL = "https://script.google.com/macros/s/AKfycbyYvAft7j0Gl4z5gap1BgdyVN4HsJ0TX5MOHn0DOQ9yrDFQP7maKYt3kskqxDAU2Dp3nQ/exec";
 
-        // Simulacija preuzimanja ID-a (ovdje možeš dodati logiku da vuče ID iz login-a)
-        // Za test ćemo staviti '101', ti ga možeš prilagoditi
+        // ID korisnika (ovo će biti naziv lista u tabeli)
         const trenutniKorisnik = "101"; 
         document.getElementById('user-display').innerText = trenutniKorisnik;
 
@@ -61,16 +59,19 @@
                 // Slanje podataka Google skripti
                 await fetch(scriptURL, {
                     method: 'POST',
-                    mode: 'no-cors', // Bitno za Google Scripts
+                    mode: 'no-cors', 
                     cache: 'no-cache',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify(podaci)
                 });
 
-                // Prikaz uspjeha
+                // Prikaz uspjeha na interfejsu
                 label.style.display = "block";
                 btn.innerText = "POSLANO";
                 
-                // Reset nakon 3 sekunde
+                // Resetovanje forme nakon 3 sekunde
                 setTimeout(() => {
                     label.style.display = "none";
                     btn.disabled = false;
@@ -79,8 +80,8 @@
                 }, 3000);
 
             } catch (e) {
-                console.error(e);
-                alert("Greška pri slanju!");
+                console.error("Greška:", e);
+                alert("Greška pri slanju! Provjerite konzolu.");
                 btn.disabled = false;
                 btn.innerText = "POŠALJI NA ANALIZU";
             }
