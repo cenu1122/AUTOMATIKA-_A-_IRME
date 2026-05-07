@@ -37,16 +37,16 @@
     window.onload = ucitajSastankeBezKesa;
 
     async function ucitajSastankeBezKesa() {
-        const urlSaZastitom = scriptURL + "?user_id=" + trenutniKorisnik + "&nocache=" + new Date().getTime();
+        const urlSaZastitom = scriptURL + "?user_id=" + trenutniKorisnik + "&v=" + Math.random();
         try {
             const response = await fetch(urlSaZastitom);
             const sastanci = await response.json();
             const container = document.getElementById('alarm-container');
             container.innerHTML = ''; 
-            container.style.display = 'none';
-
+            
             if (sastanci && sastanci.length > 0) {
-                sastanci.forEach(s => {
+                // Preokrenemo da najnoviji unosi budu na vrhu
+                sastanci.reverse().forEach(s => {
                     prikaziViseAlarma(s.samo_datum, s.ai_analiza);
                 });
             }
@@ -56,20 +56,18 @@
     function prikaziViseAlarma(datumString, kompletanTekst) {
         if (!datumString || !kompletanTekst) return;
 
-        // 1. ČIŠĆENJE ZVJEZDICA I TEKSTA
+        // Čišćenje zvjezdica i formata
         let cistCijeliTekst = kompletanTekst.replace(/\*/g, "");
         let cistiDatum = datumString.replace(/\*/g, "").replace(/1\.\s*DATUM[:\s]*/i, "").trim();
         
-        // 2. KONVERZIJA DATUMA (popravka za format May 8, 2026)
         const rok = new Date(cistiDatum);
         const sad = new Date();
-        
         if (isNaN(rok.getTime())) return;
 
-        // 3. PROVJERA TERMINA (prikazuje sve unutar 48 sati)
         const razlikaSati = (rok - sad) / (1000 * 60 * 60);
 
-        if (razlikaSati > -2 && razlikaSati <= 48) {
+        // Prikazuje sve od -24h do +72h (širok opseg da ne fulaš termine)
+        if (razlikaSati > -24 && razlikaSati <= 72) {
             const container = document.getElementById('alarm-container');
             container.style.display = 'block';
 
@@ -86,7 +84,6 @@
             const vrijemeMatch = cistiDatum.match(/\d{2}:\d{2}/);
             const vrijemePrikaz = vrijemeMatch ? vrijemeMatch[0] : "";
             
-            // Sigurna priprema teksta za alert
             let tekstZaAlert = cistCijeliTekst.replace(/'/g, "").replace(/"/g, "").replace(/\n/g, "\\n");
 
             const noviAlarm = document.createElement('div');
