@@ -73,40 +73,48 @@
 
     // --- LOGIKA ZA PRIKAZ VIŠE ALARMA ---
     function prikaziViseAlarma(datumString, kompletanTekst) {
-        const rok = new Date(datumString);
-        const sad = new Date();
-        const razlikaSati = (rok - sad) / (1000 * 60 * 60);
+    // Čistimo datum od zvjezdica i oznaka ako postoje
+    let cistiDatum = datumString.replace(/\*/g, "").replace("1. DATUM:", "").trim();
+    const rok = new Date(cistiDatum);
+    const sad = new Date();
+    const razlikaSati = (rok - sad) / (1000 * 60 * 60);
 
-        if (razlikaSati > 0 && razlikaSati <= 24) {
-            const container = document.getElementById('alarm-container');
-            container.style.display = 'block';
+    // Provjera termina u idućih 24h
+    if (razlikaSati > 0 && razlikaSati <= 24) {
+        const container = document.getElementById('alarm-container');
+        container.style.display = 'block';
 
-            let razlog = "Sastanak/Obaveza";
-            if (kompletanTekst && kompletanTekst.includes("2. DETALJ:")) {
+        let razlog = "Sastanak/Obaveza";
+        
+        // POPRAVKA: Provjeravamo i obični i bold format (sa zvjezdicama)
+        if (kompletanTekst) {
+            if (kompletanTekst.includes("2. **DETALJ**:")) {
+                razlog = kompletanTekst.split("2. **DETALJ**:")[1].split("\n")[0].trim();
+            } else if (kompletanTekst.includes("2. DETALJ:")) {
                 razlog = kompletanTekst.split("2. DETALJ:")[1].split("\n")[0].trim();
             }
-
-            const noviAlarm = document.createElement('div');
-            noviAlarm.style.borderBottom = "1px solid #f56565";
-            noviAlarm.style.padding = "10px 0";
-            
-            // Sigurno izvlačenje vremena (HH:MM)
-            const vrijemeMatch = datumString.match(/\d{2}:\d{2}/);
-            const vrijemePrikaz = vrijemeMatch ? vrijemeMatch[0] : "";
-
-            let poruka = razlikaSati <= 1 ? "🚨 HITNO: " : "⚠️ PODSJETNIK: ";
-            poruka += razlog + (vrijemePrikaz ? " (u " + vrijemePrikaz + ")" : "");
-
-            noviAlarm.innerHTML = `
-                <span style="font-weight: bold; color: #feb2b2;">${poruka}</span>
-                <a class="alarm-link" style="color: white; cursor: pointer; text-decoration: underline; display: block; margin-top: 5px;" 
-                   onclick="alert('Detalji termina:\\n${kompletanTekst.replace(/'/g, "\\'").replace(/\n/g, "\\n")}');">
-                   Klikni za detalje
-                </a>
-            `;
-            container.appendChild(noviAlarm);
         }
+
+        const noviAlarm = document.createElement('div');
+        noviAlarm.style.borderBottom = "1px solid #f56565";
+        noviAlarm.style.padding = "10px 0";
+        noviAlarm.style.textAlign = "left";
+        
+        const vrijemeMatch = cistiDatum.match(/\d{2}:\d{2}/);
+        const vrijemePrikaz = vrijemeMatch ? vrijemeMatch[0] : "";
+
+        noviAlarm.innerHTML = `
+            <div style="font-weight: bold; color: #feb2b2;">
+                ${razlikaSati <= 1 ? "🚨 HITNO" : "⚠️ PODSJETNIK"}: ${razlog} (u ${vrijemePrikaz})
+            </div>
+            <a class="alarm-link" style="color: white; cursor: pointer; text-decoration: underline; font-size: 0.85rem; display: block; margin-top: 5px;" 
+               onclick="alert('Detalji termina:\\n${kompletanTekst.replace(/'/g, "\\'").replace(/\n/g, "\\n")}');">
+               Klikni za detalje izvještaja
+            </a>
+        `;
+        container.appendChild(noviAlarm);
     }
+}
 
     // --- FUNKCIJA ZA SLANJE IZVJEŠTAJA (KOJA JE FALILA) ---
     async function posaljiIzvjestaj() {
