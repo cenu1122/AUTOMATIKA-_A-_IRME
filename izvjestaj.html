@@ -4,71 +4,140 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Alarma - Live</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-black text-white p-4 font-sans min-h-screen">
 
-    <a href="index.html" class="block w-full bg-zinc-900 border border-zinc-700 text-center py-4 rounded-xl mb-8 font-bold uppercase tracking-widest">
+    <a href="index.html"
+       class="block w-full bg-zinc-900 border border-zinc-700 text-center py-4 rounded-xl mb-8 font-bold uppercase tracking-widest hover:bg-zinc-800 transition">
         ← NAZAD NA UNOS
     </a>
 
     <header class="mb-10 border-b border-zinc-800 pb-4">
-        <h1 class="text-2xl font-black text-red-600 tracking-tighter uppercase italic">SISTEM ALARMA V3</h1>
-        <p class="text-[10px] text-zinc-500 uppercase">Live izvještaj iz baze</p>
+        <h1 class="text-2xl font-black text-red-600 tracking-tighter uppercase italic">
+            SISTEM ALARMA V3
+        </h1>
+
+        <p class="text-[10px] text-zinc-500 uppercase">
+            Live izvještaj iz baze
+        </p>
     </header>
 
     <div id="lista-alarma" class="space-y-6">
-        <p class="text-zinc-700 text-center py-20 animate-pulse text-xs uppercase">Učitavanje podataka...</p>
+        <p class="text-zinc-700 text-center py-20 animate-pulse text-xs uppercase">
+            Učitavanje podataka...
+        </p>
     </div>
 
     <script>
+
         async function ucitajPodatke() {
+
             try {
-                // Uzimamo podatke direktno sa tvog URL-a
-                const r = await fetch('https://sheetdb.io/api/v1/rjhvmuxlef6zk?t=' + Date.now());
-                const data = await r.json();
+
+                // API
+                const response = await fetch(
+                    'https://sheetdb.io/api/v1/rjhvmuxlef6zk?t=' + Date.now()
+                );
+
+                const data = await response.json();
+
                 const lista = document.getElementById('lista-alarma');
-                
-                if(!data || data.length === 0) {
-                    lista.innerHTML = "Baza je prazna.";
+
+                // PRAZNA BAZA
+                if (!data || data.length === 0) {
+                    lista.innerHTML = `
+                        <div class="text-center text-zinc-500 py-20 uppercase text-sm">
+                            Baza je prazna.
+                        </div>
+                    `;
                     return;
                 }
 
-                // Okrećemo podatke da najnoviji bude prvi
+                // NAJNOVIJI PRVI
                 const prikaz = data.reverse();
+
                 lista.innerHTML = '';
 
-                prikaz.forEach(red => {
-                    // KORISTIMO NAZIVE KOJE SMO VIDJELI NA TVOJOJ SLICI
-                    const datum = red["Datum"] || "Nema datuma";
-                    const korisnik = red["Korisnik"] || "Sistem";
-                    const tekst = red["Tekst"] || "Bez naslova";
-                    const analiza = red["AI analiza"] || "Nema detalja";
+                prikaz.forEach((red, index) => {
 
+                    // AUTOMATSKI IZLISTAJ SVA POLJA IZ TABELE
+                    let svaPolja = '';
+
+                    Object.entries(red).forEach(([kljuc, vrijednost]) => {
+
+                        svaPolja += `
+                            <div class="border-b border-zinc-800 py-2">
+                                
+                                <div class="text-[10px] uppercase text-red-500 font-bold mb-1 tracking-wider">
+                                    ${kljuc}
+                                </div>
+
+                                <div class="text-sm text-zinc-300 break-words">
+                                    ${vrijednost || '-'}
+                                </div>
+
+                            </div>
+                        `;
+                    });
+
+                    // KARTICA
                     const kartica = document.createElement('div');
-                    kartica.className = "bg-zinc-950 border-l-4 border-red-600 p-5 rounded-r-lg shadow-2xl border border-zinc-900 mb-6 text-left";
-                    
-                    kartica.innerHTML = `
-                        <div class="flex justify-between items-center mb-4">
-                            <span class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded font-black uppercase">${korisnik}</span>
-                            <span class="text-[10px] text-zinc-500 font-mono">${datum}</span>
-                        </div>
-                        <h2 class="text-xl font-bold text-zinc-100 uppercase mb-4 leading-tight">${tekst}</h2>
-                        <div class="bg-black/80 p-4 rounded border border-zinc-800 text-xs text-zinc-400 font-mono leading-relaxed">
-                            <span class="text-red-900 font-bold uppercase block mb-1 text-[9px]">Detalji kvara i analiza:</span>
-                            ${analiza}
-                        </div>
+
+                    kartica.className = `
+                        bg-zinc-950
+                        border
+                        border-zinc-800
+                        rounded-2xl
+                        p-5
+                        shadow-2xl
                     `;
+
+                    kartica.innerHTML = `
+
+                        <div class="flex justify-between items-center mb-5">
+
+                            <div class="text-xs font-black uppercase text-red-600">
+                                Alarm #${index + 1}
+                            </div>
+
+                            <div class="text-[10px] text-zinc-600">
+                                LIVE PODATAK
+                            </div>
+
+                        </div>
+
+                        <div class="space-y-2">
+                            ${svaPolja}
+                        </div>
+
+                    `;
+
                     lista.appendChild(kartica);
+
                 });
-            } catch(e) {
-                document.getElementById('lista-alarma').innerHTML = "Greška pri učitavanju.";
+
+            } catch (e) {
+
+                console.error(e);
+
+                document.getElementById('lista-alarma').innerHTML = `
+                    <div class="text-center text-red-600 py-20 uppercase text-sm">
+                        Greška pri učitavanju podataka.
+                    </div>
+                `;
             }
         }
 
-        // Pokreni odmah i osvježavaj svakih 10 sekundi
+        // UCITAJ ODMAH
         ucitajPodatke();
+
+        // REFRESH SVAKIH 10s
         setInterval(ucitajPodatke, 10000);
+
     </script>
+
 </body>
 </html>
