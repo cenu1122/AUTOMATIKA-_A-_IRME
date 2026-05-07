@@ -4,130 +4,326 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NH AI-Automation | Izvještaj</title>
+
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #1a202c; color: #e2e8f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        .card { background: #2d3748; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; max-width: 500px; border: 1px solid #4a5568; text-align: center; }
-        h2 { color: #63b3ed; margin-bottom: 10px; }
-        #status-user { font-size: 0.9rem; color: #a0aec0; margin-bottom: 20px; }
-        #alarm-container { display: none; background: #742a2a; border: 1px solid #f56565; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(245, 101, 101, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(245, 101, 101, 0); } 100% { box-shadow: 0 0 0 0 rgba(245, 101, 101, 0); } }
-        textarea { width: 100%; height: 150px; padding: 12px; border-radius: 6px; border: 1px solid #4a5568; background: #1a202c; color: white; box-sizing: border-box; resize: none; margin-bottom: 20px; font-size: 1rem; }
-        .btn-send { width: 100%; padding: 15px; background-color: #48bb78; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1.1rem; transition: 0.3s; }
-        .btn-send:hover { background-color: #38a169; }
-        .btn-send:disabled { background-color: #4a5568; cursor: not-allowed; }
-        .success-msg { color: #48bb78; margin-top: 15px; display: none; font-weight: bold; }
-        .alarm-link { color: #63b3ed; display: block; margin-top: 8px; text-decoration: underline; font-size: 0.9rem; cursor: pointer; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #1a202c;
+            color: #e2e8f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .card {
+            background: #2d3748;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid #4a5568;
+            text-align: center;
+        }
+
+        h2 {
+            color: #63b3ed;
+            margin-bottom: 10px;
+        }
+
+        #status-user {
+            font-size: 0.9rem;
+            color: #a0aec0;
+            margin-bottom: 20px;
+        }
+
+        #alarm-container {
+            display: none;
+            background: #742a2a;
+            border: 1px solid #f56565;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(245,101,101,0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(245,101,101,0); }
+            100% { box-shadow: 0 0 0 0 rgba(245,101,101,0); }
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #4a5568;
+            background: #1a202c;
+            color: white;
+            box-sizing: border-box;
+            resize: none;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        .btn-send {
+            width: 100%;
+            padding: 15px;
+            background-color: #48bb78;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .success-msg {
+            color: #48bb78;
+            margin-top: 15px;
+            display: none;
+            font-weight: bold;
+        }
+
+        .alarm-link {
+            color: #63b3ed;
+            display: block;
+            margin-top: 8px;
+            text-decoration: underline;
+            cursor: pointer;
+        }
     </style>
 </head>
+
 <body>
 
-    <div class="card">
-        <h2>NH AI-Automation</h2>
-        <div id="status-user">Prijavljeni ste kao: <span id="user-display">101</span></div>
-        <div id="alarm-container"></div>
-        <textarea id="output" placeholder="Vaš izvještaj će se ovdje pojaviti..."></textarea>
-        <button id="sendBtn" class="btn-send" onclick="posaljiIzvjestaj()">POŠALJI NA ANALIZU</button>
-        <div id="successLabel" class="success-msg">✅ Izvještaj uspješno spremljen!</div>
+<div class="card">
+    <h2>NH AI-Automation</h2>
+
+    <div id="status-user">
+        Prijavljeni ste kao:
+        <span id="user-display">101</span>
     </div>
 
+    <div id="alarm-container"></div>
+
+    <textarea id="output" placeholder="Vaš izvještaj će se ovdje pojaviti..."></textarea>
+
+    <button id="sendBtn" class="btn-send" onclick="posaljiIzvjestaj()">
+        POŠALJI NA ANALIZU
+    </button>
+
+    <div id="successLabel" class="success-msg">
+        ✅ Izvještaj uspješno spremljen!
+    </div>
+</div>
+
 <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbyYvAft7j0Gl4z5gap1BgdyVN4HsJ0TX5MOHn0DOQ9yrDFQP7maKYt3kskqxDAU2Dp3nQ/exec";
-    const trenutniKorisnik = "101"; 
+const scriptURL = "https://script.google.com/macros/s/AKfycbyYvAft7j0Gl4z5gap1BgdyVN4HsJ0TX5MOHn0DOQ9yrDFQP7maKYt3kskqxDAU2Dp3nQ/exec";
 
-    window.onload = ucitajSastankeBezKesa;
+const trenutniKorisnik = "101";
 
-    async function ucitajSastankeBezKesa() {
-        const urlWithCacheBuster = scriptURL + "?user_id=" + trenutniKorisnik + "&v=" + new Date().getTime();
-        try {
-            const response = await fetch(urlWithCacheBuster);
-            const sastanci = await response.json();
-            const container = document.getElementById('alarm-container');
-            container.innerHTML = ''; 
-            container.style.display = 'none';
+window.onload = ucitajSastankeBezKesa;
 
-            if (sastanci && sastanci.length > 0) {
-                // Prolazimo kroz sve sastanke iz tabele
-                sastanci.forEach(s => {
-                    obradiIPrikaziAlarm(s.samo_datum, s.ai_analiza);
-                });
-            }
-        } catch (e) { console.error("Greška pri dohvatu podataka:", e); }
-    }
+async function ucitajSastankeBezKesa() {
 
-    function obradiIPrikaziAlarm(datumIzTabele, analizaIzTabele) {
-        if (!datumIzTabele || !analizaIzTabele) return;
+    const urlWithCacheBuster =
+        scriptURL +
+        "?user_id=" +
+        trenutniKorisnik +
+        "&v=" +
+        new Date().getTime();
 
-        // 1. Čišćenje zvjezdica i smeća
-        let cistDatum = datumIzTabele.replace(/\*/g, "").replace(/1\.\s*DATUM[:\s]*/i, "").trim();
-        let cistAnaliza = analizaIzTabele.replace(/\*/g, "");
+    try {
 
-        // 2. Pretvaranje u pravi datum
-        const datumObjekat = new Date(cistDatum);
-        const sada = new Date();
+        const response = await fetch(urlWithCacheBuster);
+        const sastanci = await response.json();
 
-        if (isNaN(datumObjekat.getTime())) return;
+        const container =
+            document.getElementById('alarm-container');
 
-        // 3. Provjera razlike (prikazujemo sve unutar 72 sata)
-        const razlikaSati = (datumObjekat - sada) / (1000 * 60 * 60);
+        container.innerHTML = '';
+        container.style.display = 'none';
 
-        if (razlikaSati > -24 && razlikaSati <= 72) {
-            const container = document.getElementById('alarm-container');
-            container.style.display = 'block';
+        if (sastanci && sastanci.length > 0) {
 
-            // Izvlačenje naslova iz polja DETALJI
-            let naslov = "OBAVEZA";
-            let linije = cistAnaliza.split('\n');
-            for (let linija of linije) {
-                if (linija.toUpperCase().includes("DETALJ")) {
-                    naslov = linija.split(':').pop().trim();
-                    break;
-                }
-            }
-
-            // Izvlačenje vremena (HH:mm)
-            const vrijemeMatch = cistDatum.match(/\d{2}:\d{2}/);
-            const samoVrijeme = vrijemeMatch ? vrijemeMatch[0] : "";
-
-            // Priprema za alert
-            let tekstAlert = cistAnaliza.replace(/'/g, "").replace(/"/g, "").replace(/\n/g, "\\n");
-
-            const alarmElement = document.createElement('div');
-            alarmElement.style.borderBottom = "1px solid #444";
-            alarmElement.style.padding = "10px 0";
-            alarmElement.style.textAlign = "left";
-            alarmElement.innerHTML = `
-                <div style="font-weight: bold; color: #feb2b2; text-transform: uppercase; font-size: 0.9rem;">
-                    🚨 PODSJETNIK: ${naslov} (u ${samoVrijeme})
-                </div>
-                <a class="alarm-link" onclick="alert('DETALJI IZVJEŠTAJA:\\n\\n${tekstAlert}');">
-                    Prikaži detalje
-                </a>
-            `;
-            container.appendChild(alarmElement);
-        }
-    }
-
-    async function posaljiIzvjestaj() {
-        const tekst = document.getElementById('output').value.trim();
-        const btn = document.getElementById('sendBtn');
-        if(!tekst) { alert("Unesite tekst!"); return; }
-        
-        btn.disabled = true;
-        btn.innerText = "Spremanje...";
-        
-        try {
-            await fetch(scriptURL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify({ user_id: trenutniKorisnik, tekst: tekst })
+            sastanci.forEach(s => {
+                obradiIPrikaziAlarm(
+                    s.samo_datum,
+                    s.ai_analiza
+                );
             });
-            document.getElementById('successLabel').style.display = "block";
-            setTimeout(() => { location.reload(); }, 2000);
-        } catch (e) {
-            alert("Greška pri slanju!");
-            btn.disabled = false;
         }
+
+    } catch (e) {
+
+        console.error(
+            "Greška pri dohvatu podataka:",
+            e
+        );
     }
+}
+
+function obradiIPrikaziAlarm(
+    datumIzTabele,
+    analizaIzTabele
+) {
+
+    if (!datumIzTabele || !analizaIzTabele) return;
+
+    let cistDatum =
+        datumIzTabele
+        .replace(/\*/g, "")
+        .replace(/1\.\s*DATUM[:\s]*/i, "")
+        .trim();
+
+    let cistAnaliza =
+        analizaIzTabele.replace(/\*/g, "");
+
+    const datumObjekat = new Date(cistDatum);
+    const sada = new Date();
+
+    if (isNaN(datumObjekat.getTime())) return;
+
+    // samo naredna 24h
+    const razlikaMs = datumObjekat - sada;
+    const razlikaSati =
+        razlikaMs / (1000 * 60 * 60);
+
+    if (razlikaSati >= 0 &&
+        razlikaSati <= 24) {
+
+        const container =
+            document.getElementById(
+                'alarm-container'
+            );
+
+        container.style.display = 'block';
+
+        let naslov = "OBAVEZA";
+
+        let linije =
+            cistAnaliza.split('\n');
+
+        for (let linija of linije) {
+
+            if (
+                linija
+                .toUpperCase()
+                .includes("DETALJ")
+            ) {
+
+                naslov =
+                    linija
+                    .split(':')
+                    .pop()
+                    .trim();
+
+                break;
+            }
+        }
+
+        const vrijemeMatch =
+            cistDatum.match(/\d{2}:\d{2}/);
+
+        const samoVrijeme =
+            vrijemeMatch
+            ? vrijemeMatch[0]
+            : "";
+
+        let tekstAlert =
+            cistAnaliza
+            .replace(/'/g, "")
+            .replace(/"/g, "")
+            .replace(/\n/g, "\\n");
+
+        const alarmElement =
+            document.createElement('div');
+
+        alarmElement.style.borderBottom =
+            "1px solid #444";
+
+        alarmElement.style.padding =
+            "10px 0";
+
+        alarmElement.style.textAlign =
+            "left";
+
+        alarmElement.innerHTML = `
+            <div style="
+                font-weight:bold;
+                color:#feb2b2;
+                text-transform:uppercase;
+                font-size:0.9rem;
+            ">
+                🚨 PODSJETNIK:
+                ${naslov}
+                (u ${samoVrijeme})
+            </div>
+
+            <a class="alarm-link"
+               onclick="alert('DETALJI IZVJEŠTAJA:\\n\\n${tekstAlert}')">
+
+                Prikaži detalje
+            </a>
+        `;
+
+        container.appendChild(alarmElement);
+    }
+}
+
+async function posaljiIzvjestaj() {
+
+    const tekst =
+        document
+        .getElementById('output')
+        .value
+        .trim();
+
+    const btn =
+        document.getElementById('sendBtn');
+
+    if (!tekst) {
+
+        alert("Unesite tekst!");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "Spremanje...";
+
+    try {
+
+        await fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors',
+
+            body: JSON.stringify({
+                user_id: trenutniKorisnik,
+                tekst: tekst
+            })
+        });
+
+        document
+            .getElementById('successLabel')
+            .style.display = "block";
+
+        setTimeout(() => {
+            location.reload();
+        }, 2000);
+
+    } catch (e) {
+
+        alert("Greška pri slanju!");
+        btn.disabled = false;
+    }
+}
 </script>
+
 </body>
 </html>
