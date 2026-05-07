@@ -59,53 +59,51 @@
     }
 
     function prikaziViseAlarma(datumString, kompletanTekst) {
-        // 1. ČIŠĆENJE DATUMA: Izvlačimo samo vrijeme i datum za logiku sustava
-        let cistiDatum = datumString.replace(/\*/g, "").replace(/1[\.\*]?\s*DATUM:/i, "").trim();
-        
-        // Kompletan tekst čuvamo sa zvjezdicama za alert
-        let originalniTekst = kompletanTekst;
+        if (!datumString || !kompletanTekst) return;
 
+        // 1. ČIŠĆENJE DATUMA
+        let cistiDatum = datumString.replace(/\*/g, "").replace(/1[\.\s]*DATUM[:\s]*/i, "").trim();
         const rok = new Date(cistiDatum);
         const sad = new Date();
-        if (isNaN(rok.getTime())) return; 
+        
+        if (isNaN(rok.getTime())) return;
 
         const razlikaSati = (rok - sad) / (1000 * 60 * 60);
 
-        // Prikaz alarma ako je rok unutar 48 sati
-        if (razlikaSati > 0 && razlikaSati <= 48) {
+        // Prikazuj ako je termin u narednih 48 sati
+        if (razlikaSati > -1 && razlikaSati <= 48) {
             const container = document.getElementById('alarm-container');
             container.style.display = 'block';
 
-            // 2. IZVLAČENJE NASLOVA ZA EKRAN (npr. KROV ili RIGIPS)
-            let razlog = "OBAVEZA";
-            let linije = originalniTekst.replace(/\*/g, "").split('\n');
+            // 2. IZDVAJANJE NASLOVA (npr. HJALA ili GHALA)
+            let naslovZaEkran = "OBAVEZA";
+            let cistCijeliTekst = kompletanTekst.replace(/\*/g, "");
+            let linije = cistCijeliTekst.split('\n');
 
             for (let linija of linije) {
                 if (linija.toUpperCase().includes("DETALJ")) {
                     let dijelovi = linija.split(':');
-                    if (dijelovi.length > 1) {
-                        razlog = dijelovi[1].trim();
-                    }
-                    break; 
+                    if (dijelovi.length > 1) naslovZaEkran = dijelovi[1].trim();
+                    break;
                 }
             }
 
             const vrijemeMatch = cistiDatum.match(/\d{2}:\d{2}/);
             const vrijemePrikaz = vrijemeMatch ? vrijemeMatch[0] : "";
 
-            // 3. PRIPREMA TEKSTA ZA ALERT (da ispiše sve podatke)
-            let tekstZaAlert = originalniTekst.replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, "\\n");
+            // 3. PRIPREMA ZA ALERT (uklanjamo zvjezdice za čišći ispis)
+            let tekstZaAlert = cistCijeliTekst.replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, "\\n");
 
             const noviAlarm = document.createElement('div');
-            noviAlarm.style.borderBottom = "1px solid #f56565";
+            noviAlarm.style.borderBottom = "1px solid #444";
             noviAlarm.style.padding = "10px 0";
             noviAlarm.style.textAlign = "left";
             
             noviAlarm.innerHTML = `
                 <div style="font-weight: bold; color: #feb2b2; text-transform: uppercase;">
-                    🚨 PODSJETNIK: ${razlog} (u ${vrijemePrikaz})
+                    🚨 PODSJETNIK: ${naslovZaEkran} (u ${vrijemePrikaz})
                 </div>
-                <a class="alarm-link" style="color: #63b3ed; cursor: pointer; text-decoration: underline; font-size: 0.85rem;" 
+                <a class="alarm-link" 
                    onclick="alert('DETALJI IZVJEŠTAJA:\\n\\n${tekstZaAlert}');">
                    Prikaži detalje izvještaja
                 </a>
