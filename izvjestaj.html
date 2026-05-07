@@ -4,137 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Alarma - AI Analiza</title>
-
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-
 <body class="bg-black text-white p-4 font-sans min-h-screen">
 
-    <a href="index.html"
-       class="block w-full bg-zinc-900 border border-zinc-700 text-center py-4 rounded-xl mb-8 font-bold uppercase tracking-widest hover:bg-zinc-800 transition">
+    <a href="index.html" class="block w-full bg-zinc-900 border border-zinc-700 text-center py-4 rounded-xl mb-8 font-bold uppercase tracking-widest hover:bg-zinc-800 transition">
         ← NAZAD NA UNOS
     </a>
 
-    <header class="mb-10 border-b border-zinc-800 pb-4">
-        <h1 class="text-2xl font-black text-red-600 tracking-tighter uppercase italic">
-            AI ANALIZA - LIVE
-        </h1>
-
-        <p class="text-[10px] text-zinc-500 uppercase">
-            Prikaz samo kolone AI ANALIZA
-        </p>
+    <header class="mb-10 border-b border-zinc-800 pb-4 text-left">
+        <h1 class="text-2xl font-black text-red-600 tracking-tighter uppercase italic">AI ANALIZA - LIVE</h1>
+        <p class="text-[10px] text-zinc-500 uppercase">Prikaz podataka iz kolone AI ANALIZA</p>
     </header>
 
-    <div id="lista-alarma" class="space-y-6">
-
-        <p class="text-zinc-700 text-center py-20 animate-pulse text-xs uppercase">
-            Učitavanje podataka...
-        </p>
-
+    <div id="lista-alarma" class="space-y-6 text-left">
+        <p class="text-zinc-700 text-center py-20 animate-pulse text-xs uppercase">Učitavanje podataka...</p>
     </div>
 
     <script>
-
         async function ucitajPodatke() {
-
             try {
-
-                // API
-                const response = await fetch(
-                    'https://sheetdb.io/api/v1/rjhvmuxlef6zk?t=' + Date.now()
-                );
-
+                // Dodajemo timestamp da izbjegnemo keširanje
+                const response = await fetch('https://sheetdb.io/api/v1/rjhvmuxlef6zk?t=' + Date.now());
                 const data = await response.json();
-
                 const lista = document.getElementById('lista-alarma');
 
-                // PRAZNA BAZA
                 if (!data || data.length === 0) {
-
-                    lista.innerHTML = `
-                        <div class="text-center text-zinc-500 py-20 uppercase text-sm">
-                            Baza je prazna.
-                        </div>
-                    `;
-
+                    lista.innerHTML = '<div class="text-center text-zinc-500 py-20 uppercase text-sm">Baza je prazna.</div>';
                     return;
                 }
 
-                // NAJNOVIJI PRVI
                 const prikaz = data.reverse();
-
-                // OBRIŠI STARI SADRŽAJ
                 lista.innerHTML = '';
 
-                // PETLJA
                 prikaz.forEach((red, index) => {
+                    // ISPRAVAK: Provjeravamo oba naziva kolone (velika i mala slova)
+                    // Također dodajemo i univerzalnu provjeru ako se naziv skroz promijeni
+                    const aiAnaliza = red["AI analiza"] || red["AI ANALIZA"] || Object.values(red)[3] || "-";
 
-                    // SAMO KOLONA "AI ANALIZA"
-                    const aiAnaliza = red["AI ANALIZA"] || "-";
-
-                    // KARTICA
                     const kartica = document.createElement('div');
-
-                    kartica.className = `
-                        bg-zinc-950
-                        border
-                        border-zinc-800
-                        rounded-2xl
-                        p-5
-                        shadow-2xl
-                    `;
+                    kartica.className = "bg-zinc-950 border border-zinc-800 rounded-2xl p-5 shadow-2xl";
 
                     kartica.innerHTML = `
-
                         <div class="flex justify-between items-center mb-5">
-
-                            <div class="text-xs font-black uppercase text-red-600">
-                                AI ANALIZA #${index + 1}
-                            </div>
-
-                            <div class="text-[10px] text-zinc-600">
-                                LIVE PODATAK
-                            </div>
-
+                            <div class="text-xs font-black uppercase text-red-600 italic">AI ANALIZA #${prikaz.length - index}</div>
+                            <div class="text-[10px] text-zinc-600 font-mono italic">LIVE DATA</div>
                         </div>
-
                         <div class="border border-zinc-800 rounded-xl p-4 bg-black">
-
-                            <div class="text-[10px] uppercase text-red-500 font-bold mb-2 tracking-wider">
-                                AI ANALIZA
-                            </div>
-
-                            <div class="text-sm text-zinc-300 break-words leading-relaxed whitespace-pre-wrap">
-                                ${aiAnaliza}
-                            </div>
-
+                            <div class="text-[10px] uppercase text-red-500 font-bold mb-2 tracking-wider italic">Rezultat analize:</div>
+                            <div class="text-sm text-zinc-300 break-words leading-relaxed whitespace-pre-wrap">${aiAnaliza}</div>
                         </div>
-
                     `;
-
                     lista.appendChild(kartica);
-
                 });
-
             } catch (e) {
-
-                console.error(e);
-
-                document.getElementById('lista-alarma').innerHTML = `
-                    <div class="text-center text-red-600 py-20 uppercase text-sm">
-                        Greška pri učitavanju podataka.
-                    </div>
-                `;
+                document.getElementById('lista-alarma').innerHTML = '<div class="text-center text-red-600 py-20 uppercase text-sm">Greška pri povezivanju.</div>';
             }
         }
 
-        // UČITAJ ODMAH
         ucitajPodatke();
-
-        // REFRESH SVAKIH 10 SEKUNDI
         setInterval(ucitajPodatke, 10000);
-
     </script>
-
 </body>
 </html>
