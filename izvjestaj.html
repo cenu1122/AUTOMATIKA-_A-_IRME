@@ -2,85 +2,78 @@
 <html lang="hr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Alarma - Izvještaj</title>
+    <title>Sistem Alarma - Svi Izvještaji</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-black text-white p-4 font-sans min-h-screen">
+<body class="bg-black text-white p-6 font-sans">
 
-    <a href="index.html" class="block w-full bg-zinc-900 border border-zinc-700 text-center py-4 rounded-xl mb-8 font-bold uppercase tracking-widest hover:bg-zinc-800 transition">
-        ← NAZAD NA UNOS (POČETNA)
-    </a>
-
-    <header class="mb-10 border-b border-zinc-800 pb-4">
-        <h1 class="text-2xl font-black text-red-600 tracking-tighter uppercase italic">SISTEM ALARMA V3</h1>
-        <p class="text-[10px] text-zinc-500 uppercase italic">AKTIVNI IZVJEŠTAJ IZ BAZE PODATAKA</p>
-    </header>
-
-    <div id="lista-konacna" class="space-y-6">
-        <p class="text-zinc-700 text-center py-20 animate-pulse text-xs uppercase">Učitavanje podataka...</p>
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-red-600 font-black text-3xl italic mb-8 uppercase tracking-tighter">SVI ZAPISI IZ BAZE</h1>
+        
+        <div id="svi-izvjestaji" class="space-y-6">
+            <p class="text-zinc-500 animate-pulse uppercase text-xs">Povezivanje sa bazom...</p>
+        </div>
     </div>
 
     <script>
-        async function osvjeziPodatke() {
+        async function ucitajSvePodatke() {
+            const kontejner = document.getElementById('svi-izvjestaji');
             try {
-                // Pozivamo API sa timestampom protiv keširanja
-                const r = await fetch('https://sheetdb.io/api/v1/rjhvmuxlef6zk?t=' + Date.now());
-                const data = await r.json();
-                const lista = document.getElementById('lista-konacna');
+                // Pozivamo tvoj SheetDB API
+                const odgovor = await fetch('https://sheetdb.io/api/v1/rjhvmuxlef6zk?t=' + Date.now());
+                const podaci = await odgovor.json();
 
-                if (!data || data.length === 0) {
-                    lista.innerHTML = '<p class="text-center text-zinc-600 uppercase text-xs">Baza je trenutno prazna.</p>';
+                if (!podaci || podaci.length === 0) {
+                    kontejner.innerHTML = "Tabela je prazna.";
                     return;
                 }
 
-                // Okrećemo podatke da najnoviji bude prvi
-                const prikaz = data.reverse();
-                lista.innerHTML = '';
+                // Okrećemo redoslijed tako da najnoviji unosi (kao taj "Reduktor") budu na vrhu
+                const poredaniPodaci = podaci.reverse();
+                
+                kontejner.innerHTML = '';
 
-                prikaz.forEach((red, i) => {
-                    // KORISTIMO TAČNE NAZIVE KOJE JE SKENER IZBACIO
-                    const datum = red["Datum"] || "N/A";
-                    const korisnik = red["Korisnik"] || "SISTEM";
-                    const naslov = red["Tekst"] || "BEZ NASLOVA";
+                poredaniPodaci.forEach((red, index) => {
+                    // Uzimamo podatke po ključevima koje smo vidjeli u JSON-u
+                    const datum = red["Datum"] || "Nepoznato";
+                    const korisnik = red["Korisnik"] || "101";
+                    const tekst = red["Tekst"] || "Bez naslova";
                     const analiza = red["AI analiza"] || "Nema detalja";
 
                     const kartica = document.createElement('div');
-                    kartica.className = "bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-2xl mb-4";
-
+                    kartica.className = "bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-xl hover:border-red-600/50 transition duration-300";
+                    
                     kartica.innerHTML = `
-                        <div class="flex justify-between items-center mb-6">
-                            <div class="bg-zinc-800 px-3 py-1 rounded text-[9px] font-black text-zinc-400 uppercase tracking-widest">
-                                USER: ${korisnik}
-                            </div>
-                            <div class="text-[10px] text-zinc-600 font-mono italic">
-                                ${datum}
-                            </div>
+                        <div class="flex justify-between items-start mb-4 border-b border-zinc-800 pb-2">
+                            <span class="text-red-500 font-black text-xs uppercase italic">ZAPIS #${podaci.length - index}</span>
+                            <span class="text-zinc-500 font-mono text-[10px]">${datum}</span>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h2 class="text-zinc-400 text-[10px] uppercase font-bold tracking-widest mb-1">Status Sastanka:</h2>
+                            <p class="text-xl font-bold text-white uppercase italic">${tekst}</p>
                         </div>
 
-                        <h2 class="text-xl font-bold text-zinc-100 uppercase mb-4 tracking-tight">
-                            ${naslov}
-                        </h2>
+                        <div class="bg-black/40 p-4 rounded-xl border border-zinc-800/50">
+                            <h3 class="text-red-600/70 text-[9px] uppercase font-black mb-2 tracking-widest italic">Detalji iz tabele:</h3>
+                            <p class="text-sm text-zinc-300 leading-relaxed font-mono whitespace-pre-line">${analiza}</p>
+                        </div>
 
-                        <div class="bg-black/50 border border-zinc-900 rounded-xl p-4 relative">
-                            <div class="absolute -top-2 left-4 bg-black px-2 text-[8px] text-zinc-600 font-bold uppercase tracking-widest">
-                                Detalji kvara i analiza:
-                            </div>
-                            <p class="text-sm text-zinc-400 leading-relaxed italic">
-                                ${analiza}
-                            </p>
+                        <div class="mt-4 text-right">
+                            <span class="text-[9px] text-zinc-700 font-bold uppercase tracking-widest">ID Korisnika: ${korisnik}</span>
                         </div>
                     `;
-                    lista.appendChild(kartica);
+                    kontejner.appendChild(kartica);
                 });
-            } catch (e) {
-                console.error(e);
+
+            } catch (greska) {
+                kontejner.innerHTML = "<p class='text-red-600 uppercase font-black'>Greška pri učitavanju: " + greska.message + "</p>";
             }
         }
 
-        // Pokreni odmah i postavi automatsko osvježavanje svakih 10 sekundi
-        osvjeziPodatke();
-        setInterval(osvjeziPodatke, 10000);
+        ucitajSvePodatke();
+        // Osvježava automatski svakih 30 sekundi da vidiš nove unose iz tabele
+        setInterval(ucitajSvePodatke, 30000);
     </script>
 </body>
 </html>
