@@ -10,7 +10,6 @@
         h2 { color: #63b3ed; margin-bottom: 10px; }
         #status-user { font-size: 0.9rem; color: #a0aec0; margin-bottom: 20px; }
         
-        /* Alarm stil */
         #alarm-container { display: none; background: #742a2a; border: 1px solid #f56565; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(245, 101, 101, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(245, 101, 101, 0); } 100% { box-shadow: 0 0 0 0 rgba(245, 101, 101, 0); } }
         
@@ -19,110 +18,89 @@
         .btn-send:hover { background-color: #38a169; }
         .btn-send:disabled { background-color: #4a5568; cursor: not-allowed; }
         .success-msg { color: #48bb78; margin-top: 15px; display: none; font-weight: bold; }
-        .alarm-link { color: white; display: block; margin-top: 8px; text-decoration: underline; font-size: 0.9rem; cursor: pointer; }
+        .alarm-link { color: #63b3ed; display: block; margin-top: 8px; text-decoration: underline; font-size: 0.9rem; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="card">
         <h2>NH AI-Automation</h2>
-        <div id="status-user">Prijavljeni ste kao: <span id="user-display">Učitavanje...</span></div>
+        <div id="status-user">Prijavljeni ste kao: <span id="user-display">101</span></div>
 
-        <!-- Alarm sekcija -->
-        <div id="alarm-container">
-            <span id="alarm-tekst" style="font-weight: bold; color: #feb2b2;"></span>
-            <a class="alarm-link" onclick="prikaziDetaljeRoka()">Klikni za detalje o sastanku</a>
-        </div>
+        <div id="alarm-container"></div>
         
-        <textarea id="output" placeholder="Vaš izvještaj će se ovdje pojaviti nakon govora ili ga možete sami upisati..."></textarea>
+        <textarea id="output" placeholder="Vaš izvještaj će se ovdje pojaviti..."></textarea>
         
         <button id="sendBtn" class="btn-send" onclick="posaljiIzvjestaj()">POŠALJI NA ANALIZU</button>
         
-        <div id="successLabel" class="success-msg">✅ Izvještaj uspješno spremljen u Vaš list!</div>
+        <div id="successLabel" class="success-msg">✅ Izvještaj uspješno spremljen!</div>
     </div>
 
 <script>
     const scriptURL = "https://script.google.com/macros/s/AKfycbyYvAft7j0Gl4z5gap1BgdyVN4HsJ0TX5MOHn0DOQ9yrDFQP7maKYt3kskqxDAU2Dp3nQ/exec";
     const trenutniKorisnik = "101"; 
-    document.getElementById('user-display').innerText = trenutniKorisnik;
 
-    window.onload = function() {
-        ucitajSastankeBezKesa();
-    };
+    window.onload = ucitajSastankeBezKesa;
 
-    // --- FUNKCIJA ZA DOHVAĆANJE PODATAKA ---
     async function ucitajSastankeBezKesa() {
         const urlSaZastitom = scriptURL + "?user_id=" + trenutniKorisnik + "&nocache=" + new Date().getTime();
         try {
             const response = await fetch(urlSaZastitom);
             const sastanci = await response.json();
-
             const container = document.getElementById('alarm-container');
+            
             container.innerHTML = ''; 
             container.style.display = 'none';
 
             if (sastanci && sastanci.length > 0) {
-                sastanci.forEach(sastanak => {
-                    prikaziViseAlarma(sastanak.samo_datum, sastanak.ai_analiza);
-                });
+                sastanci.forEach(s => prikaziViseAlarma(s.samo_datum, s.ai_analiza));
             }
-        } catch (e) {
-            console.error("Greška pri učitavanju alarma:", e);
-        }
+        } catch (e) { console.error("Greška:", e); }
     }
 
-    // --- LOGIKA ZA PRIKAZ VIŠE ALARMA ---
     function prikaziViseAlarma(datumString, kompletanTekst) {
-    // Čistimo datum od zvjezdica i oznaka ako postoje
-    let cistiDatum = datumString.replace(/\*/g, "").replace("1. DATUM:", "").trim();
-    const rok = new Date(cistiDatum);
-    const sad = new Date();
-    const razlikaSati = (rok - sad) / (1000 * 60 * 60);
+        // Čistimo sve zvjezdice
+        let cistiDatum = datumString.replace(/\*/g, "").replace("1. DATUM:", "").trim();
+        let cistiOpis = kompletanTekst.replace(/\*/g, "");
 
-    // Provjera termina u idućih 24h
-    if (razlikaSati > 0 && razlikaSati <= 24) {
-        const container = document.getElementById('alarm-container');
-        container.style.display = 'block';
+        const rok = new Date(cistiDatum);
+        const sad = new Date();
+        const razlikaSati = (rok - sad) / (1000 * 60 * 60);
 
-        let razlog = "Sastanak/Obaveza";
-        
-        // POPRAVKA: Provjeravamo i obični i bold format (sa zvjezdicama)
-        if (kompletanTekst) {
-            if (kompletanTekst.includes("2. **DETALJ**:")) {
-                razlog = kompletanTekst.split("2. **DETALJ**:")[1].split("\n")[0].trim();
-            } else if (kompletanTekst.includes("2. DETALJ:")) {
-                razlog = kompletanTekst.split("2. DETALJ:")[1].split("\n")[0].trim();
+        // Prikazuj samo ako je u budućnosti unutar 24h
+        if (razlikaSati > 0 && razlikaSati <= 24) {
+            const container = document.getElementById('alarm-container');
+            container.style.display = 'block';
+
+            let razlog = "Sastanak/Obaveza";
+            if (cistiOpis.includes("2. DETALJ:")) {
+                razlog = cistiOpis.split("2. DETALJ:")[1].split("\n")[0].trim();
             }
+
+            const vrijemeMatch = cistiDatum.match(/\d{2}:\d{2}/);
+            const vrijemePrikaz = vrijemeMatch ? vrijemeMatch[0] : "";
+
+            const stavka = document.createElement('div');
+            stavka.style.borderBottom = "1px solid #f56565";
+            stavka.style.padding = "10px 0";
+            stavka.style.textAlign = "left";
+            
+            stavka.innerHTML = `
+                <div style="font-weight: bold; color: #feb2b2;">
+                    🚨 PODSJETNIK: ${razlog} (u ${vrijemePrikaz})
+                </div>
+                <a class="alarm-link" onclick="alert('Detalji:\\n${cistiOpis.replace(/'/g, "\\'").replace(/\n/g, "\\n")}');">
+                   Prikaži detalje analize
+                </a>
+            `;
+            container.appendChild(stavka);
         }
-
-        const noviAlarm = document.createElement('div');
-        noviAlarm.style.borderBottom = "1px solid #f56565";
-        noviAlarm.style.padding = "10px 0";
-        noviAlarm.style.textAlign = "left";
-        
-        const vrijemeMatch = cistiDatum.match(/\d{2}:\d{2}/);
-        const vrijemePrikaz = vrijemeMatch ? vrijemeMatch[0] : "";
-
-        noviAlarm.innerHTML = `
-            <div style="font-weight: bold; color: #feb2b2;">
-                ${razlikaSati <= 1 ? "🚨 HITNO" : "⚠️ PODSJETNIK"}: ${razlog} (u ${vrijemePrikaz})
-            </div>
-            <a class="alarm-link" style="color: white; cursor: pointer; text-decoration: underline; font-size: 0.85rem; display: block; margin-top: 5px;" 
-               onclick="alert('Detalji termina:\\n${kompletanTekst.replace(/'/g, "\\'").replace(/\n/g, "\\n")}');">
-               Klikni za detalje izvještaja
-            </a>
-        `;
-        container.appendChild(noviAlarm);
     }
-}
 
-    // --- FUNKCIJA ZA SLANJE IZVJEŠTAJA (KOJA JE FALILA) ---
     async function posaljiIzvjestaj() {
         const tekst = document.getElementById('output').value.trim();
         const btn = document.getElementById('sendBtn');
-        const label = document.getElementById('successLabel');
-
-        if(!tekst) { alert("Prvo unesite tekst!"); return; }
+        if(!tekst) return;
 
         btn.disabled = true;
         btn.innerText = "Spremanje...";
@@ -133,21 +111,12 @@
                 mode: 'no-cors', 
                 body: JSON.stringify({ user_id: trenutniKorisnik, tekst: tekst })
             });
-
-            label.style.display = "block";
-            btn.innerText = "POSLANO";
-            
+            document.getElementById('successLabel').style.display = "block";
             setTimeout(() => {
-                label.style.display = "none";
-                btn.disabled = false;
-                btn.innerText = "POŠALJI NA ANALIZU";
-                document.getElementById('output').value = "";
-                ucitajSastankeBezKesa(); // Osvježi listu alarma odmah
-            }, 3000);
-        } catch (e) {
-            alert("Greška pri slanju!");
-            btn.disabled = false;
-        }
+                location.reload(); // Osvježava sve i učitava nove alarme
+            }, 2000);
+        } catch (e) { alert("Greška!"); btn.disabled = false; }
     }
 </script>
+</body>
 </html>
