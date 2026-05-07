@@ -2,75 +2,85 @@
 <html lang="hr">
 <head>
     <meta charset="UTF-8">
-    <title>Sistem Alarma - Scan & Prikaz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Alarma - Izvještaj</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-black text-white p-6 font-sans">
+<body class="bg-black text-white p-4 font-sans min-h-screen">
 
-    <h1 class="text-red-600 font-black text-2xl italic mb-6 uppercase tracking-tighter">Struktura i Podaci</h1>
-    
-    <div id="nazivi-kolona" class="mb-8 p-4 bg-zinc-900 border border-red-900/30 rounded-xl">
-        <h3 class="text-[10px] text-red-500 font-bold uppercase mb-3 italic">Pronađene kolone u Excelu:</h3>
-        <div id="kolone-lista" class="flex flex-wrap gap-2 text-xs font-mono text-green-500">
-            Skeniranje...
-        </div>
-    </div>
+    <a href="index.html" class="block w-full bg-zinc-900 border border-zinc-700 text-center py-4 rounded-xl mb-8 font-bold uppercase tracking-widest hover:bg-zinc-800 transition">
+        ← NAZAD NA UNOS (POČETNA)
+    </a>
 
-    <div id="izvjestaj-lista" class="space-y-4">
-        <p class="text-zinc-700 animate-pulse text-xs uppercase text-center py-10">Učitavanje podataka...</p>
+    <header class="mb-10 border-b border-zinc-800 pb-4">
+        <h1 class="text-2xl font-black text-red-600 tracking-tighter uppercase italic">SISTEM ALARMA V3</h1>
+        <p class="text-[10px] text-zinc-500 uppercase italic">AKTIVNI IZVJEŠTAJ IZ BAZE PODATAKA</p>
+    </header>
+
+    <div id="lista-konacna" class="space-y-6">
+        <p class="text-zinc-700 text-center py-20 animate-pulse text-xs uppercase">Učitavanje podataka...</p>
     </div>
 
     <script>
-        async function pokreniSve() {
-            const koloneLista = document.getElementById('kolone-lista');
-            const izvjestajLista = document.getElementById('izvjestaj-lista');
-
+        async function osvjeziPodatke() {
             try {
+                // Pozivamo API sa timestampom protiv keširanja
                 const r = await fetch('https://sheetdb.io/api/v1/rjhvmuxlef6zk?t=' + Date.now());
                 const data = await r.json();
+                const lista = document.getElementById('lista-konacna');
 
                 if (!data || data.length === 0) {
-                    izvjestajLista.innerHTML = "Baza je prazna.";
+                    lista.innerHTML = '<p class="text-center text-zinc-600 uppercase text-xs">Baza je trenutno prazna.</p>';
                     return;
                 }
 
-                // 1. ISPIS NAZIVA KOLONA
-                const imena = Object.keys(data[0]);
-                koloneLista.innerHTML = imena.map(ime => 
-                    `<span class="bg-black px-2 py-1 rounded border border-zinc-700">[ ${ime} ]</span>`
-                ).join('');
+                // Okrećemo podatke da najnoviji bude prvi
+                const prikaz = data.reverse();
+                lista.innerHTML = '';
 
-                // 2. ISPIS PODATAKA (Uzimamo ih po redoslijedu/indexu)
-                izvjestajLista.innerHTML = '';
-                data.reverse().forEach((red, i) => {
-                    const v = Object.values(red);
-                    
+                prikaz.forEach((red, i) => {
+                    // KORISTIMO TAČNE NAZIVE KOJE JE SKENER IZBACIO
+                    const datum = red["Datum"] || "N/A";
+                    const korisnik = red["Korisnik"] || "SISTEM";
+                    const naslov = red["Tekst"] || "BEZ NASLOVA";
+                    const analiza = red["AI analiza"] || "Nema detalja";
+
                     const kartica = document.createElement('div');
-                    kartica.className = "bg-zinc-950 border border-zinc-800 p-5 rounded-2xl shadow-2xl";
-                    
-                    // v[0] = Datum, v[1] = Korisnik, v[2] = Tekst, v[3] = AI analiza
+                    kartica.className = "bg-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-2xl mb-4";
+
                     kartica.innerHTML = `
-                        <div class="flex justify-between text-[9px] text-zinc-600 font-mono mb-4">
-                            <span>ZAPIS #${data.length - i} | ${v[1] || 'SISTEM'}</span>
-                            <span>${v[0] || ''}</span>
+                        <div class="flex justify-between items-center mb-6">
+                            <div class="bg-zinc-800 px-3 py-1 rounded text-[9px] font-black text-zinc-400 uppercase tracking-widest">
+                                USER: ${korisnik}
+                            </div>
+                            <div class="text-[10px] text-zinc-600 font-mono italic">
+                                ${datum}
+                            </div>
                         </div>
-                        <div class="border-l-2 border-red-600 pl-3 mb-4">
-                            <h2 class="text-lg font-bold uppercase text-zinc-100">${v[2] || 'BEZ NASLOVA'}</h2>
-                        </div>
-                        <div class="bg-black p-4 rounded-xl border border-zinc-900 shadow-inner">
-                            <p class="text-sm text-zinc-400 leading-relaxed">${v[3] || 'Analiza nije dostupna'}</p>
+
+                        <h2 class="text-xl font-bold text-zinc-100 uppercase mb-4 tracking-tight">
+                            ${naslov}
+                        </h2>
+
+                        <div class="bg-black/50 border border-zinc-900 rounded-xl p-4 relative">
+                            <div class="absolute -top-2 left-4 bg-black px-2 text-[8px] text-zinc-600 font-bold uppercase tracking-widest">
+                                Detalji kvara i analiza:
+                            </div>
+                            <p class="text-sm text-zinc-400 leading-relaxed italic">
+                                ${analiza}
+                            </p>
                         </div>
                     `;
-                    izvjestajLista.appendChild(kartica);
+                    lista.appendChild(kartica);
                 });
-
-            } catch (err) {
-                izvjestajLista.innerHTML = "Greška: " + err.message;
+            } catch (e) {
+                console.error(e);
             }
         }
 
-        pokreniSve();
-        setInterval(pokreniSve, 10000);
+        // Pokreni odmah i postavi automatsko osvježavanje svakih 10 sekundi
+        osvjeziPodatke();
+        setInterval(osvjeziPodatke, 10000);
     </script>
 </body>
 </html>
