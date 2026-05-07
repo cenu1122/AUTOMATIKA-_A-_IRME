@@ -36,7 +36,7 @@
         <div id="successLabel" class="success-msg">✅ Izvještaj uspješno spremljen!</div>
     </div>
 
-<script>
+<<script>
     const scriptURL = "https://script.google.com/macros/s/AKfycbyYvAft7j0Gl4z5gap1BgdyVN4HsJ0TX5MOHn0DOQ9yrDFQP7maKYt3kskqxDAU2Dp3nQ/exec";
     const trenutniKorisnik = "101"; 
 
@@ -48,7 +48,6 @@
             const response = await fetch(urlSaZastitom);
             const sastanci = await response.json();
             const container = document.getElementById('alarm-container');
-            
             container.innerHTML = ''; 
             container.style.display = 'none';
 
@@ -63,40 +62,33 @@
     function prikaziViseAlarma(datumString, kompletanTekst) {
         if (!datumString || !kompletanTekst) return;
 
-        // 1. ČIŠĆENJE DATUMA
+        // Čistimo sve zvjezdice i nepotrebne oznake
+        let cistCijeliTekst = kompletanTekst.replace(/\*/g, "");
         let cistiDatum = datumString.replace(/\*/g, "").replace(/1\.\s*DATUM[:\s]*/i, "").trim();
+        
         const rok = new Date(cistiDatum);
         const sad = new Date();
-        
         if (isNaN(rok.getTime())) return;
 
         const razlikaSati = (rok - sad) / (1000 * 60 * 60);
 
-        // Prikazuje sve što je unutar 48 sati (uključujući i sutra)
+        // Prikazuje sve za danas i sutra (do 48h unaprijed)
         if (razlikaSati > -1 && razlikaSati <= 48) {
             const container = document.getElementById('alarm-container');
             container.style.display = 'block';
 
             let naslovZaEkran = "OBAVEZA";
-            let cistCijeliTekst = kompletanTekst.replace(/\*/g, "");
             let linije = cistCijeliTekst.split('\n');
 
-            // Traženje DETALJA za naslov
             for (let linija of linije) {
-                if (linija.includes(':')) {
-                    let dijelovi = linija.split(':');
-                    if (dijelovi[0].toUpperCase().includes("DETALJ")) {
-                        naslovZaEkran = dijelovi[1].trim();
-                        break;
-                    }
+                if (linija.toUpperCase().includes("DETALJ")) {
+                    naslovZaEkran = linija.split(':').pop().trim();
+                    break;
                 }
             }
 
-            // Izvlačenje vremena (npr. 09:00)
             const vrijemeMatch = cistiDatum.match(/\d{2}:\d{2}/);
             const vrijemePrikaz = vrijemeMatch ? vrijemeMatch[0] : "";
-
-            // Priprema teksta za alert
             let tekstZaAlert = cistCijeliTekst.replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, "\\n");
 
             const noviAlarm = document.createElement('div');
@@ -120,25 +112,14 @@
         const tekst = document.getElementById('output').value.trim();
         const btn = document.getElementById('sendBtn');
         const label = document.getElementById('successLabel');
-
         if(!tekst) { alert("Prvo unesite tekst!"); return; }
-
         btn.disabled = true;
         btn.innerText = "Spremanje...";
-
         try {
-            await fetch(scriptURL, {
-                method: 'POST',
-                mode: 'no-cors', 
-                body: JSON.stringify({ user_id: trenutniKorisnik, tekst: tekst })
-            });
-
+            await fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ user_id: trenutniKorisnik, tekst: tekst }) });
             label.style.display = "block";
             btn.innerText = "POSLANO";
-            
-            setTimeout(() => {
-                location.reload();
-            }, 2000);
+            setTimeout(() => { location.reload(); }, 2000);
         } catch (e) {
             alert("Greška pri slanju!");
             btn.disabled = false;
