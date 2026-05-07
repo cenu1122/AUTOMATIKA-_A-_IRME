@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Alarm Report - 24h</title>
+    <title>Sistem Alarma - Live Report</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes pulse-red {
@@ -12,44 +12,33 @@
             100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
         }
         .pulse { animation: pulse-red 2s infinite; }
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #000; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        .alarm-card { cursor: pointer; transition: all 0.2s; }
+        .alarm-card:hover { transform: translateY(-2px); border-color: #dc2626; }
     </style>
 </head>
 <body class="bg-black text-gray-200 font-sans min-h-screen">
 
-    <div class="max-w-2xl mx-auto p-4 pb-24">
-        <!-- Header -->
-        <header class="flex justify-between items-center mb-6 border-b border-red-900 pb-4">
+    <div class="max-w-2xl mx-auto p-4 pb-20">
+        
+        <div class="mb-6">
+            <a href="index.html" class="flex items-center justify-center gap-2 bg-zinc-900 border border-zinc-700 hover:bg-red-900 text-white py-4 rounded-xl transition-all shadow-lg">
+                <span class="text-sm font-bold uppercase tracking-widest">← NAZAD NA UNOS (POČETNA)</span>
+            </a>
+        </div>
+
+        <header class="flex justify-between items-center mb-6 border-b border-red-900/50 pb-4">
             <div>
                 <h1 class="text-xl font-bold text-red-500 uppercase tracking-tighter">Sistem Alarma v3</h1>
-                <p class="text-[10px] text-gray-500 uppercase tracking-widest">Izvještaj zadnjih 24h</p>
-                <p class="text-[10px] text-gray-600" id="current-date-display"></p>
+                <p class="text-[10px] text-gray-500">KLIKNI NA ALARM ZA DETALJE SASTANKA</p>
             </div>
             <div class="flex items-center gap-2">
                 <span class="w-2 h-2 bg-red-600 rounded-full pulse"></span>
-                <span class="text-[10px] font-bold text-red-600 uppercase">Live Monitoring</span>
+                <span class="text-[10px] font-bold text-red-600 uppercase">Live</span>
             </div>
         </header>
 
-        <!-- Alarm Container -->
         <div id="alarm-container" class="space-y-4">
-            <div class="text-center py-20 text-gray-600 animate-pulse text-sm">
-                Skeniranje baze podataka...
-            </div>
-        </div>
-    </div>
-
-    <!-- Fixed Bottom Navigation (Dugme za povratak) -->
-    <div class="fixed bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black via-black to-transparent">
-        <div class="max-w-2xl mx-auto">
-            <a href="index.html" class="flex items-center justify-center gap-2 w-full bg-gray-900 hover:bg-red-950 border border-gray-800 hover:border-red-600 text-white py-3 rounded-lg transition-all duration-300 group">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                <span class="text-sm font-bold uppercase tracking-widest">Povratak na početnu</span>
-            </a>
+            <div class="text-center py-20 text-gray-600 animate-pulse text-sm">Učitavanje podataka...</div>
         </div>
     </div>
 
@@ -60,73 +49,69 @@
             try {
                 const response = await fetch(API_URL);
                 const data = await response.json();
-                
                 const container = document.getElementById('alarm-container');
-                const sad = new Date();
-                const prije24h = sad.getTime() - (24 * 60 * 60 * 1000);
 
-                // Filtriranje za zadnjih 24h
+                const sad = new Date().getTime();
+                const prije24h = sad - (24 * 60 * 60 * 1000);
+
+                // Filtriranje i čišćenje datuma
                 const filtrirano = data.filter(red => {
-                    const tekstD = red.D || Object.values(red)[3] || "";
-                    // Pretpostavljamo da tekstD sadrži datum u formatu koji JS može prepoznati (npr. "May 7, 2026 20:00:00")
-                    const datumAlarma = new Date(tekstD).getTime();
+                    let tekstD = red.D || Object.values(red)[3] || "";
+                    // Izvlačenje datuma iz formata "1. **DATUM**: May 8, 2026 11:00"
+                    let cistiDatum = tekstD.replace(/1\.\s\*\*DATUM\*\*:\s*/i, "").split('\n')[0].trim();
+                    let datumAlarma = new Date(cistiDatum).getTime();
                     
-                    // Ako datum nije validan u koloni D, pokušavamo izvući samo dio datuma
-                    return datumAlarma > prije24h;
+                    return !isNaN(datumAlarma) && datumAlarma > prije24h;
                 });
 
                 if (filtrirano.length === 0) {
-                    container.innerHTML = `
-                        <div class="text-center p-12 border border-dashed border-gray-800 rounded-lg text-gray-600 italic text-sm">
-                            Nema zabilježenih alarma u protekla 24 sata.
-                        </div>`;
+                    container.innerHTML = `<div class="text-center p-10 border border-gray-800 text-gray-600 italic text-sm">Nema novih alarma u zadnjih 24h.</div>`;
                     return;
                 }
 
-                // Sortiranje da najnoviji bude prvi
+                // Sortiranje (najnoviji prvi)
                 filtrirano.sort((a, b) => {
-                    const datumA = new Date(a.D || Object.values(a)[3]).getTime();
-                    const datumB = new Date(b.D || Object.values(b)[3]).getTime();
-                    return datumB - datumA;
+                    let d1 = new Date((a.D || "").replace(/1\.\s\*\*DATUM\*\*:\s*/i, "").split('\n')[0]).getTime();
+                    let d2 = new Date((b.D || "").replace(/1\.\s\*\*DATUM\*\*:\s*/i, "").split('\n')[0]).getTime();
+                    return d2 - d1;
                 });
 
                 container.innerHTML = '';
                 filtrirano.forEach(alarm => {
                     const tekstD = alarm.D || Object.values(alarm)[3] || "";
-                    const status = alarm.C || Object.values(alarm)[2] || "STATUS_UNKNOWN";
+                    const razlogC = alarm.C || Object.values(alarm)[2] || "Nema razloga";
+                    const statusE = alarm.E || Object.values(alarm)[4] || "STATUS";
                     const id = alarm.B || Object.values(alarm)[1] || "---";
 
                     const card = document.createElement('div');
-                    card.className = "bg-zinc-950 border border-zinc-900 p-4 rounded shadow-lg relative transition-all duration-500 hover:border-red-900/50";
+                    card.className = "alarm-card bg-zinc-950 border border-zinc-900 p-4 rounded-lg relative shadow-md";
+                    
+                    // Funkcija na klik koja izbacuje razlog iz kolone C
+                    card.onclick = () => {
+                        alert("RAZLOG SASTANKA:\n\n" + razlogC);
+                    };
+
                     card.innerHTML = `
-                        <div class="absolute top-0 left-0 w-[2px] h-full bg-red-800"></div>
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-[9px] bg-red-950/50 text-red-500 px-2 py-0.5 rounded border border-red-900/30 font-bold uppercase">ID: ${id}</span>
-                            <span class="text-[9px] text-zinc-600 font-mono">${tekstD.split(',')[0]}</span>
+                        <div class="absolute top-0 left-0 w-1 h-full bg-red-600"></div>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-[10px] font-bold text-red-500">ID: ${id}</span>
+                            <span class="text-[9px] text-zinc-500 uppercase font-mono">Zadnjih 24h</span>
                         </div>
-                        <h2 class="text-zinc-100 font-bold text-sm mb-3 uppercase tracking-tight">${status}</h2>
-                        <div class="text-[11px] text-zinc-400 font-mono leading-relaxed bg-black p-3 rounded border border-zinc-900">
+                        <h2 class="text-white font-bold text-sm mb-2 uppercase">${statusE}</h2>
+                        <div class="text-[11px] text-zinc-400 font-mono bg-black/40 p-3 rounded border border-zinc-800 whitespace-pre-line">
                             ${tekstD}
                         </div>
+                        <p class="text-[9px] text-red-900 mt-2 text-right">Klikni za više detalja...</p>
                     `;
                     container.appendChild(card);
                 });
 
-                document.getElementById('current-date-display').innerText = "Zadnja provjera: " + new Date().toLocaleTimeString();
-
             } catch (err) {
-                console.error("Greška:", err);
-                document.getElementById('alarm-container').innerHTML = `
-                    <div class="text-center p-6 border border-red-900/50 rounded bg-red-950/10 text-red-500 text-xs">
-                        Greška pri povezivanju sa serverom. Provjerite API limit.
-                    </div>`;
+                container.innerHTML = `<div class="text-red-500 text-center">Greška pri učitavanju.</div>`;
             }
         }
 
-        // Inicijalno pokretanje
         osvjeziAlarme();
-        
-        // Automatsko osvježavanje svakih 30 sekundi
         setInterval(osvjeziAlarme, 30000);
     </script>
 </body>
