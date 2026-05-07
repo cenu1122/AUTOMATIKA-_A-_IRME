@@ -3,327 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NH AI-Automation | Izvještaj</title>
-
+    <title>Live Alarm Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #1a202c;
-            color: #e2e8f0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
         }
-
-        .card {
-            background: #2d3748;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            width: 100%;
-            max-width: 500px;
-            border: 1px solid #4a5568;
-            text-align: center;
-        }
-
-        h2 {
-            color: #63b3ed;
-            margin-bottom: 10px;
-        }
-
-        #status-user {
-            font-size: 0.9rem;
-            color: #a0aec0;
-            margin-bottom: 20px;
-        }
-
-        #alarm-container {
-            display: none;
-            background: #742a2a;
-            border: 1px solid #f56565;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(245,101,101,0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(245,101,101,0); }
-            100% { box-shadow: 0 0 0 0 rgba(245,101,101,0); }
-        }
-
-        textarea {
-            width: 100%;
-            height: 150px;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #4a5568;
-            background: #1a202c;
-            color: white;
-            box-sizing: border-box;
-            resize: none;
-            margin-bottom: 20px;
-            font-size: 1rem;
-        }
-
-        .btn-send {
-            width: 100%;
-            padding: 15px;
-            background-color: #48bb78;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-
-        .success-msg {
-            color: #48bb78;
-            margin-top: 15px;
-            display: none;
-            font-weight: bold;
-        }
-
-        .alarm-link {
-            color: #63b3ed;
-            display: block;
-            margin-top: 8px;
-            text-decoration: underline;
-            cursor: pointer;
-        }
+        .pulse { animation: pulse-red 2s infinite; }
     </style>
 </head>
+<body class="bg-black text-gray-200 font-sans">
 
-<body>
+    <div class="max-w-2xl mx-auto p-4">
+        <header class="flex justify-between items-center mb-6 border-b border-red-900 pb-4">
+            <div>
+                <h1 class="text-xl font-bold text-red-500 uppercase tracking-tighter">Sistem Alarma v3</h1>
+                <p class="text-xs text-gray-500" id="current-date-display"></p>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="w-3 h-3 bg-red-600 rounded-full pulse"></span>
+                <span class="text-[10px] font-bold text-red-600 uppercase">Live</span>
+            </div>
+        </header>
 
-<div class="card">
-    <h2>NH AI-Automation</h2>
-
-    <div id="status-user">
-        Prijavljeni ste kao:
-        <span id="user-display">101</span>
+        <div id="alarm-container" class="space-y-4">
+            <div class="text-center py-20 text-gray-600">Povezivanje sa bazom podataka...</div>
+        </div>
     </div>
 
-    <div id="alarm-container"></div>
+    <script>
+        // TVOJ LINK SA SLIKE
+        const API_URL = 'https://sheetdb.io/api/v1/rjhvmuxlef6zk';
 
-    <textarea id="output" placeholder="Vaš izvještaj će se ovdje pojaviti..."></textarea>
+        async function osvjeziAlarme() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                
+                const container = document.getElementById('alarm-container');
+                
+                // 1. Dobijanje datuma za filtriranje (format: May 7, 2026)
+                // Na tvojoj slici datum u koloni D je u formatu "Month Day, Year"
+                const opcije = { month: 'short', day: 'numeric', year: 'numeric' };
+                let danas = new Date().toLocaleDateString('en-US', opcije).replace(',', '');
+                // Napomena: pošto JS daje 'May 7 2026', a u tabeli može biti 'May 7, 2026', 
+                // koristićemo samo mesec i dan za sigurnost
+                const mesecDan = danas.split(' ').slice(0, 2).join(' '); 
 
-    <button id="sendBtn" class="btn-send" onclick="posaljiIzvjestaj()">
-        POŠALJI NA ANALIZU
-    </button>
+                // 2. Filtriranje - tražimo datum unutar kolone D
+                const filtrirano = data.filter(red => {
+                    const kolonaD = red.D || Object.values(red)[3] || "";
+                    return kolonaD.includes(mesecDan);
+                });
 
-    <div id="successLabel" class="success-msg">
-        ✅ Izvještaj uspješno spremljen!
-    </div>
-</div>
+                if (filtrirano.length === 0) {
+                    container.innerHTML = `<div class="text-center p-10 border border-gray-800 rounded text-gray-600 italic">
+                        Nema aktivnih alarma za danas (${mesecDan}).
+                    </div>`;
+                    return;
+                }
 
-<script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbyYvAft7j0Gl4z5gap1BgdyVN4HsJ0TX5MOHn0DOQ9yrDFQP7maKYt3kskqxDAU2Dp3nQ/exec";
+                // 3. Prikaz
+                container.innerHTML = '';
+                filtrirano.reverse().forEach(alarm => {
+                    const tekstD = alarm.D || Object.values(alarm)[3] || "";
+                    const status = alarm.C || Object.values(alarm)[2] || "Nepoznato";
+                    const id = alarm.B || Object.values(alarm)[1] || "---";
 
-const trenutniKorisnik = "101";
+                    const card = document.createElement('div');
+                    card.className = "bg-gray-900 border border-gray-800 p-4 rounded-lg shadow-2xl relative overflow-hidden";
+                    card.innerHTML = `
+                        <div class="absolute top-0 left-0 w-1 h-full bg-red-600"></div>
+                        <div class="flex justify-between text-[10px] mb-2">
+                            <span class="text-red-500 font-bold">ID: ${id}</span>
+                            <span class="text-gray-600 uppercase tracking-widest font-mono">Incident Report</span>
+                        </div>
+                        <h2 class="text-white font-bold mb-3 uppercase tracking-tight">${status}</h2>
+                        <div class="text-xs text-gray-400 font-mono leading-relaxed bg-black/50 p-3 rounded border border-gray-800/50">
+                            ${tekstD.replace(/\n/g, '<br>')}
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
 
-window.onload = ucitajSastankeBezKesa;
+                document.getElementById('current-date-display').innerText = "Zadnje ažuriranje: " + new Date().toLocaleTimeString();
 
-async function ucitajSastankeBezKesa() {
-
-    const urlWithCacheBuster =
-        scriptURL +
-        "?user_id=" +
-        trenutniKorisnik +
-        "&v=" +
-        new Date().getTime();
-
-    try {
-
-        const response = await fetch(urlWithCacheBuster);
-        const sastanci = await response.json();
-
-        const container =
-            document.getElementById('alarm-container');
-
-        container.innerHTML = '';
-        container.style.display = 'none';
-
-        if (sastanci && sastanci.length > 0) {
-
-            sastanci.forEach(s => {
-                obradiIPrikaziAlarm(
-                    s.samo_datum,
-                    s.ai_analiza
-                );
-            });
-        }
-
-    } catch (e) {
-
-        console.error(
-            "Greška pri dohvatu podataka:",
-            e
-        );
-    }
-}
-
-function obradiIPrikaziAlarm(
-    datumIzTabele,
-    analizaIzTabele
-) {
-
-    if (!datumIzTabele || !analizaIzTabele) return;
-
-    let cistDatum =
-        datumIzTabele
-        .replace(/\*/g, "")
-        .replace(/1\.\s*DATUM[:\s]*/i, "")
-        .trim();
-
-    let cistAnaliza =
-        analizaIzTabele.replace(/\*/g, "");
-
-    const datumObjekat = new Date(cistDatum);
-    const sada = new Date();
-
-    if (isNaN(datumObjekat.getTime())) return;
-
-    // samo naredna 24h
-    const razlikaMs = datumObjekat - sada;
-    const razlikaSati =
-        razlikaMs / (1000 * 60 * 60);
-
-    if (razlikaSati >= 0 &&
-        razlikaSati <= 24) {
-
-        const container =
-            document.getElementById(
-                'alarm-container'
-            );
-
-        container.style.display = 'block';
-
-        let naslov = "OBAVEZA";
-
-        let linije =
-            cistAnaliza.split('\n');
-
-        for (let linija of linije) {
-
-            if (
-                linija
-                .toUpperCase()
-                .includes("DETALJ")
-            ) {
-
-                naslov =
-                    linija
-                    .split(':')
-                    .pop()
-                    .trim();
-
-                break;
+            } catch (err) {
+                console.error(err);
+                document.getElementById('alarm-container').innerHTML = "Greška u konekciji.";
             }
         }
 
-        const vrijemeMatch =
-            cistDatum.match(/\d{2}:\d{2}/);
-
-        const samoVrijeme =
-            vrijemeMatch
-            ? vrijemeMatch[0]
-            : "";
-
-        let tekstAlert =
-            cistAnaliza
-            .replace(/'/g, "")
-            .replace(/"/g, "")
-            .replace(/\n/g, "\\n");
-
-        const alarmElement =
-            document.createElement('div');
-
-        alarmElement.style.borderBottom =
-            "1px solid #444";
-
-        alarmElement.style.padding =
-            "10px 0";
-
-        alarmElement.style.textAlign =
-            "left";
-
-        alarmElement.innerHTML = `
-            <div style="
-                font-weight:bold;
-                color:#feb2b2;
-                text-transform:uppercase;
-                font-size:0.9rem;
-            ">
-                🚨 PODSJETNIK:
-                ${naslov}
-                (u ${samoVrijeme})
-            </div>
-
-            <a class="alarm-link"
-               onclick="alert('DETALJI IZVJEŠTAJA:\\n\\n${tekstAlert}')">
-
-                Prikaži detalje
-            </a>
-        `;
-
-        container.appendChild(alarmElement);
-    }
-}
-
-async function posaljiIzvjestaj() {
-
-    const tekst =
-        document
-        .getElementById('output')
-        .value
-        .trim();
-
-    const btn =
-        document.getElementById('sendBtn');
-
-    if (!tekst) {
-
-        alert("Unesite tekst!");
-        return;
-    }
-
-    btn.disabled = true;
-    btn.innerText = "Spremanje...";
-
-    try {
-
-        await fetch(scriptURL, {
-            method: 'POST',
-            mode: 'no-cors',
-
-            body: JSON.stringify({
-                user_id: trenutniKorisnik,
-                tekst: tekst
-            })
-        });
-
-        document
-            .getElementById('successLabel')
-            .style.display = "block";
-
-        setTimeout(() => {
-            location.reload();
-        }, 2000);
-
-    } catch (e) {
-
-        alert("Greška pri slanju!");
-        btn.disabled = false;
-    }
-}
-</script>
-
+        // Pokreni odmah i postavi refresh na 30 sekundi
+        osvjeziAlarme();
+        setInterval(osvjeziAlarme, 30000);
+    </script>
 </body>
 </html>
