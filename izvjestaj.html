@@ -59,49 +59,55 @@
     }
 
     function prikaziViseAlarma(datumString, kompletanTekst) {
-        // NAPREDNO ČIŠĆENJE: Brišemo zvjezdice i oba formata oznaka (1. i 1*)
-        let cistiDatum = datumString.replace(/\*/g, "")
-                                   .replace(/1[\.\*]\s*DATUM:/i, "")
-                                   .trim();
-        let cistiOpis = kompletanTekst.replace(/\*/g, "");
+    // 1. ČIŠĆENJE: Brišemo sve zvjezdice i izvlačimo čist datum
+    let cistiDatum = datumString.replace(/\*/g, "").replace(/1[\.\*]\s*DATUM:/i, "").trim();
+    let cistiOpis = kompletanTekst.replace(/\*/g, "");
 
-        const rok = new Date(cistiDatum);
-        const sad = new Date();
+    const rok = new Date(cistiDatum);
+    const sad = new Date();
+    if (isNaN(rok.getTime())) return; 
+
+    const razlikaSati = (rok - sad) / (1000 * 60 * 60);
+
+    // Prikazujemo ako je u idućih 48 sati
+    if (razlikaSati > 0 && razlikaSati <= 48) {
+        const container = document.getElementById('alarm-container');
+        container.style.display = 'block';
+
+        // 2. PAMETNO IZVLAČENJE NASLOVA: Tražimo bilo šta nakon "2."
+        let razlog = "Obaveza";
         
-        // Provjera da li je datum uopšte ispravno pročitan
-        if (isNaN(rok.getTime())) return; 
-
-        const razlikaSati = (rok - sad) / (1000 * 60 * 60);
-
-        // Prikazujemo ako je termin u narednih 48 sati
-        if (razlikaSati > 0 && razlikaSati <= 48) {
-            const container = document.getElementById('alarm-container');
-            container.style.display = 'block';
-
-            let razlog = "Sastanak/Obaveza";
-            if (cistiOpis.includes("2. DETALJ:")) {
-                razlog = cistiOpis.split("2. DETALJ:")[1].split("\n")[0].trim();
+        // Tražimo liniju koja počinje sa 2. (može imati razmak ili zvjezdicu)
+        let linije = cistiOpis.split('\n');
+        for (let linija of linije) {
+            if (linija.includes("2.") || linija.toLowerCase().includes("detalj")) {
+                // Uzimamo tekst nakon dvotačke i brišemo oznaku "DETALJ"
+                razlog = linija.split(':')[1] ? linija.split(':')[1].trim() : "Obaveza";
+                break;
             }
-
-            const vrijemeMatch = cistiDatum.match(/\d{2}:\d{2}/);
-            const vrijemePrikaz = vrijemeMatch ? vrijemeMatch[0] : "";
-
-            const noviAlarm = document.createElement('div');
-            noviAlarm.style.borderBottom = "1px solid #f56565";
-            noviAlarm.style.padding = "10px 0";
-            noviAlarm.style.textAlign = "left";
-            
-            noviAlarm.innerHTML = `
-                <div style="font-weight: bold; color: #feb2b2;">
-                    🚨 PODSJETNIK: ${razlog.toUpperCase()} (u ${vrijemePrikaz})
-                </div>
-                <a class="alarm-link" onclick="alert('Detalji:\\n${cistiOpis.replace(/'/g, "\\'").replace(/\n/g, "\\n")}');">
-                   Prikaži detalje izvještaja
-                </a>
-            `;
-            container.appendChild(noviAlarm);
         }
+
+        const vrijemeMatch = cistiDatum.match(/\d{2}:\d{2}/);
+        const vrijemePrikaz = vrijemeMatch ? vrijemeMatch[0] : "";
+
+        // 3. ISPIS NA EKRAN
+        const noviAlarm = document.createElement('div');
+        noviAlarm.style.borderBottom = "1px solid #f56565";
+        noviAlarm.style.padding = "10px 0";
+        noviAlarm.style.textAlign = "left";
+        
+        noviAlarm.innerHTML = `
+            <div style="font-weight: bold; color: #feb2b2; text-transform: uppercase;">
+                🚨 PODSJETNIK: ${razlog} (u ${vrijemePrikaz})
+            </div>
+            <a class="alarm-link" style="color: #63b3ed; cursor: pointer; text-decoration: underline; font-size: 0.85rem;" 
+               onclick="alert('Kompletna analiza:\\n${cistiOpis.replace(/'/g, "\\'").replace(/\n/g, "\\n")}');">
+               Prikaži detalje izvještaja
+            </a>
+        `;
+        container.appendChild(noviAlarm);
     }
+}
 
     async function posaljiIzvjestaj() {
         const tekst = document.getElementById('output').value.trim();
