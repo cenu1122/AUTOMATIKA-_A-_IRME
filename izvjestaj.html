@@ -43,30 +43,28 @@
     window.onload = ucitajSastankeBezKesa;
 
     async function ucitajSastankeBezKesa() {
-    const urlSaZastitom = scriptURL + "?user_id=" + trenutniKorisnik + "&nocache=" + new Date().getTime();
-    try {
-        const response = await fetch(urlSaZastitom);
-        const sastanci = await response.json();
-        const container = document.getElementById('alarm-container');
-        
-        // Ovo mora biti ovdje da isprazni stari sadržaj PRIJE nego krene dodavati nove
-        container.innerHTML = ''; 
-        container.style.display = 'none';
+        const urlSaZastitom = scriptURL + "?user_id=" + trenutniKorisnik + "&nocache=" + new Date().getTime();
+        try {
+            const response = await fetch(urlSaZastitom);
+            const sastanci = await response.json();
+            const container = document.getElementById('alarm-container');
+            
+            container.innerHTML = ''; 
+            container.style.display = 'none';
 
-        if (sastanci && sastanci.length > 0) {
-            // Prolazimo kroz SVAKI sastanak iz tabele
-            sastanci.forEach(s => {
-                prikaziViseAlarma(s.samo_datum, s.ai_analiza);
-            });
-        }
-    } catch (e) { console.error("Greška:", e); }
-}
+            if (sastanci && sastanci.length > 0) {
+                sastanci.forEach(s => {
+                    prikaziViseAlarma(s.samo_datum, s.ai_analiza);
+                });
+            }
+        } catch (e) { console.error("Greška:", e); }
+    }
 
     function prikaziViseAlarma(datumString, kompletanTekst) {
         if (!datumString || !kompletanTekst) return;
 
         // 1. ČIŠĆENJE DATUMA
-        let cistiDatum = datumString.replace(/\*/g, "").replace(/1[\.\s]*DATUM[:\s]*/i, "").trim();
+        let cistiDatum = datumString.replace(/\*/g, "").replace(/1\.\s*DATUM[:\s]*/i, "").trim();
         const rok = new Date(cistiDatum);
         const sad = new Date();
         
@@ -74,28 +72,31 @@
 
         const razlikaSati = (rok - sad) / (1000 * 60 * 60);
 
-        // Prikazuj ako je termin u narednih 48 sati
+        // Prikazuje sve što je unutar 48 sati (uključujući i sutra)
         if (razlikaSati > -1 && razlikaSati <= 48) {
             const container = document.getElementById('alarm-container');
             container.style.display = 'block';
 
-            // 2. IZDVAJANJE NASLOVA (npr. HJALA ili GHALA)
             let naslovZaEkran = "OBAVEZA";
             let cistCijeliTekst = kompletanTekst.replace(/\*/g, "");
             let linije = cistCijeliTekst.split('\n');
 
+            // Traženje DETALJA za naslov
             for (let linija of linije) {
-                if (linija.toUpperCase().includes("DETALJ")) {
+                if (linija.includes(':')) {
                     let dijelovi = linija.split(':');
-                    if (dijelovi.length > 1) naslovZaEkran = dijelovi[1].trim();
-                    break;
+                    if (dijelovi[0].toUpperCase().includes("DETALJ")) {
+                        naslovZaEkran = dijelovi[1].trim();
+                        break;
+                    }
                 }
             }
 
+            // Izvlačenje vremena (npr. 09:00)
             const vrijemeMatch = cistiDatum.match(/\d{2}:\d{2}/);
             const vrijemePrikaz = vrijemeMatch ? vrijemeMatch[0] : "";
 
-            // 3. PRIPREMA ZA ALERT (uklanjamo zvjezdice za čišći ispis)
+            // Priprema teksta za alert
             let tekstZaAlert = cistCijeliTekst.replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, "\\n");
 
             const noviAlarm = document.createElement('div');
@@ -107,9 +108,8 @@
                 <div style="font-weight: bold; color: #feb2b2; text-transform: uppercase;">
                     🚨 PODSJETNIK: ${naslovZaEkran} (u ${vrijemePrikaz})
                 </div>
-                <a class="alarm-link" 
-                   onclick="alert('DETALJI IZVJEŠTAJA:\\n\\n${tekstZaAlert}');">
-                   Prikaži detalje izvještaja
+                <a class="alarm-link" onclick="alert('DETALJI IZVJEŠTAJA:\\n\\n${tekstZaAlert}');">
+                    Prikaži detalje izvještaja
                 </a>
             `;
             container.appendChild(noviAlarm);
