@@ -3,87 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Alarma - Izvještaj</title>
+    <title>Sistem Alarma - Live Report</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-black text-gray-200 min-h-screen font-sans">
+<body class="bg-black text-white p-4 font-sans min-h-screen">
 
-    <div class="max-w-2xl mx-auto p-4">
-        
-        <a href="index.html" class="block w-full text-center bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 text-white py-4 rounded-xl mb-8 font-bold uppercase tracking-widest transition-all">
-            ← NAZAD NA UNOS (POČETNA)
-        </a>
+    <a href="index.html" class="block w-full bg-zinc-900 border border-zinc-700 text-center py-4 rounded-xl mb-8 font-bold uppercase tracking-widest hover:bg-zinc-800 transition-all">
+        ← NAZAD NA UNOS (POČETNA)
+    </a>
 
-        <header class="flex justify-between items-center mb-8 border-b border-zinc-800 pb-4">
-            <div>
-                <h1 class="text-2xl font-black text-red-600 tracking-tighter uppercase">SISTEM ALARMA V3</h1>
-                <p class="text-[10px] text-zinc-500 uppercase">PRIKAZ ZADNJIH ZAPISA IZ BAZE</p>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="w-2 h-2 bg-red-600 rounded-full animate-pulse"></span>
-                <span class="text-[10px] font-bold text-red-500 uppercase">Live</span>
-            </div>
-        </header>
-
-        <div id="alarm-list" class="space-y-6">
-            <div class="text-center py-20 text-zinc-700 font-mono animate-pulse uppercase text-xs">
-                Učitavanje podataka...
-            </div>
+    <header class="flex justify-between items-center mb-10 border-b border-zinc-800 pb-4">
+        <div>
+            <h1 class="text-2xl font-black text-red-600 tracking-tighter uppercase italic">SISTEM ALARMA V3</h1>
+            <p class="text-[10px] text-zinc-500 uppercase tracking-widest">Aktivni izvještaj iz baze podataka</p>
         </div>
+        <div class="flex items-center gap-2 bg-red-900/20 px-3 py-1 rounded-full border border-red-900/50">
+            <span class="w-2 h-2 bg-red-600 rounded-full animate-pulse"></span>
+            <span class="text-[10px] font-bold text-red-500 uppercase">Live</span>
+        </div>
+    </header>
+
+    <div id="alarm-lista" class="space-y-6">
+        <p class="text-zinc-700 text-center py-20 animate-pulse text-xs uppercase">Učitavanje podataka...</p>
     </div>
 
     <script>
-        const API_URL = 'https://sheetdb.io/api/v1/rjhvmuxlef6zk';
-
-        async function fetchAlarms() {
+        async function osvjeziAlarme() {
             try {
-                // Uzimamo podatke direktno
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                const list = document.getElementById('alarm-list');
+                // Dodajemo timestamp da izbjegnemo stare (cached) podatke
+                const r = await fetch('https://sheetdb.io/api/v1/rjhvmuxlef6zk?t=' + Date.now());
+                const data = await r.json();
+                const lista = document.getElementById('alarm-lista');
                 
-                if (!data || data.length === 0) {
-                    list.innerHTML = `<div class="text-center p-12 text-zinc-600 uppercase text-xs">Tabela je prazna</div>`;
+                if(!data || data.length === 0) {
+                    lista.innerHTML = "<p class='text-center text-zinc-600 uppercase text-xs'>Baza podataka je trenutno prazna.</p>";
                     return;
                 }
 
-                // Uzmi zadnjih 15 redova bez ikakvog filtriranja datuma
-                const recentData = data.slice(-15).reverse();
-                
-                list.innerHTML = '';
-                recentData.forEach(item => {
-                    // Mapiranje kolona: B=ID, C=Razlog, D=Detalji/Datum
-                    const id = item.B || "N/A";
-                    const razlog = item.C || "Bez naslova";
-                    const detalji = item.D || "Nema detalja";
+                // Pokaži zadnjih 20 zapisa, najnoviji na vrh
+                const prikaz = data.slice(-20).reverse();
+                lista.innerHTML = '';
 
-                    const card = document.createElement('div');
-                    card.className = "bg-zinc-950 border-l-4 border-red-600 border-y border-r border-zinc-900 rounded-r-lg p-5 shadow-2xl";
-                    card.innerHTML = `
-                        <div class="flex justify-between items-start mb-3">
-                            <span class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded font-black uppercase">ID: ${id}</span>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <h2 class="text-lg text-zinc-100 font-bold leading-tight uppercase">${razlog}</h2>
-                        </div>
+                prikaz.forEach(red => {
+                    // KORISTIMO TAČNE NAZIVE IZ TVOG API-JA
+                    const datum = red.Datum || "Nema datuma";
+                    const korisnik = red.Korisnik || "Nepoznato";
+                    const naslov = red.Tekst || "Bez naslova";
+                    const analiza = red["AI analiza"] || "Nema analize";
 
-                        <div class="bg-black/40 border border-zinc-900 rounded p-3 text-left">
-                            <p class="text-[11px] text-zinc-400 font-mono whitespace-pre-line">${detalji}</p>
+                    const kartica = document.createElement('div');
+                    kartica.className = "bg-zinc-950 border-l-4 border-red-600 p-5 rounded-r-lg shadow-2xl border-y border-r border-zinc-900 mb-6";
+                    
+                    kartica.innerHTML = `
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded font-black uppercase">USER: ${korisnik}</span>
+                            <span class="text-[10px] text-zinc-500 font-mono">${datum}</span>
+                        </div>
+                        <h2 class="text-xl font-bold text-zinc-100 uppercase mb-4 leading-tight">${naslov}</h2>
+                        <div class="bg-black/80 p-4 rounded border border-zinc-800 text-xs text-zinc-400 font-mono leading-relaxed whitespace-pre-wrap">
+                            <span class="text-red-900 font-bold uppercase block mb-1 text-[9px]">Status/Analiza:</span>
+                            ${analiza}
                         </div>
                     `;
-                    list.appendChild(card);
+                    lista.appendChild(kartica);
                 });
-
-            } catch (error) {
-                document.getElementById('alarm-list').innerHTML = `<div class="text-red-600 text-center text-xs">Greška u konekciji</div>`;
+            } catch(e) {
+                document.getElementById('alarm-lista').innerHTML = "<p class='text-red-900 text-center text-xs'>Greška pri povezivanju sa API-jem.</p>";
             }
         }
 
-        // Pokreni odmah
-        fetchAlarms();
-        // Osvježavaj svakih 20 sekundi
-        setInterval(fetchAlarms, 20000);
+        osvjeziAlarme();
+        setInterval(osvjeziAlarme, 15000); // Osvježava svakih 15 sekundi
     </script>
 </body>
 </html>
