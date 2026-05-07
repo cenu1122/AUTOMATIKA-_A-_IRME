@@ -42,7 +42,6 @@
 
     window.onload = ucitajSastankeBezKesa;
 
-    // --- 1. DOHVAĆANJE PODATAKA ---
     async function ucitajSastankeBezKesa() {
         const urlSaZastitom = scriptURL + "?user_id=" + trenutniKorisnik + "&nocache=" + new Date().getTime();
         try {
@@ -59,9 +58,8 @@
         } catch (e) { console.error("Greška pri učitavanju:", e); }
     }
 
-    // --- 2. PRIKAZ ALARMA ---
     function prikaziViseAlarma(datumString, kompletanTekst) {
-        // Napredno čišćenje: brišemo zvjezdice, "1. DATUM", "1*" i sl.
+        // NAPREDNO ČIŠĆENJE: Brišemo zvjezdice i oba formata oznaka (1. i 1*)
         let cistiDatum = datumString.replace(/\*/g, "")
                                    .replace(/1[\.\*]\s*DATUM:/i, "")
                                    .trim();
@@ -69,9 +67,13 @@
 
         const rok = new Date(cistiDatum);
         const sad = new Date();
+        
+        // Provjera da li je datum uopšte ispravno pročitan
+        if (isNaN(rok.getTime())) return; 
+
         const razlikaSati = (rok - sad) / (1000 * 60 * 60);
 
-        // Prikaz ako je u idućih 48h
+        // Prikazujemo ako je termin u narednih 48 sati
         if (razlikaSati > 0 && razlikaSati <= 48) {
             const container = document.getElementById('alarm-container');
             container.style.display = 'block';
@@ -84,24 +86,23 @@
             const vrijemeMatch = cistiDatum.match(/\d{2}:\d{2}/);
             const vrijemePrikaz = vrijemeMatch ? vrijemeMatch[0] : "";
 
-            const stavka = document.createElement('div');
-            stavka.style.borderBottom = "1px solid #f56565";
-            stavka.style.padding = "10px 0";
-            stavka.style.textAlign = "left";
+            const noviAlarm = document.createElement('div');
+            noviAlarm.style.borderBottom = "1px solid #f56565";
+            noviAlarm.style.padding = "10px 0";
+            noviAlarm.style.textAlign = "left";
             
-            stavka.innerHTML = `
+            noviAlarm.innerHTML = `
                 <div style="font-weight: bold; color: #feb2b2;">
-                    🚨 PODSJETNIK: ${razlog} (u ${vrijemePrikaz})
+                    🚨 PODSJETNIK: ${razlog.toUpperCase()} (u ${vrijemePrikaz})
                 </div>
                 <a class="alarm-link" onclick="alert('Detalji:\\n${cistiOpis.replace(/'/g, "\\'").replace(/\n/g, "\\n")}');">
-                   Prikaži detalje analize
+                   Prikaži detalje izvještaja
                 </a>
             `;
-            container.appendChild(stavka);
+            container.appendChild(noviAlarm);
         }
     }
 
-    // --- 3. SLANJE IZVJEŠTAJA ---
     async function posaljiIzvjestaj() {
         const tekst = document.getElementById('output').value.trim();
         const btn = document.getElementById('sendBtn');
@@ -123,7 +124,7 @@
             btn.innerText = "POSLANO";
             
             setTimeout(() => {
-                location.reload(); // Osvježi stranicu da povuče nove alarme
+                location.reload();
             }, 2000);
         } catch (e) {
             alert("Greška pri slanju!");
