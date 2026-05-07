@@ -43,20 +43,24 @@
     window.onload = ucitajSastankeBezKesa;
 
     async function ucitajSastankeBezKesa() {
-        const urlSaZastitom = scriptURL + "?user_id=" + trenutniKorisnik + "&nocache=" + new Date().getTime();
-        try {
-            const response = await fetch(urlSaZastitom);
-            const sastanci = await response.json();
-            const container = document.getElementById('alarm-container');
-            
-            container.innerHTML = ''; 
-            container.style.display = 'none';
+    const urlSaZastitom = scriptURL + "?user_id=" + trenutniKorisnik + "&nocache=" + new Date().getTime();
+    try {
+        const response = await fetch(urlSaZastitom);
+        const sastanci = await response.json();
+        const container = document.getElementById('alarm-container');
+        
+        // Ovo mora biti ovdje da isprazni stari sadržaj PRIJE nego krene dodavati nove
+        container.innerHTML = ''; 
+        container.style.display = 'none';
 
-            if (sastanci && sastanci.length > 0) {
-                sastanci.forEach(s => prikaziViseAlarma(s.samo_datum, s.ai_analiza));
-            }
-        } catch (e) { console.error("Greška pri učitavanju:", e); }
-    }
+        if (sastanci && sastanci.length > 0) {
+            // Prolazimo kroz SVAKI sastanak iz tabele
+            sastanci.forEach(s => {
+                prikaziViseAlarma(s.samo_datum, s.ai_analiza);
+            });
+        }
+    } catch (e) { console.error("Greška:", e); }
+}
 
     function prikaziViseAlarma(datumString, kompletanTekst) {
         if (!datumString || !kompletanTekst) return;
