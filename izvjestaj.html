@@ -3,13 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Alarma - Live Report</title>
+    <title>Sistem Alarma - Izvještaj</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .card-red-edge { border-left: 4px solid #dc2626; }
-        @keyframes blink { 50% { opacity: 0.5; } }
-        .live-dot { animation: blink 1.5s infinite; }
-    </style>
 </head>
 <body class="bg-black text-gray-200 min-h-screen font-sans">
 
@@ -21,18 +16,18 @@
 
         <header class="flex justify-between items-center mb-8 border-b border-zinc-800 pb-4">
             <div>
-                <h1 class="text-2xl font-black text-red-600 tracking-tighter uppercase">Sistem Alarma v3</h1>
-                <p id="update-time" class="text-[10px] text-zinc-500 font-mono uppercase">Učitavanje...</p>
+                <h1 class="text-2xl font-black text-red-600 tracking-tighter uppercase">SISTEM ALARMA V3</h1>
+                <p class="text-[10px] text-zinc-500 uppercase">PRIKAZ ZADNJIH ZAPISA IZ BAZE</p>
             </div>
-            <div class="flex items-center gap-2 bg-red-900/20 px-3 py-1 rounded-full border border-red-900/50">
-                <span class="w-2 h-2 bg-red-600 rounded-full live-dot"></span>
-                <span class="text-[10px] font-bold text-red-500 uppercase">Live Monitoring</span>
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 bg-red-600 rounded-full animate-pulse"></span>
+                <span class="text-[10px] font-bold text-red-500 uppercase">Live</span>
             </div>
         </header>
 
         <div id="alarm-list" class="space-y-6">
-            <div class="text-center py-20 text-zinc-700 font-mono animate-pulse uppercase text-xs tracking-widest">
-                Povezivanje sa bazom podataka...
+            <div class="text-center py-20 text-zinc-700 font-mono animate-pulse uppercase text-xs">
+                Učitavanje podataka...
             </div>
         </div>
     </div>
@@ -42,58 +37,53 @@
 
         async function fetchAlarms() {
             try {
-                // Dodajemo timestamp na URL da spriječimo keširanje starih podataka
-                const response = await fetch(`${API_URL}?_=${new Date().getTime()}`);
+                // Uzimamo podatke direktno
+                const response = await fetch(API_URL);
                 const data = await response.json();
                 const list = document.getElementById('alarm-list');
                 
                 if (!data || data.length === 0) {
-                    list.innerHTML = `<div class="text-center p-12 border border-dashed border-zinc-800 text-zinc-600 uppercase text-xs">Baza podataka je prazna</div>`;
+                    list.innerHTML = `<div class="text-center p-12 text-zinc-600 uppercase text-xs">Tabela je prazna</div>`;
                     return;
                 }
 
-                // Uzmi zadnjih 20 zapisa i stavi najnoviji na vrh
-                const recentData = data.slice(-20).reverse();
+                // Uzmi zadnjih 15 redova bez ikakvog filtriranja datuma
+                const recentData = data.slice(-15).reverse();
                 
                 list.innerHTML = '';
                 recentData.forEach(item => {
-                    // Izvlačenje podataka iz kolona B, C, D, E
-                    const id = item.B || Object.values(item)[1] || "N/A";
-                    const razlog = item.C || Object.values(item)[2] || "Nema opisa sastanka";
-                    const detalji = item.D || Object.values(item)[3] || "";
-                    const status = item.E || Object.values(item)[4] || "ALARM";
+                    // Mapiranje kolona: B=ID, C=Razlog, D=Detalji/Datum
+                    const id = item.B || "N/A";
+                    const razlog = item.C || "Bez naslova";
+                    const detalji = item.D || "Nema detalja";
 
                     const card = document.createElement('div');
-                    card.className = "bg-zinc-950 border border-zinc-900 rounded-lg p-5 card-red-edge shadow-2xl transition-transform active:scale-[0.98]";
+                    card.className = "bg-zinc-950 border-l-4 border-red-600 border-y border-r border-zinc-900 rounded-r-lg p-5 shadow-2xl";
                     card.innerHTML = `
-                        <div class="flex justify-between items-start mb-4">
-                            <span class="text-[10px] bg-red-600 text-white px-2 py-1 rounded font-black uppercase tracking-widest">ID: ${id}</span>
-                            <span class="text-[10px] text-zinc-600 font-mono">STATUS: ${status}</span>
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded font-black uppercase">ID: ${id}</span>
                         </div>
                         
-                        <div class="mb-4">
-                            <p class="text-[10px] text-red-500 uppercase font-bold mb-1">Razlog sastanka:</p>
-                            <p class="text-sm text-zinc-100 font-semibold leading-snug">${razlog}</p>
+                        <div class="mb-3">
+                            <h2 class="text-lg text-zinc-100 font-bold leading-tight uppercase">${razlog}</h2>
                         </div>
 
-                        <div class="bg-black/50 border border-zinc-900 rounded p-3">
-                            <p class="text-[9px] text-zinc-600 uppercase font-bold mb-2">Vrijeme i detalji kvara:</p>
-                            <p class="text-[11px] text-zinc-400 font-mono whitespace-pre-line leading-relaxed">${detalji}</p>
+                        <div class="bg-black/40 border border-zinc-900 rounded p-3 text-left">
+                            <p class="text-[11px] text-zinc-400 font-mono whitespace-pre-line">${detalji}</p>
                         </div>
                     `;
                     list.appendChild(card);
                 });
 
-                document.getElementById('update-time').innerText = "Zadnje ažuriranje: " + new Date().toLocaleTimeString();
-
             } catch (error) {
-                document.getElementById('alarm-list').innerHTML = `<div class="text-red-600 text-center text-xs p-10 uppercase">Greška pri spajanju na Google Sheets</div>`;
+                document.getElementById('alarm-list').innerHTML = `<div class="text-red-600 text-center text-xs">Greška u konekciji</div>`;
             }
         }
 
-        // Pokreni odmah i svakih 30 sekundi
+        // Pokreni odmah
         fetchAlarms();
-        setInterval(fetchAlarms, 30000);
+        // Osvježavaj svakih 20 sekundi
+        setInterval(fetchAlarms, 20000);
     </script>
 </body>
 </html>
