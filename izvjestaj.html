@@ -2,66 +2,75 @@
 <html lang="hr">
 <head>
     <meta charset="UTF-8">
-    <title>Sistem Alarma - Scan Kolona</title>
+    <title>Sistem Alarma - Scan & Prikaz</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-black text-white p-8 font-sans">
+<body class="bg-black text-white p-6 font-sans">
 
-    <h1 class="text-red-600 font-black text-2xl italic mb-6 uppercase">Scanner Strukture Tabele</h1>
+    <h1 class="text-red-600 font-black text-2xl italic mb-6 uppercase tracking-tighter">Struktura i Podaci</h1>
     
-    <div id="debug-panel" class="space-y-6">
-        <p class="text-zinc-500 animate-pulse text-xs uppercase">Skeniranje baze u toku...</p>
+    <div id="nazivi-kolona" class="mb-8 p-4 bg-zinc-900 border border-red-900/30 rounded-xl">
+        <h3 class="text-[10px] text-red-500 font-bold uppercase mb-3 italic">Pronađene kolone u Excelu:</h3>
+        <div id="kolone-lista" class="flex flex-wrap gap-2 text-xs font-mono text-green-500">
+            Skeniranje...
+        </div>
+    </div>
+
+    <div id="izvjestaj-lista" class="space-y-4">
+        <p class="text-zinc-700 animate-pulse text-xs uppercase text-center py-10">Učitavanje podataka...</p>
     </div>
 
     <script>
-        async function skenirajKolone() {
-            const panel = document.getElementById('debug-panel');
+        async function pokreniSve() {
+            const koloneLista = document.getElementById('kolone-lista');
+            const izvjestajLista = document.getElementById('izvjestaj-lista');
+
             try {
-                // Pozivamo tvoj SheetDB API
                 const r = await fetch('https://sheetdb.io/api/v1/rjhvmuxlef6zk?t=' + Date.now());
                 const data = await r.json();
 
                 if (!data || data.length === 0) {
-                    panel.innerHTML = "<p class='text-yellow-500 font-bold'>TABELA JE PRAZNA - Dodaj barem jedan red u Excel!</p>";
+                    izvjestajLista.innerHTML = "Baza je prazna.";
                     return;
                 }
 
-                // Uzimamo nazive kolona iz prvog reda podataka
-                const naziviKolona = Object.keys(data[0]);
-                const vrijednosti = Object.values(data[0]);
+                // 1. ISPIS NAZIVA KOLONA
+                const imena = Object.keys(data[0]);
+                koloneLista.innerHTML = imena.map(ime => 
+                    `<span class="bg-black px-2 py-1 rounded border border-zinc-700">[ ${ime} ]</span>`
+                ).join('');
 
-                let html = `
-                    <div class="bg-zinc-900 border border-zinc-700 p-6 rounded-2xl shadow-2xl">
-                        <h2 class="text-green-500 font-bold mb-4 uppercase text-sm italic">Pronađeno u bazi:</h2>
-                        <ul class="space-y-4">
-                `;
-
-                naziviKolona.forEach((naziv, index) => {
-                    html += `
-                        <li class="border-b border-zinc-800 pb-2">
-                            <span class="text-zinc-500 text-[10px] block uppercase font-black">Kolona #${index + 1}</span>
-                            <span class="text-red-500 font-mono font-bold text-lg italic">"${naziv}"</span>
-                            <span class="text-zinc-400 text-xs block mt-1">Trenutni sadržaj: <span class="text-white font-bold">${vrijednosti[index] || '(Prazno)'}</span></span>
-                        </li>
+                // 2. ISPIS PODATAKA (Uzimamo ih po redoslijedu/indexu)
+                izvjestajLista.innerHTML = '';
+                data.reverse().forEach((red, i) => {
+                    const v = Object.values(red);
+                    
+                    const kartica = document.createElement('div');
+                    kartica.className = "bg-zinc-950 border border-zinc-800 p-5 rounded-2xl shadow-2xl";
+                    
+                    // v[0] = Datum, v[1] = Korisnik, v[2] = Tekst, v[3] = AI analiza
+                    kartica.innerHTML = `
+                        <div class="flex justify-between text-[9px] text-zinc-600 font-mono mb-4">
+                            <span>ZAPIS #${data.length - i} | ${v[1] || 'SISTEM'}</span>
+                            <span>${v[0] || ''}</span>
+                        </div>
+                        <div class="border-l-2 border-red-600 pl-3 mb-4">
+                            <h2 class="text-lg font-bold uppercase text-zinc-100">${v[2] || 'BEZ NASLOVA'}</h2>
+                        </div>
+                        <div class="bg-black p-4 rounded-xl border border-zinc-900 shadow-inner">
+                            <p class="text-sm text-zinc-400 leading-relaxed">${v[3] || 'Analiza nije dostupna'}</p>
+                        </div>
                     `;
+                    izvjestajLista.appendChild(kartica);
                 });
 
-                html += `
-                        </ul>
-                        <div class="mt-8 p-4 bg-black rounded-lg border border-red-900/30 text-[10px] text-zinc-500 font-mono">
-                            Ovo su tačni nazivi koje moraš koristiti u kodu za prikaz podataka.
-                        </div>
-                    </div>
-                `;
-
-                panel.innerHTML = html;
-
             } catch (err) {
-                panel.innerHTML = "<p class='text-red-600 font-bold uppercase'>GRESKA: " + err.message + "</p>";
+                izvjestajLista.innerHTML = "Greška: " + err.message;
             }
         }
 
-        skenirajKolone();
+        pokreniSve();
+        setInterval(pokreniSve, 10000);
     </script>
 </body>
 </html>
