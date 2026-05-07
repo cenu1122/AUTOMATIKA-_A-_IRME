@@ -59,10 +59,11 @@
     }
 
     function prikaziViseAlarma(datumString, kompletanTekst) {
-        // 1. ČIŠĆENJE: Brišemo sve zvjezdice i izvlačimo čist datum
-        // Dodao sam podršku za 1* DATUM format
+        // 1. ČIŠĆENJE DATUMA: Izvlačimo samo vrijeme i datum za logiku sustava
         let cistiDatum = datumString.replace(/\*/g, "").replace(/1[\.\*]?\s*DATUM:/i, "").trim();
-        let cistiOpis = kompletanTekst.replace(/\*/g, "");
+        
+        // Kompletan tekst čuvamo sa zvjezdicama za alert
+        let originalniTekst = kompletanTekst;
 
         const rok = new Date(cistiDatum);
         const sad = new Date();
@@ -70,14 +71,14 @@
 
         const razlikaSati = (rok - sad) / (1000 * 60 * 60);
 
-        // Prikazujemo ako je u idućih 48 sati
+        // Prikaz alarma ako je rok unutar 48 sati
         if (razlikaSati > 0 && razlikaSati <= 48) {
             const container = document.getElementById('alarm-container');
             container.style.display = 'block';
 
-            // 2. ROBUSNO IZVLAČENJE NASLOVA: Tražimo liniju s "DETALJ"
+            // 2. IZVLAČENJE NASLOVA ZA EKRAN (npr. KROV ili RIGIPS)
             let razlog = "OBAVEZA";
-            let linije = cistiOpis.split('\n');
+            let linije = originalniTekst.replace(/\*/g, "").split('\n');
 
             for (let linija of linije) {
                 if (linija.toUpperCase().includes("DETALJ")) {
@@ -89,12 +90,12 @@
                 }
             }
 
-            if (!razlog || razlog === "") razlog = "OBAVEZA";
-
             const vrijemeMatch = cistiDatum.match(/\d{2}:\d{2}/);
             const vrijemePrikaz = vrijemeMatch ? vrijemeMatch[0] : "";
 
-            // 3. ISPIS NA EKRAN
+            // 3. PRIPREMA TEKSTA ZA ALERT (da ispiše sve podatke)
+            let tekstZaAlert = originalniTekst.replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, "\\n");
+
             const noviAlarm = document.createElement('div');
             noviAlarm.style.borderBottom = "1px solid #f56565";
             noviAlarm.style.padding = "10px 0";
@@ -105,7 +106,7 @@
                     🚨 PODSJETNIK: ${razlog} (u ${vrijemePrikaz})
                 </div>
                 <a class="alarm-link" style="color: #63b3ed; cursor: pointer; text-decoration: underline; font-size: 0.85rem;" 
-                   onclick="alert('DETALJI:\\n${cistiOpis.replace(/'/g, "\\'").replace(/\n/g, "\\n")}');">
+                   onclick="alert('DETALJI IZVJEŠTAJA:\\n\\n${tekstZaAlert}');">
                    Prikaži detalje izvještaja
                 </a>
             `;
