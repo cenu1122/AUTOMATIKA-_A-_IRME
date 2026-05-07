@@ -42,6 +42,7 @@
 
     window.onload = ucitajSastankeBezKesa;
 
+    // --- 1. DOHVAĆANJE PODATAKA ---
     async function ucitajSastankeBezKesa() {
         const urlSaZastitom = scriptURL + "?user_id=" + trenutniKorisnik + "&nocache=" + new Date().getTime();
         try {
@@ -55,20 +56,23 @@
             if (sastanci && sastanci.length > 0) {
                 sastanci.forEach(s => prikaziViseAlarma(s.samo_datum, s.ai_analiza));
             }
-        } catch (e) { console.error("Greška:", e); }
+        } catch (e) { console.error("Greška pri učitavanju:", e); }
     }
 
+    // --- 2. PRIKAZ ALARMA ---
     function prikaziViseAlarma(datumString, kompletanTekst) {
-        // Čistimo sve zvjezdice
-        let cistiDatum = datumString.replace(/\*/g, "").replace("1. DATUM:", "").trim();
+        // Napredno čišćenje: brišemo zvjezdice, "1. DATUM", "1*" i sl.
+        let cistiDatum = datumString.replace(/\*/g, "")
+                                   .replace(/1[\.\*]\s*DATUM:/i, "")
+                                   .trim();
         let cistiOpis = kompletanTekst.replace(/\*/g, "");
 
         const rok = new Date(cistiDatum);
         const sad = new Date();
         const razlikaSati = (rok - sad) / (1000 * 60 * 60);
 
-        // Prikazuj samo ako je u budućnosti unutar 24h
-        if (razlikaSati > 0 && razlikaSati <= 24) {
+        // Prikaz ako je u idućih 48h
+        if (razlikaSati > 0 && razlikaSati <= 48) {
             const container = document.getElementById('alarm-container');
             container.style.display = 'block';
 
@@ -97,10 +101,13 @@
         }
     }
 
+    // --- 3. SLANJE IZVJEŠTAJA ---
     async function posaljiIzvjestaj() {
         const tekst = document.getElementById('output').value.trim();
         const btn = document.getElementById('sendBtn');
-        if(!tekst) return;
+        const label = document.getElementById('successLabel');
+
+        if(!tekst) { alert("Prvo unesite tekst!"); return; }
 
         btn.disabled = true;
         btn.innerText = "Spremanje...";
@@ -111,11 +118,17 @@
                 mode: 'no-cors', 
                 body: JSON.stringify({ user_id: trenutniKorisnik, tekst: tekst })
             });
-            document.getElementById('successLabel').style.display = "block";
+
+            label.style.display = "block";
+            btn.innerText = "POSLANO";
+            
             setTimeout(() => {
-                location.reload(); // Osvježava sve i učitava nove alarme
+                location.reload(); // Osvježi stranicu da povuče nove alarme
             }, 2000);
-        } catch (e) { alert("Greška!"); btn.disabled = false; }
+        } catch (e) {
+            alert("Greška pri slanju!");
+            btn.disabled = false;
+        }
     }
 </script>
 </body>
