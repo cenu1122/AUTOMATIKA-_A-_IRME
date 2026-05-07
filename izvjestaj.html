@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Alarma - Live</title>
+    <title>Sistem Alarma - AI Analiza</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -17,18 +17,20 @@
 
     <header class="mb-10 border-b border-zinc-800 pb-4">
         <h1 class="text-2xl font-black text-red-600 tracking-tighter uppercase italic">
-            SISTEM ALARMA V3
+            AI ANALIZA - LIVE
         </h1>
 
         <p class="text-[10px] text-zinc-500 uppercase">
-            Live izvještaj iz baze
+            Prikaz samo kolone AI ANALIZA
         </p>
     </header>
 
     <div id="lista-alarma" class="space-y-6">
+
         <p class="text-zinc-700 text-center py-20 animate-pulse text-xs uppercase">
             Učitavanje podataka...
         </p>
+
     </div>
 
     <script>
@@ -48,40 +50,27 @@
 
                 // PRAZNA BAZA
                 if (!data || data.length === 0) {
+
                     lista.innerHTML = `
                         <div class="text-center text-zinc-500 py-20 uppercase text-sm">
                             Baza je prazna.
                         </div>
                     `;
+
                     return;
                 }
 
                 // NAJNOVIJI PRVI
                 const prikaz = data.reverse();
 
+                // OBRIŠI STARI SADRŽAJ
                 lista.innerHTML = '';
 
+                // PETLJA
                 prikaz.forEach((red, index) => {
 
-                    // AUTOMATSKI IZLISTAJ SVA POLJA IZ TABELE
-                    let svaPolja = '';
-
-                    Object.entries(red).forEach(([kljuc, vrijednost]) => {
-
-                        svaPolja += `
-                            <div class="border-b border-zinc-800 py-2">
-                                
-                                <div class="text-[10px] uppercase text-red-500 font-bold mb-1 tracking-wider">
-                                    ${kljuc}
-                                </div>
-
-                                <div class="text-sm text-zinc-300 break-words">
-                                    ${vrijednost || '-'}
-                                </div>
-
-                            </div>
-                        `;
-                    });
+                    // SAMO KOLONA "AI ANALIZA"
+                    const aiAnaliza = red["AI ANALIZA"] || "-";
 
                     // KARTICA
                     const kartica = document.createElement('div');
@@ -100,7 +89,7 @@
                         <div class="flex justify-between items-center mb-5">
 
                             <div class="text-xs font-black uppercase text-red-600">
-                                Alarm #${index + 1}
+                                AI ANALIZA #${index + 1}
                             </div>
 
                             <div class="text-[10px] text-zinc-600">
@@ -109,8 +98,16 @@
 
                         </div>
 
-                        <div class="space-y-2">
-                            ${svaPolja}
+                        <div class="border border-zinc-800 rounded-xl p-4 bg-black">
+
+                            <div class="text-[10px] uppercase text-red-500 font-bold mb-2 tracking-wider">
+                                AI ANALIZA
+                            </div>
+
+                            <div class="text-sm text-zinc-300 break-words leading-relaxed whitespace-pre-wrap">
+                                ${aiAnaliza}
+                            </div>
+
                         </div>
 
                     `;
@@ -131,10 +128,10 @@
             }
         }
 
-        // UCITAJ ODMAH
+        // UČITAJ ODMAH
         ucitajPodatke();
 
-        // REFRESH SVAKIH 10s
+        // REFRESH SVAKIH 10 SEKUNDI
         setInterval(ucitajPodatke, 10000);
 
     </script>
