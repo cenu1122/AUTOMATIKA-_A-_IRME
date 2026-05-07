@@ -3,77 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Alarma - Live Report</title>
+    <title>Sistem Alarma - Live</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-black text-white p-4 font-sans min-h-screen">
 
-    <a href="index.html" class="block w-full bg-zinc-900 border border-zinc-700 text-center py-4 rounded-xl mb-8 font-bold uppercase tracking-widest hover:bg-zinc-800 transition-all">
-        ← NAZAD NA UNOS (POČETNA)
+    <a href="index.html" class="block w-full bg-zinc-900 border border-zinc-700 text-center py-4 rounded-xl mb-8 font-bold uppercase tracking-widest">
+        ← NAZAD NA UNOS
     </a>
 
-    <header class="flex justify-between items-center mb-10 border-b border-zinc-800 pb-4">
-        <div>
-            <h1 class="text-2xl font-black text-red-600 tracking-tighter uppercase italic">SISTEM ALARMA V3</h1>
-            <p class="text-[10px] text-zinc-500 uppercase tracking-widest">Aktivni izvještaj iz baze podataka</p>
-        </div>
-        <div class="flex items-center gap-2 bg-red-900/20 px-3 py-1 rounded-full border border-red-900/50">
-            <span class="w-2 h-2 bg-red-600 rounded-full animate-pulse"></span>
-            <span class="text-[10px] font-bold text-red-500 uppercase">Live</span>
-        </div>
+    <header class="mb-10 border-b border-zinc-800 pb-4">
+        <h1 class="text-2xl font-black text-red-600 tracking-tighter uppercase italic">SISTEM ALARMA V3</h1>
+        <p class="text-[10px] text-zinc-500 uppercase">Live izvještaj iz baze</p>
     </header>
 
-    <div id="alarm-lista" class="space-y-6">
+    <div id="lista-alarma" class="space-y-6">
         <p class="text-zinc-700 text-center py-20 animate-pulse text-xs uppercase">Učitavanje podataka...</p>
     </div>
 
     <script>
-        async function osvjeziAlarme() {
+        async function ucitajPodatke() {
             try {
-                // Dodajemo timestamp da izbjegnemo stare (cached) podatke
+                // Uzimamo podatke direktno sa tvog URL-a
                 const r = await fetch('https://sheetdb.io/api/v1/rjhvmuxlef6zk?t=' + Date.now());
                 const data = await r.json();
-                const lista = document.getElementById('alarm-lista');
+                const lista = document.getElementById('lista-alarma');
                 
                 if(!data || data.length === 0) {
-                    lista.innerHTML = "<p class='text-center text-zinc-600 uppercase text-xs'>Baza podataka je trenutno prazna.</p>";
+                    lista.innerHTML = "Baza je prazna.";
                     return;
                 }
 
-                // Pokaži zadnjih 20 zapisa, najnoviji na vrh
-                const prikaz = data.slice(-20).reverse();
+                // Okrećemo podatke da najnoviji bude prvi
+                const prikaz = data.reverse();
                 lista.innerHTML = '';
 
                 prikaz.forEach(red => {
-                    // KORISTIMO TAČNE NAZIVE IZ TVOG API-JA
-                    const datum = red.Datum || "Nema datuma";
-                    const korisnik = red.Korisnik || "Nepoznato";
-                    const naslov = red.Tekst || "Bez naslova";
-                    const analiza = red["AI analiza"] || "Nema analize";
+                    // KORISTIMO NAZIVE KOJE SMO VIDJELI NA TVOJOJ SLICI
+                    const datum = red["Datum"] || "Nema datuma";
+                    const korisnik = red["Korisnik"] || "Sistem";
+                    const tekst = red["Tekst"] || "Bez naslova";
+                    const analiza = red["AI analiza"] || "Nema detalja";
 
                     const kartica = document.createElement('div');
-                    kartica.className = "bg-zinc-950 border-l-4 border-red-600 p-5 rounded-r-lg shadow-2xl border-y border-r border-zinc-900 mb-6";
+                    kartica.className = "bg-zinc-950 border-l-4 border-red-600 p-5 rounded-r-lg shadow-2xl border border-zinc-900 mb-6 text-left";
                     
                     kartica.innerHTML = `
                         <div class="flex justify-between items-center mb-4">
-                            <span class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded font-black uppercase">USER: ${korisnik}</span>
+                            <span class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded font-black uppercase">${korisnik}</span>
                             <span class="text-[10px] text-zinc-500 font-mono">${datum}</span>
                         </div>
-                        <h2 class="text-xl font-bold text-zinc-100 uppercase mb-4 leading-tight">${naslov}</h2>
-                        <div class="bg-black/80 p-4 rounded border border-zinc-800 text-xs text-zinc-400 font-mono leading-relaxed whitespace-pre-wrap">
-                            <span class="text-red-900 font-bold uppercase block mb-1 text-[9px]">Status/Analiza:</span>
+                        <h2 class="text-xl font-bold text-zinc-100 uppercase mb-4 leading-tight">${tekst}</h2>
+                        <div class="bg-black/80 p-4 rounded border border-zinc-800 text-xs text-zinc-400 font-mono leading-relaxed">
+                            <span class="text-red-900 font-bold uppercase block mb-1 text-[9px]">Detalji kvara i analiza:</span>
                             ${analiza}
                         </div>
                     `;
                     lista.appendChild(kartica);
                 });
             } catch(e) {
-                document.getElementById('alarm-lista').innerHTML = "<p class='text-red-900 text-center text-xs'>Greška pri povezivanju sa API-jem.</p>";
+                document.getElementById('lista-alarma').innerHTML = "Greška pri učitavanju.";
             }
         }
 
-        osvjeziAlarme();
-        setInterval(osvjeziAlarme, 15000); // Osvježava svakih 15 sekundi
+        // Pokreni odmah i osvježavaj svakih 10 sekundi
+        ucitajPodatke();
+        setInterval(ucitajPodatke, 10000);
     </script>
 </body>
 </html>
