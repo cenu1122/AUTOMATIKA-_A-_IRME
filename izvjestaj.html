@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Alarma - Izvještaj</title>
+    <title>Sistem Alarma - Live Report</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes pulse-red {
@@ -19,27 +19,27 @@
     <div class="max-w-2xl mx-auto p-4 pb-20">
         
         <div class="mb-6">
-            <button onclick="history.back()" class="w-full flex items-center justify-center gap-2 bg-zinc-900 border border-zinc-700 hover:bg-red-950/30 text-white py-4 rounded-xl transition-all shadow-lg active:scale-95">
+            <button onclick="window.location.href='index.html'" class="w-full flex items-center justify-center gap-2 bg-zinc-900 border border-zinc-700 hover:bg-red-950/30 text-white py-4 rounded-xl transition-all shadow-lg">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                <span class="text-sm font-bold uppercase tracking-widest">Nazad na unos (Formu)</span>
+                <span class="text-sm font-bold uppercase tracking-widest">Nazad na Glavni ekran</span>
             </button>
         </div>
 
         <header class="flex justify-between items-center mb-6 border-b border-red-900/50 pb-4">
             <div>
                 <h1 class="text-xl font-bold text-red-500 uppercase tracking-tighter">Sistem Alarma v3</h1>
-                <p class="text-[10px] text-gray-500 uppercase">Lista zadnjih aktivnosti iz baze</p>
+                <p class="text-[10px] text-gray-500 uppercase">Aktivnosti u zadnjih 24h</p>
             </div>
             <div class="flex items-center gap-2">
                 <span class="w-2 h-2 bg-red-600 rounded-full pulse"></span>
-                <span class="text-[10px] font-bold text-red-600 uppercase">Live</span>
+                <span class="text-[10px] font-bold text-red-600 uppercase font-mono">Live</span>
             </div>
         </header>
 
         <div id="alarm-container" class="space-y-4 text-left">
-            <div class="text-center py-20 text-gray-600 animate-pulse text-sm">Provjera baze podataka...</div>
+            <div class="text-center py-20 text-gray-600 animate-pulse text-sm">Skeniranje baze...</div>
         </div>
     </div>
 
@@ -52,33 +52,47 @@
                 const data = await response.json();
                 const container = document.getElementById('alarm-container');
 
-                if (!data || data.length === 0) {
-                    container.innerHTML = `<div class="text-center p-10 text-gray-600 italic">Baza je prazna.</div>`;
-                    return;
+                // Trenutno vrijeme i granica od 24h
+                const sad = new Date();
+                const granica24h = new Date(sad.getTime() - (24 * 60 * 60 * 1000));
+
+                // Funkcija za vađenje datuma iz tvog teksta "1. **DATUM**: May 8, 2026..."
+                function extractDate(text) {
+                    if (!text) return null;
+                    const match = text.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},\s+\d{4}\s+\d{2}:\d{2}/);
+                    return match ? new Date(match[0]) : null;
                 }
 
-                // Uzimamo zadnjih 50 zapisa bez filtera datuma da bi sigurno vidjeli podatke
-                const prikazaniAlarmi = data.slice(-50).reverse();
+                // Filtriranje: Uzmi samo one koji su unutar 24h ILI zadnjih 5 ako nema nijednog novog
+                let filtrirano = data.filter(item => {
+                    const d = extractDate(item.D || Object.values(item)[3]);
+                    return d && d >= granica24h;
+                });
+
+                // Ako je lista prazna (nema ništa u zadnjih 24h), pokaži zadnjih 5 čisto da nije prazno
+                if (filtrirano.length === 0) {
+                    filtrirano = data.slice(-5);
+                }
 
                 container.innerHTML = '';
-                prikazaniAlarmi.forEach(alarm => {
-                    const tekstD = alarm.D || Object.values(alarm)[3] || "Nema podataka";
+
+                filtrirano.reverse().forEach(alarm => {
+                    const tekstD = alarm.D || Object.values(alarm)[3] || "";
                     const status = alarm.C || Object.values(alarm)[2] || "INFO";
-                    const id = alarm.B || Object.values(alarm)[1] || "---";
+                    const id = alarm.B || Object.values(alarm)[1] || "SISTEM";
 
                     const card = document.createElement('div');
-                    card.className = "bg-zinc-950 border border-zinc-900 p-4 rounded-lg relative mb-4 shadow-xl cursor-pointer hover:border-red-600 transition-all";
+                    card.className = "bg-zinc-950 border border-zinc-900 p-4 rounded-lg relative mb-4 shadow-xl cursor-pointer hover:border-red-600";
                     
-                    // Klik na karticu izbacuje razlog iz kolone C
-                    card.onclick = () => alert("RAZLOG/DETALJI:\n\n" + status);
+                    card.onclick = () => alert("DETALJI:\n\n" + status);
 
                     card.innerHTML = `
                         <div class="absolute top-0 left-0 w-1 h-full bg-red-600"></div>
                         <div class="flex justify-between mb-2">
-                            <span class="text-[10px] bg-red-950 text-red-500 px-2 py-0.5 rounded font-bold uppercase">ID: ${id}</span>
+                            <span class="text-[10px] bg-red-950 text-red-500 px-2 py-0.5 rounded font-bold">ID: ${id}</span>
                         </div>
-                        <h2 class="text-white font-bold text-sm uppercase tracking-tight">${status}</h2>
-                        <div class="text-[11px] text-zinc-400 font-mono mt-3 bg-black p-3 rounded border border-zinc-900/50 leading-relaxed whitespace-pre-line">
+                        <h2 class="text-white font-bold text-sm uppercase">${status.substring(0, 40)}...</h2>
+                        <div class="text-[11px] text-zinc-400 font-mono mt-3 bg-black p-3 rounded border border-zinc-900/50 whitespace-pre-line leading-relaxed">
                             ${tekstD}
                         </div>
                     `;
@@ -86,12 +100,12 @@
                 });
 
             } catch (err) {
-                document.getElementById('alarm-container').innerHTML = `<div class="text-red-600 text-center text-xs">Greška u konekciji.</div>`;
+                container.innerHTML = `<div class="text-red-600 text-center text-xs">Greška u povezivanju.</div>`;
             }
         }
 
         osvjeziAlarme();
-        setInterval(osvjeziAlarme, 20000); // Osvježi svakih 20 sekundi
+        setInterval(osvjeziAlarme, 30000);
     </script>
 </body>
-</html>15222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222
+</html>
