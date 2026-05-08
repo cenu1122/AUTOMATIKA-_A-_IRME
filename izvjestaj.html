@@ -2,16 +2,16 @@
 <html lang="hr">
 <head>
     <meta charset="UTF-8">
-    <title>Sistem Alarma - Svi Izvještaji</title>
+    <title>Sistem Alarma - Google Sheets</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-black text-white p-6 font-sans">
 
     <div class="max-w-4xl mx-auto">
-        <h1 class="text-red-600 font-black text-3xl italic mb-8 uppercase tracking-tighter">SVI ZAPISI IZ BAZE</h1>
+        <h1 class="text-red-600 font-black text-3xl italic mb-8 uppercase tracking-tighter">IZVJEŠTAJI IZ GOOGLE TABELE</h1>
         
         <div id="svi-izvjestaji" class="space-y-6">
-            <p class="text-zinc-500 animate-pulse uppercase text-xs">Povezivanje sa bazom...</p>
+            <p class="text-zinc-500 animate-pulse uppercase text-xs">Učitavam podatke iz tabele...</p>
         </div>
     </div>
 
@@ -19,29 +19,29 @@
         async function ucitajSvePodatke() {
             const kontejner = document.getElementById('svi-izvjestaji');
             try {
-                // Pozivamo tvoj SheetDB API
+                // Tvoj SheetDB API link
                 const odgovor = await fetch('https://sheetdb.io/api/v1/rjhvmuxlef6zk?t=' + Date.now());
                 const podaci = await odgovor.json();
 
                 if (!podaci || podaci.length === 0) {
-                    kontejner.innerHTML = "Tabela je prazna.";
+                    kontejner.innerHTML = "<p class='text-zinc-500'>Tabela je trenutno prazna.</p>";
                     return;
                 }
 
-                // Okrećemo redoslijed tako da najnoviji unosi (kao taj "Reduktor") budu na vrhu
+                // Najnoviji unosi idu prvi
                 const poredaniPodaci = podaci.reverse();
                 
                 kontejner.innerHTML = '';
 
                 poredaniPodaci.forEach((red, index) => {
-                    // Uzimamo podatke po ključevima koje smo vidjeli u JSON-u
+                    // TAČNI NAZIVI IZ TVOJE SLIKE:
                     const datum = red["Datum"] || "Nepoznato";
-                    const korisnik = red["Korisnik"] || "101";
-                    const tekst = red["Tekst"] || "Bez naslova";
-                    const analiza = red["AI analiza"] || "Nema detalja";
+                    const korisnik = red["Korisnik ID"] || "101"; // Dodano "ID" jer tako piše na slici
+                    const tekst = red["Tekst izvještaja"] || "Bez naslova"; // Dodano "izvještaja"
+                    const analiza = red["AI Analiza"] || "Nema detalja";
 
                     const kartica = document.createElement('div');
-                    kartica.className = "bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-xl hover:border-red-600/50 transition duration-300";
+                    kartica.className = "bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-xl hover:border-red-600/50 transition duration-300 mb-6";
                     
                     kartica.innerHTML = `
                         <div class="flex justify-between items-start mb-4 border-b border-zinc-800 pb-2">
@@ -50,30 +50,32 @@
                         </div>
                         
                         <div class="mb-4">
-                            <h2 class="text-zinc-400 text-[10px] uppercase font-bold tracking-widest mb-1">Status Sastanka:</h2>
+                            <h2 class="text-zinc-400 text-[10px] uppercase font-bold tracking-widest mb-1">Status / Naslov:</h2>
                             <p class="text-xl font-bold text-white uppercase italic">${tekst}</p>
                         </div>
 
                         <div class="bg-black/40 p-4 rounded-xl border border-zinc-800/50">
-                            <h3 class="text-red-600/70 text-[9px] uppercase font-black mb-2 tracking-widest italic">Detalji iz tabele:</h3>
+                            <h3 class="text-red-600/70 text-[9px] uppercase font-black mb-2 tracking-widest italic">AI Analiza kvara:</h3>
                             <p class="text-sm text-zinc-300 leading-relaxed font-mono whitespace-pre-line">${analiza}</p>
                         </div>
 
                         <div class="mt-4 text-right">
-                            <span class="text-[9px] text-zinc-700 font-bold uppercase tracking-widest">ID Korisnika: ${korisnik}</span>
+                            <span class="text-[9px] text-zinc-700 font-bold uppercase tracking-widest">Korisnik ID: ${korisnik}</span>
                         </div>
                     `;
                     kontejner.appendChild(kartica);
                 });
 
             } catch (greska) {
-                kontejner.innerHTML = "<p class='text-red-600 uppercase font-black'>Greška pri učitavanju: " + greska.message + "</p>";
+                kontejner.innerHTML = "<p class='text-red-600 uppercase font-black'>Greška pri povezivanju: " + greska.message + "</p>";
             }
         }
 
+        // Pokreni odmah
         ucitajSvePodatke();
-        // Osvježava automatski svakih 30 sekundi da vidiš nove unose iz tabele
-        setInterval(ucitajSvePodatke, 30000);
+        
+        // Osvježi svakih 20 sekundi
+        setInterval(ucitajSvePodatke, 20000);
     </script>
 </body>
 </html>
