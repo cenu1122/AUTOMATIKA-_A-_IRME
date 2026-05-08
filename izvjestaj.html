@@ -2,25 +2,27 @@
 <html lang="hr">
 <head>
     <meta charset="UTF-8">
-    <title>Sistem Alarma - Upis i Prikaz</title>
+    <title>NH AI - Upis i Pregled</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-black text-white p-6 font-sans">
 
     <div class="max-w-4xl mx-auto">
         <div class="bg-zinc-900 border border-red-600/30 p-6 rounded-2xl mb-12 shadow-2xl">
-            <h2 class="text-red-600 font-black text-xl uppercase italic mb-4">Novi Upis Alarma</h2>
+            <h2 class="text-red-600 font-black text-xl uppercase italic mb-4">Novi Upis u Tabelu</h2>
             <form id="alarm-forma" class="space-y-4">
                 <div>
-                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Tekst izvještaja (Naslov):</label>
-                    <input type="text" id="naslov" required class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none transition">
+                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Naslov izvještaja:</label>
+                    <input type="text" id="naslov" required placeholder="npr. Servis reduktora" 
+                           class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none transition text-white">
                 </div>
                 <div>
-                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">AI Analiza (Detalji):</label>
-                    <textarea id="detalji" rows="3" required class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none transition"></textarea>
+                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Detaljna Analiza:</label>
+                    <textarea id="detalji" rows="3" required placeholder="Opiši kvar ili status..." 
+                              class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none transition text-white"></textarea>
                 </div>
-                <button type="submit" id="btn-slanje" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-3 rounded-xl uppercase italic transition duration-300">
-                    Pošalji u Tabelu
+                <button type="submit" id="btn-slanje" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-red-600/20">
+                    POŠALJI U GOOGLE TABELU
                 </button>
             </form>
         </div>
@@ -29,85 +31,93 @@
 
         <h1 class="text-red-600 font-black text-3xl italic mb-8 uppercase tracking-tighter">SVI ZAPISI IZ BAZE</h1>
         <div id="svi-izvjestaji" class="space-y-6">
-            <p class="text-zinc-500 animate-pulse uppercase text-xs">Učitavam...</p>
+            <p class="text-zinc-500 animate-pulse uppercase text-xs text-center">Učitavam podatke...</p>
         </div>
     </div>
 
     <script>
         const API_URL = 'https://sheetdb.io/api/v1/rjhvmuxlef6zk';
 
-        // 1. FUNKCIJA ZA SLANJE PODATAKA
+        // 1. SLANJE PODATAKA U TABELU
         document.getElementById('alarm-forma').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-slanje');
-            btn.innerText = "SLANJE...";
+            const naslov = document.getElementById('naslov').value;
+            const detalji = document.getElementById('detalji').value;
+
+            btn.innerText = "SLANJE U TOKU...";
             btn.disabled = true;
 
-            const noviZapis = {
+            const noviRed = {
                 "Datum": new Date().toLocaleString('hr-BA'),
                 "Korisnik ID": "101",
-                "Tekst izvještaja": document.getElementById('naslov').value,
-                "AI Analiza": document.getElementById('detalji').value
+                "Tekst izvještaja": naslov,
+                "AI Analiza": detalji
             };
 
             try {
-                const response = await fetch(API_URL, {
+                const res = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: [noviZapis] })
+                    body: JSON.stringify({ data: [noviRed] })
                 });
 
-                if(response.ok) {
-                    alert("Uspješno poslano!");
+                if(res.ok) {
+                    alert("Podaci uspješno upisani!");
                     document.getElementById('alarm-forma').reset();
-                    ucitajSvePodatke(); // Odmah osvježi listu
+                    await ucitajSvePodatke(); // Odmah osvježi listu ispod
                 }
             } catch (err) {
-                alert("Greška pri slanju!");
+                alert("Greška pri slanju: " + err.message);
             } finally {
-                btn.innerText = "POŠALJI U TABELU";
+                btn.innerText = "POŠALJI U GOOGLE TABELU";
                 btn.disabled = false;
             }
         });
 
-        // 2. FUNKCIJA ZA UCITAVANJE (POPRAVLJENA)
+        // 2. UCITAVANJE PODATAKA (SA FIXOM ZA REVERSE GREŠKU)
         async function ucitajSvePodatke() {
             const kontejner = document.getElementById('svi-izvjestaji');
             try {
                 const odgovor = await fetch(API_URL + '?t=' + Date.now());
                 const podaci = await odgovor.json();
 
-                // PROVJERA: Da li su podaci stvarno lista (Array)
-                if (!Array.isArray(podaci) || podaci.length === 0) {
-                    kontejner.innerHTML = "<p class='text-zinc-500'>Tabela je prazna ili API ne odgovara.</p>";
+                // SIGURNOSNA PROVJERA: Ako podaci nisu lista, napravi praznu listu
+                const listaPodataka = Array.isArray(podaci) ? podaci : [];
+
+                if (listaPodataka.length === 0) {
+                    kontejner.innerHTML = "<p class='text-zinc-600 text-center uppercase text-xs'>Tabela je trenutno prazna.</p>";
                     return;
                 }
 
-                const poredaniPodaci = [...podaci].reverse();
+                // Okrećemo redoslijed: Najnoviji na vrh
+                const poredani = [...listaPodataka].reverse();
+                
                 kontejner.innerHTML = '';
-
-                poredaniPodaci.forEach((red, index) => {
+                poredani.forEach((red, index) => {
                     const kartica = document.createElement('div');
-                    kartica.className = "bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-xl mb-4";
+                    kartica.className = "bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-xl hover:border-red-600/30 transition duration-500";
+                    
                     kartica.innerHTML = `
-                        <div class="flex justify-between border-b border-zinc-800 pb-2 mb-4">
-                            <span class="text-red-500 font-black text-xs">ZAPIS #${podaci.length - index}</span>
-                            <span class="text-zinc-500 text-[10px]">${red["Datum"] || ''}</span>
+                        <div class="flex justify-between items-start mb-4 border-b border-zinc-800 pb-2">
+                            <span class="text-red-500 font-black text-[10px] uppercase italic">ZAPIS #${listaPodataka.length - index}</span>
+                            <span class="text-zinc-600 font-mono text-[10px]">${red["Datum"] || 'Bez datuma'}</span>
                         </div>
-                        <h2 class="text-white font-bold uppercase italic text-lg mb-2">${red["Tekst izvještaja"] || 'Nema naslova'}</h2>
-                        <div class="bg-black/50 p-4 rounded-lg border border-zinc-800/50">
-                            <p class="text-zinc-400 text-sm font-mono whitespace-pre-line">${red["AI Analiza"] || 'Nema analize'}</p>
+                        <h3 class="text-white font-black uppercase italic text-xl mb-3">${red["Tekst izvještaja"] || 'Bez naslova'}</h3>
+                        <div class="bg-black/60 p-4 rounded-xl border border-zinc-800/50">
+                            <p class="text-zinc-400 text-sm font-mono whitespace-pre-line">${red["AI Analiza"] || 'Nema detalja'}</p>
                         </div>
                     `;
                     kontejner.appendChild(kartica);
                 });
-            } catch (greska) {
-                kontejner.innerHTML = "<p class='text-red-600 uppercase font-black'>Greška: " + greska.message + "</p>";
+            } catch (err) {
+                kontejner.innerHTML = `<p class="text-red-600 font-bold text-center">GREŠKA: ${err.message}</p>`;
             }
         }
 
+        // Pokreni odmah i postavi automatsko osvježavanje svakih 30s
         ucitajSvePodatke();
-        setInterval(ucitajSvePodatke, 20000);
+        setInterval(ucitajSvePodatke, 30000);
     </script>
 </body>
 </html>
