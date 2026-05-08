@@ -2,79 +2,111 @@
 <html lang="hr">
 <head>
     <meta charset="UTF-8">
-    <title>Sistem Alarma - Google Sheets</title>
+    <title>Sistem Alarma - Upis i Prikaz</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-black text-white p-6 font-sans">
 
     <div class="max-w-4xl mx-auto">
-        <h1 class="text-red-600 font-black text-3xl italic mb-8 uppercase tracking-tighter">IZVJEŠTAJI IZ GOOGLE TABELE</h1>
-        
+        <div class="bg-zinc-900 border border-red-600/30 p-6 rounded-2xl mb-12 shadow-2xl">
+            <h2 class="text-red-600 font-black text-xl uppercase italic mb-4">Novi Upis Alarma</h2>
+            <form id="alarm-forma" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Tekst izvještaja (Naslov):</label>
+                    <input type="text" id="naslov" required class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none transition">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">AI Analiza (Detalji):</label>
+                    <textarea id="detalji" rows="3" required class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none transition"></textarea>
+                </div>
+                <button type="submit" id="btn-slanje" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-3 rounded-xl uppercase italic transition duration-300">
+                    Pošalji u Tabelu
+                </button>
+            </form>
+        </div>
+
+        <hr class="border-zinc-800 mb-12">
+
+        <h1 class="text-red-600 font-black text-3xl italic mb-8 uppercase tracking-tighter">SVI ZAPISI IZ BAZE</h1>
         <div id="svi-izvjestaji" class="space-y-6">
-            <p class="text-zinc-500 animate-pulse uppercase text-xs">Učitavam podatke iz tabele...</p>
+            <p class="text-zinc-500 animate-pulse uppercase text-xs">Učitavam...</p>
         </div>
     </div>
 
     <script>
+        const API_URL = 'https://sheetdb.io/api/v1/rjhvmuxlef6zk';
+
+        // 1. FUNKCIJA ZA SLANJE PODATAKA
+        document.getElementById('alarm-forma').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-slanje');
+            btn.innerText = "SLANJE...";
+            btn.disabled = true;
+
+            const noviZapis = {
+                "Datum": new Date().toLocaleString('hr-BA'),
+                "Korisnik ID": "101",
+                "Tekst izvještaja": document.getElementById('naslov').value,
+                "AI Analiza": document.getElementById('detalji').value
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: [noviZapis] })
+                });
+
+                if(response.ok) {
+                    alert("Uspješno poslano!");
+                    document.getElementById('alarm-forma').reset();
+                    ucitajSvePodatke(); // Odmah osvježi listu
+                }
+            } catch (err) {
+                alert("Greška pri slanju!");
+            } finally {
+                btn.innerText = "POŠALJI U TABELU";
+                btn.disabled = false;
+            }
+        });
+
+        // 2. FUNKCIJA ZA UCITAVANJE (POPRAVLJENA)
         async function ucitajSvePodatke() {
             const kontejner = document.getElementById('svi-izvjestaji');
             try {
-                // Tvoj SheetDB API link
-                const odgovor = await fetch('https://sheetdb.io/api/v1/rjhvmuxlef6zk?t=' + Date.now());
+                const odgovor = await fetch(API_URL + '?t=' + Date.now());
                 const podaci = await odgovor.json();
 
-                if (!podaci || podaci.length === 0) {
-                    kontejner.innerHTML = "<p class='text-zinc-500'>Tabela je trenutno prazna.</p>";
+                // PROVJERA: Da li su podaci stvarno lista (Array)
+                if (!Array.isArray(podaci) || podaci.length === 0) {
+                    kontejner.innerHTML = "<p class='text-zinc-500'>Tabela je prazna ili API ne odgovara.</p>";
                     return;
                 }
 
-                // Najnoviji unosi idu prvi
-                const poredaniPodaci = podaci.reverse();
-                
+                const poredaniPodaci = [...podaci].reverse();
                 kontejner.innerHTML = '';
 
                 poredaniPodaci.forEach((red, index) => {
-                    // TAČNI NAZIVI IZ TVOJE SLIKE:
-                    const datum = red["Datum"] || "Nepoznato";
-                    const korisnik = red["Korisnik ID"] || "101"; // Dodano "ID" jer tako piše na slici
-                    const tekst = red["Tekst izvještaja"] || "Bez naslova"; // Dodano "izvještaja"
-                    const analiza = red["AI Analiza"] || "Nema detalja";
-
                     const kartica = document.createElement('div');
-                    kartica.className = "bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-xl hover:border-red-600/50 transition duration-300 mb-6";
-                    
+                    kartica.className = "bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-xl mb-4";
                     kartica.innerHTML = `
-                        <div class="flex justify-between items-start mb-4 border-b border-zinc-800 pb-2">
-                            <span class="text-red-500 font-black text-xs uppercase italic">ZAPIS #${podaci.length - index}</span>
-                            <span class="text-zinc-500 font-mono text-[10px]">${datum}</span>
+                        <div class="flex justify-between border-b border-zinc-800 pb-2 mb-4">
+                            <span class="text-red-500 font-black text-xs">ZAPIS #${podaci.length - index}</span>
+                            <span class="text-zinc-500 text-[10px]">${red["Datum"] || ''}</span>
                         </div>
-                        
-                        <div class="mb-4">
-                            <h2 class="text-zinc-400 text-[10px] uppercase font-bold tracking-widest mb-1">Status / Naslov:</h2>
-                            <p class="text-xl font-bold text-white uppercase italic">${tekst}</p>
-                        </div>
-
-                        <div class="bg-black/40 p-4 rounded-xl border border-zinc-800/50">
-                            <h3 class="text-red-600/70 text-[9px] uppercase font-black mb-2 tracking-widest italic">AI Analiza kvara:</h3>
-                            <p class="text-sm text-zinc-300 leading-relaxed font-mono whitespace-pre-line">${analiza}</p>
-                        </div>
-
-                        <div class="mt-4 text-right">
-                            <span class="text-[9px] text-zinc-700 font-bold uppercase tracking-widest">Korisnik ID: ${korisnik}</span>
+                        <h2 class="text-white font-bold uppercase italic text-lg mb-2">${red["Tekst izvještaja"] || 'Nema naslova'}</h2>
+                        <div class="bg-black/50 p-4 rounded-lg border border-zinc-800/50">
+                            <p class="text-zinc-400 text-sm font-mono whitespace-pre-line">${red["AI Analiza"] || 'Nema analize'}</p>
                         </div>
                     `;
                     kontejner.appendChild(kartica);
                 });
-
             } catch (greska) {
-                kontejner.innerHTML = "<p class='text-red-600 uppercase font-black'>Greška pri povezivanju: " + greska.message + "</p>";
+                kontejner.innerHTML = "<p class='text-red-600 uppercase font-black'>Greška: " + greska.message + "</p>";
             }
         }
 
-        // Pokreni odmah
         ucitajSvePodatke();
-        
-        // Osvježi svakih 20 sekundi
         setInterval(ucitajSvePodatke, 20000);
     </script>
 </body>
