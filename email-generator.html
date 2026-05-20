@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NH AI - Email Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white p-6 font-sans">
+
+    <div class="max-w-4xl mx-auto">
+        
+        <div class="flex flex-col md:flex-row justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-2xl mb-6 gap-4">
+            <div class="text-center md:text-left">
+                <span class="text-[10px] uppercase text-zinc-500 font-bold block">Prijavljeni klijent:</span>
+                <h2 id="firma-naziv-prikaz" class="text-orange-500 font-black text-xl uppercase italic">Učitavanje...</h2>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-center">
+                <select onchange="location = this.value;" class="bg-zinc-900 border border-zinc-800 text-white text-xs font-bold p-2.5 rounded-xl outline-none cursor-pointer focus:border-orange-500">
+                    <option value="izvjestaj.html">📋 Pregled Izvještaja</option>
+                    <option value="ugovori.html">🤖 AI Generator Ugovora</option>
+                    <option value="cv-generator.html">📄 AI CV / Biografija Generator</option>
+                    <option value="email-generator.html" selected>✉️ AI Email / Pismo Generator</option>
+                </select>
+
+                <button onclick="pokreniAlarm()" class="bg-red-600 hover:bg-red-700 text-white font-black py-2.5 px-4 rounded-xl text-xs uppercase italic transition shadow-lg shadow-red-600/20">
+                    🚨 Hitan Alarm
+                </button>
+
+                <button onclick="odjaviSe()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 font-bold py-2.5 px-3 rounded-xl text-xs uppercase transition">
+                    Odjava
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-zinc-900 border border-orange-600/30 p-6 rounded-2xl mb-12 shadow-2xl">
+            <h2 class="text-orange-500 font-black text-xl uppercase italic mb-4">✉️ NH AI — Generator Poslovnih Emailova</h2>
+            <form id="email-forma" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Tema / Svrha emaila:</label>
+                    <input type="text" id="email-tema" required placeholder="npr. Kašnjenje isporuke robe, Ponuda za saradnju, Izvinjenje klijentu..." 
+                           class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-orange-500 outline-none transition text-white">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Kratke natuknice (Šta AI mora pomenuti i u kakvom tonu):</label>
+                    <textarea id="email-detalji" rows="4" required placeholder="npr. Ton: Ljubazan ali oštar. Pomeni da kasnimo jer dobavljač nije poslao dijelove, ali da stiže u utorak i dajemo popust 10%..." 
+                              class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-orange-500 outline-none transition text-white"></textarea>
+                </div>
+                <button type="submit" id="btn-slanje" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-orange-600/20">
+                    ✉️ GENERIŠI PROFESIONALAN EMAIL
+                </button>
+            </form>
+        </div>
+
+        <hr class="border-zinc-800 mb-12">
+
+        <h1 class="text-orange-500 font-black text-3xl italic mb-8 uppercase tracking-tighter">VAŠI GENERISANI EMAIL-OVI</h1>
+        <div id="svi-emailovi" class="space-y-6">
+            <p class="text-zinc-500 animate-pulse uppercase text-xs text-center">Učitavam emailove...</p>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://sheetdb.io/api/v1/rjhvmuxlef6zk';
+        const firmaId = localStorage.getItem("prijavljenaFirma") || "Nepoznata Firma";
+        document.getElementById("firma-naziv-prikaz").innerText = firmaId;
+
+        document.getElementById('email-forma').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-slanje');
+            const tema = document.getElementById('email-tema').value;
+            const detalji = document.getElementById('email-detalji').value;
+
+            btn.innerText = "AI PIŠE EMAIL...";
+            btn.disabled = true;
+
+            const noviRed = {
+                "Datum": new Date().toLocaleString('hr-BA'),
+                "Korisnik ID": firmaId, 
+                "Tekst izvještaja": "AI_EMAIL: " + tema,
+                "AI Analiza": "U izradi... [Svrha: " + detalji + "]"
+            };
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: [noviRed] })
+                });
+
+                if(res.ok) {
+                    alert("Zahtjev poslan! AI kreira tekst maila. Osvježi listu ispod za par trenutaka.");
+                    document.getElementById('email-forma').reset();
+                    await ucitajEmailove(); 
+                }
+            } catch (err) {
+                alert("Greška: " + err.message);
+            } finally {
+                btn.innerText = "✉️ GENERIŠI PROFESIONALAN EMAIL";
+                btn.disabled = false;
+            }
+        });
+
+        async function ucitajEmailove() {
+            const kontejner = document.getElementById('svi-emailovi');
+            try {
+                const odgovor = await fetch(API_URL + '?t=' + Date.now());
+                const podaci = await odgovor.json();
+                const listaPodataka = Array.isArray(podaci) ? podaci : [];
+
+                const emailLista = listaPodataka.filter(red => red["Korisnik ID"] === firmaId && red["Tekst izvještaja"].startsWith("AI_EMAIL:"));
+                const poredani = [...emailLista].reverse();
+                
+                kontejner.innerHTML = '';
+                
+                if(poredani.length === 0) {
+                    kontejner.innerHTML = "<p class='text-zinc-600 text-center uppercase text-xs'>Nema generisanih emailova.</p>";
+                    return;
+                }
+
+                poredani.forEach((red, index) => {
+                    const kartica = document.createElement('div');
+                    kartica.className = "bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-xl hover:border-orange-600/30 transition duration-500";
+                    
+                    const cistaTema = red["Tekst izvještaja"].replace("AI_EMAIL: ", "");
+
+                    kartica.innerHTML = `
+                        <div class="flex justify-between items-center mb-4 border-b border-zinc-800 pb-2">
+                            <span class="text-orange-500 font-black text-[10px] uppercase italic">EMAIL #${poredani.length - index}</span>
+                            <span class="text-zinc-600 font-mono text-[10px]">${red["Datum"] || 'Bez datuma'}</span>
+                        </div>
+                        <h3 class="text-white font-black uppercase italic text-xl mb-3">Predmet: ${cistaTema}</h3>
+                        <div class="bg-black/60 p-4 rounded-xl border border-zinc-800/50 mb-4">
+                            <p class="text-zinc-400 text-sm font-mono whitespace-pre-line">${red["AI Analiza"] || 'AI piše tekst...'}</p>
+                        </div>
+                        <button onclick="kopirajTekst(this)" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-2 px-4 rounded-xl text-xs uppercase transition w-full sm:w-auto">
+                            📋 Kopiraj tekst emaila
+                        </button>
+                    `;
+                    kontejner.appendChild(kartica);
+                });
+            } catch (err) {
+                kontejner.innerHTML = `<p class="text-red-600 font-bold text-center">GREŠKA: ${err.message}</p>`;
+            }
+        }
+
+        // FUNKCIJA ZA KOPIRANJE TEKSTA U JEDAN KLIK
+        function kopirajTekst(dugme) {
+            const tekst = dugme.previousElementSibling.innerText;
+            navigator.clipboard.writeText(tekst).then(() => {
+                dugme.innerText = "✔️ KOPIRANO!";
+                dugme.className = "bg-emerald-600 text-white font-bold py-2 px-4 rounded-xl text-xs uppercase transition w-full sm:w-auto";
+                setTimeout(() => {
+                    dugme.innerText = "📋 Kopiraj tekst emaila";
+                    dugme.className = "bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-2 px-4 rounded-xl text-xs uppercase transition w-full sm:w-auto";
+                }, 2000);
+            });
+        }
+
+        function pokreniAlarm() { alert("🚨 ALARM AKTIVIRAN za firmu: " + firmaId); }
+        function odjaviSe() { localStorage.removeItem("prijavljenaFirma"); window.location.href = "index.html"; }
+
+        ucitajEmailove();
+        setInterval(ucitajEmailove, 20000);
+    </script>
+</body>
+</html>
+
+💎 Šta je ovdje genijalno urađeno za tvoj backend:
+
+S
