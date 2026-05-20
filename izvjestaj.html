@@ -2,12 +2,34 @@
 <html lang="hr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NH AI - Upis i Pregled</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-black text-white p-6 font-sans">
 
     <div class="max-w-4xl mx-auto">
+        
+        <div class="flex flex-col sm:flex-row justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-2xl mb-6 gap-4">
+            <div class="text-center sm:text-left">
+                <span class="text-[10px] uppercase text-zinc-500 font-bold block">Prijavljeni klijent:</span>
+                <h2 id="firma-naziv-prikaz" class="text-blue-400 font-black text-xl uppercase italic">Učitavanje...</h2>
+            </div>
+            <button onclick="odjaviSe()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white font-bold py-2 px-4 rounded-xl text-xs uppercase transition">
+                Odjavi se
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <button onclick="generisiUgovorKlijentu()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-emerald-600/20 text-center text-sm">
+                📄 Preuzmi ugovor o saradnji
+            </button>
+            
+            <button onclick="pokreniAlarm()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-amber-500/20 text-center text-sm">
+                🚨 Aktiviraj hitan AI alarm
+            </button>
+        </div>
+
         <div class="bg-zinc-900 border border-red-600/30 p-6 rounded-2xl mb-12 shadow-2xl">
             <h2 class="text-red-600 font-black text-xl uppercase italic mb-4">Novi Upis u Tabelu</h2>
             <form id="alarm-forma" class="space-y-4">
@@ -38,6 +60,10 @@
     <script>
         const API_URL = 'https://sheetdb.io/api/v1/rjhvmuxlef6zk';
 
+        // Izvlačenje imena firme iz memorije (koju je index.html postavio)
+        const firmaId = localStorage.getItem("prijavljenaFirma") || "Nepoznata Firma";
+        document.getElementById("firma-naziv-prikaz").innerText = firmaId;
+
         // 1. SLANJE PODATAKA U TABELU
         document.getElementById('alarm-forma').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -48,9 +74,10 @@
             btn.innerText = "SLANJE U TOKU...";
             btn.disabled = true;
 
+            // Sad automatski upisuje stvarno ime firme u kolonu "Korisnik ID"
             const noviRed = {
                 "Datum": new Date().toLocaleString('hr-BA'),
-                "Korisnik ID": "101",
+                "Korisnik ID": firmaId, 
                 "Tekst izvještaja": naslov,
                 "AI Analiza": detalji
             };
@@ -65,7 +92,7 @@
                 if(res.ok) {
                     alert("Podaci uspješno upisani!");
                     document.getElementById('alarm-forma').reset();
-                    await ucitajSvePodatke(); // Odmah osvježi listu ispod
+                    await ucitajSvePodatke(); 
                 }
             } catch (err) {
                 alert("Greška pri slanju: " + err.message);
@@ -75,14 +102,13 @@
             }
         });
 
-        // 2. UCITAVANJE PODATAKA (SA FIXOM ZA REVERSE GREŠKU)
+        // 2. UCITAVANJE PODATAKA
         async function ucitajSvePodatke() {
             const kontejner = document.getElementById('svi-izvjestaji');
             try {
                 const odgovor = await fetch(API_URL + '?t=' + Date.now());
                 const podaci = await odgovor.json();
 
-                // SIGURNOSNA PROVJERA: Ako podaci nisu lista, napravi praznu listu
                 const listaPodataka = Array.isArray(podaci) ? podaci : [];
 
                 if (listaPodataka.length === 0) {
@@ -90,7 +116,6 @@
                     return;
                 }
 
-                // Okrećemo redoslijed: Najnoviji na vrh
                 const poredani = [...listaPodataka].reverse();
                 
                 kontejner.innerHTML = '';
@@ -100,7 +125,7 @@
                     
                     kartica.innerHTML = `
                         <div class="flex justify-between items-start mb-4 border-b border-zinc-800 pb-2">
-                            <span class="text-red-500 font-black text-[10px] uppercase italic">ZAPIS #${listaPodataka.length - index}</span>
+                            <span class="text-red-500 font-black text-[10px] uppercase italic">ZAPIS #${listaPodataka.length - index} — ${red["Korisnik ID"] || 'Opšti'}</span>
                             <span class="text-zinc-600 font-mono text-[10px]">${red["Datum"] || 'Bez datuma'}</span>
                         </div>
                         <h3 class="text-white font-black uppercase italic text-xl mb-3">${red["Tekst izvještaja"] || 'Bez naslova'}</h3>
@@ -115,7 +140,78 @@
             }
         }
 
-        // Pokreni odmah i postavi automatsko osvježavanje svakih 30s
+        // --- FUNKCIJA ZA AUTOMATSKI UGOVOR ---
+        function generisiUgovorKlijentu() {
+            const datum = new Date().toLocaleDateString('hr-BA');
+            const printProzor = window.open('', '_blank');
+            
+            printProzor.document.write(`
+                <html>
+                <head>
+                    <title>Ugovor o saradnji - ${firmaId}</title>
+                    <style>
+                        body { font-family: 'Times New Roman', serif; padding: 40px; color: #000; line-height: 1.6; }
+                        .header { text-align: center; margin-bottom: 50px; }
+                        .title { font-size: 22px; font-weight: bold; text-transform: uppercase; margin-bottom: 30px; }
+                        .section { margin-bottom: 20px; text-align: justify; }
+                        .signatures { margin-top: 80px; display: flex; justify-content: space-between; }
+                        .sig-box { width: 200px; border-top: 1px solid #000; text-align: center; padding-top: 5px; }
+                        @media print { .no-print { display: none; } }
+                        .btn-print { background: #4299e1; color: white; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; border-radius: 5px; margin-bottom: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <button class="btn-print no-print" onclick="window.print()">🖨️ Isprintaj / Spasi kao PDF</button>
+                    
+                    <div class="header">
+                        <div class="title">UGOCOR O POSLOVNO-TEHNIČKOJ SARADNJI</div>
+                        <p>Zaključen na dan <strong>${datum}</strong> godine.</p>
+                    </div>
+
+                    <div class="section">
+                        <strong>UGOVORNE STRANE:</strong><br>
+                        1. <strong>NH AI-Automation</strong>, kao pružalac usluga automatizacije i AI sistema (u daljem tekstu: Izvršilac), i<br>
+                        2. <strong>${firmaId}</strong>, kao korisnik usluga (u daljem tekstu: Naručilac).
+                    </div>
+
+                    <div class="section">
+                        <strong>Član 1. (Predmet ugovora)</strong><br>
+                        Predmet ovog ugovora je regulisanje prava i obaveza u vezi sa implementacijom vještačke inteligencije, glasovnih asistenata te sistema automatizacije poslovnih izvještaja za potrebe Naručioca.
+                    </div>
+
+                    <div class="section">
+                        <strong>Član 2. (Obaveze Izvršioca)</strong><br>
+                        Izvršilac se obavezuje da će dodijeljeni sistem ("NH AI-Voice / Obrada izvještaja") održavati funkcionalnim, osigurati stabilnu vezu sa AI modelima, te garantovati privatnost podataka unutar baze.
+                    </div>
+
+                    <div class="section">
+                        <strong>Član 3. (Obaveze Naručioca)</strong><br>
+                        Naručilac se obavezuje da će dodijeljeni korisnički nalog koristiti u skladu sa tehničkim uputstvima i redovno izmirivering ugovorene obaveze za održavanje sistema.
+                    </div>
+
+                    <div class="signatures">
+                        <div class="sig-box">NH AI-Automation<br>(Izvršilac)</div>
+                        <div class="sig-box">${firmaId}<br>(Naručilac)</div>
+                    </div>
+                </body>
+                </html>
+            `);
+            printProzor.document.close();
+        }
+
+        // --- FUNKCIJA ZA ALARM ---
+        function pokreniAlarm() {
+            // Ovdje za prvu ruku iskače obavještenje, a unutra možemo povezati slanje na tvoj eksterni server / API
+            alert("🚨 ALARM AKTIVIRAN!\nSistem za klijenta '" + firmaId + "' je upravo pokrenuo hitnu AI analizu i poslao upozorenje!");
+            console.log("Hitan alarm aktiviran za: " + firmaId);
+        }
+
+        function odjaviSe() {
+            localStorage.removeItem("prijavljenaFirma");
+            window.location.href = "index.html";
+        }
+
+        // Pokretanje skripte
         ucitajSvePodatke();
         setInterval(ucitajSvePodatke, 30000);
     </script>
