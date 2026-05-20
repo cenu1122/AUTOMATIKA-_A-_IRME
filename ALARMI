@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NH AI-Automation | Poslovni Portal</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #1a202c; color: #e2e8f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .card { background: #2d3748; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; max-width: 400px; border: 1px solid #4a5568; }
+        h1 { color: #63b3ed; text-align: center; cursor: pointer; margin-bottom: 30px; } 
+        input { width: 100%; padding: 12px; margin-bottom: 1rem; border-radius: 6px; border: 1px solid #4a5568; background: #1a202c; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #4299e1; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #3182ce; }
+        button:disabled { background-color: #4a5568; cursor: not-allowed; }
+        #admin-panel { display: none; margin-top: 20px; border-top: 1px solid #4a5568; padding-top: 20px; }
+        .admin-header { color: #f6ad55; font-size: 1.2rem; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1 onclick="openAdmin()">NH AI-Automation</h1>
+
+        <!-- LOGIN SEKCIJA -->
+        <div id="login-section">
+            <p style="text-align: center; margin-bottom: 20px;">Prijava za klijente</p>
+            <input type="text" id="companyId" placeholder="Korisnički ID">
+            <input type="password" id="password" placeholder="Lozinka">
+            <button id="loginBtn" onclick="handleLogin()">Prijavi se</button>
+        </div>
+
+        <!-- ADMIN PANEL (Skriven, aktivira se na 5 klikova na naslov) -->
+        <div id="admin-panel">
+            <h2 class="admin-header">Admin Panel</h2>
+            <input type="text" id="newFirmaID" placeholder="Novi user_id">
+            <input type="text" id="newFirmaPass" placeholder="Nova lozinka">
+            <input type="text" id="newFirmaStatus" placeholder="Status (aktivan)" value="aktivan">
+            <button onclick="saveNewCompany()" style="background-color: #f6ad55;">Spremi u bazu</button>
+        </div>
+    </div>
+
+    <script>
+        // Tvoj URL skripte za provjeru korisnika
+        const scriptURL = "https://script.google.com/macros/s/AKfycbweiMSOZNQI8UFdwTaB8Lf93WHAO5Ev7co_t-PmFkQ8chU9ngtuJxx-2KO-q_G65xQO/exec";
+
+        let clicks = 0;
+        function openAdmin() {
+            clicks++;
+            if(clicks === 5) {
+                document.getElementById('admin-panel').style.display = 'block';
+                alert("Admin mod aktiviran!");
+            }
+        }
+
+        async function handleLogin() {
+            const uneseniId = document.getElementById('companyId').value.trim();
+            const unesenaSifra = document.getElementById('password').value.trim();
+            const btn = document.getElementById('loginBtn');
+
+            if(!uneseniId || !unesenaSifra) return alert("Popunite sva polja!");
+
+            btn.innerText = "Provjera...";
+            btn.disabled = true;
+
+            try {
+                // Dodajemo timestamp da izbjegnemo caching (osvježavanje podataka)
+                const response = await fetch(scriptURL + "?t=" + new Date().getTime());
+                const rezultat = await response.json();
+                
+                const korisnici = Array.isArray(rezultat) ? rezultat : [];
+
+                // Traženje korisnika u bazi
+                const korisnikPoId = korisnici.find(k => 
+                    (k.user_id || "").toString().trim() === uneseniId
+                );
+
+                if (!korisnikPoId) {
+                    alert("Korisnički ID ne postoji!");
+                    resetBtn(btn);
+                    return;
+                }
+
+                if ((korisnikPoId.password || "").toString().trim() !== unesenaSifra) {
+                    alert("Pogrešna lozinka!");
+                    resetBtn(btn);
+                    return;
+                }
+
+                const trenutniStatus = (korisnikPoId.status || "").toString().toLowerCase().trim();
+                if (trenutniStatus !== "aktivan") {
+                    alert("Nalog nije aktivan.");
+                    resetBtn(btn);
+                    return;
+                }
+
+                // --- AKCIJA: PREBACIVANJE NA IZVJESTAJ ---
+                alert("Prijava uspješna! Prebacivanje na izvještaj...");
+                window.location.href = "izvjestaj.html"; 
+
+            } catch (error) {
+                console.error(error);
+                alert("Greška pri povezivanju sa serverom.");
+                resetBtn(btn);
+            }
+        }
+
+        function resetBtn(btn) {
+            btn.disabled = false;
+            btn.innerText = "Prijavi se";
+        }
+
+        async function saveNewCompany() {
+            const data = {
+                tip: "novi_korisnik",
+                user_id: document.getElementById('newFirmaID').value,
+                password: document.getElementById('newFirmaPass').value,
+                status: document.getElementById('newFirmaStatus').value
+            };
+
+            if(!data.user_id || !data.password) return alert("Popunite podatke!");
+
+            try {
+                await fetch(scriptURL, { 
+                    method: 'POST', 
+                    mode: 'no-cors', 
+                    body: JSON.stringify(data) 
+                });
+                alert("Korisnik poslan u bazu!");
+                document.getElementById('newFirmaID').value = "";
+                document.getElementById('newFirmaPass').value = "";
+            } catch (e) {
+                alert("Greška!");
+            }
+        }
+    </script>
+</body>
+</html>
