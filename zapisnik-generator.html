@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NH AI - Zapisnik sa Sastanka</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white p-6 font-sans">
+
+    <div class="max-w-4xl mx-auto">
+        
+        <div class="flex flex-col md:flex-row justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-2xl mb-6 gap-4">
+            <div class="text-center md:text-left">
+                <span class="text-[10px] uppercase text-zinc-500 font-bold block">Prijavljeni klijent:</span>
+                <h2 id="firma-naziv-prikaz" class="text-cyan-400 font-black text-xl uppercase italic">Učitavanje...</h2>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-center">
+                <select onchange="location = this.value;" class="bg-zinc-900 border border-zinc-800 text-white text-xs font-bold p-2.5 rounded-xl outline-none cursor-pointer focus:border-cyan-400">
+                    <option value="izvjestaj.html">📋 Pregled Izvještaja</option>
+                    <option value="ugovori.html">🤖 AI Generator Ugovora</option>
+                    <option value="cv-generator.html">📄 AI CV / Biografija Generator</option>
+                    <option value="email-generator.html">✉️ AI Email / Pismo Generator</option>
+                    <option value="ponuda-generator.html">📊 AI Generator Ponuda / Predračuna</option>
+                    <option value="zapisnik-generator.html" selected>📝 AI Zapisnik sa Sastanka</option>
+                </select>
+
+                <button onclick="pokreniAlarm()" class="bg-red-600 hover:bg-red-700 text-white font-black py-2.5 px-4 rounded-xl text-xs uppercase italic transition shadow-lg shadow-red-600/20">
+                    🚨 Hitan Alarm
+                </button>
+
+                <button onclick="odjaviSe()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 font-bold py-2.5 px-3 rounded-xl text-xs uppercase transition">
+                    Odjava
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-zinc-900 border border-cyan-600/30 p-6 rounded-2xl mb-12 shadow-2xl">
+            <h2 class="text-cyan-400 font-black text-xl uppercase italic mb-4">📝 NH AI — Pametni Zapisnik sa Sastanka (Meeting Minutes)</h2>
+            <form id="zapisnik-forma" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Naziv sastanka / Projekat:</label>
+                    <input type="text" id="zapisnik-naslov" required placeholder="npr. Sastanak sa timom oko automatizacije proizvodne trake" 
+                           class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-cyan-400 outline-none transition text-white">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Unesi sirove bilješke, natuknice ili transkript:</label>
+                    <textarea id="zapisnik-detalji" rows="5" required placeholder="Napiši ko je bio na sastanku i šta se pričalo: Nermin rekao da završimo bazu do petka, Amar preuzima nabavku opreme, klijent traži brži odziv aplikacije. Sljedeći sastanak u ponedjeljak..." 
+                              class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-cyan-400 outline-none transition text-white"></textarea>
+                </div>
+                <button type="submit" id="btn-slanje" class="w-full bg-cyan-500 hover:bg-cyan-600 text-black font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-cyan-500/20 text-sm">
+                    📝 STRUKTURIRAJ ZAPISNIK I TASKOVE VIA AI
+                </button>
+            </form>
+        </div>
+
+        <hr class="border-zinc-800 mb-12">
+
+        <h1 class="text-cyan-400 font-black text-3xl italic mb-8 uppercase tracking-tighter">VAŠI STRUKTURIRANI ZAPISNICI</h1>
+        <div id="svi-zapisnici" class="space-y-6">
+            <p class="text-zinc-500 animate-pulse uppercase text-xs text-center">Učitavam zapisnike...</p>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://sheetdb.io/api/v1/rjhvmuxlef6zk';
+        const firmaId = localStorage.getItem("prijavljenaFirma") || "Nepoznata Firma";
+        document.getElementById("firma-naziv-prikaz").innerText = firmaId;
+
+        document.getElementById('zapisnik-forma').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-slanje');
+            const naslov = document.getElementById('zapisnik-naslov').value;
+            const detalji = document.getElementById('zapisnik-detalji').value;
+
+            btn.innerText = "AI STRUKTURIRA ZAPISNIK...";
+            btn.disabled = true;
+
+            const noviRed = {
+                "Datum": new Date().toLocaleString('hr-BA'),
+                "Korisnik ID": firmaId, 
+                "Tekst izvještaja": "AI_ZAPISNIK: " + naslov,
+                "AI Analiza": "U izradi... [Sirove bilješke: " + detalji + "]"
+            };
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: [noviRed] })
+                });
+
+                if(res.ok) {
+                    alert("Zahtjev primljen! AI će sada izvući: Ključne zaključke, Zaduženja (Taskove) i Rokove u preglednu tabelu.");
+                    document.getElementById('zapisnik-forma').reset();
+                    await ucitajZapisnike(); 
+                }
+            } catch (err) {
+                alert("Greška: " + err.message);
+            } finally {
+                btn.innerText = "📝 STRUKTURIRAJ ZAPISNIK I TASKOVE VIA AI";
+                btn.disabled = false;
+            }
+        });
+
+        async function ucitajZapisnike() {
+            const kontejner = document.getElementById('svi-zapisnici');
+            try {
+                const odgovor = await fetch(API_URL + '?t=' + Date.now());
+                const podaci = await odgovor.json();
+                const listaPodataka = Array.isArray(podaci) ? podaci : [];
+
+                const zapisnici = listaPodataka.filter(red => red["Korisnik ID"] === firmaId && red["Tekst izvještaja"].startsWith("AI_ZAPISNIK:"));
+                const poredani = [...zapisnici].reverse();
+                
+                kontejner.innerHTML = '';
+                
+                if(poredani.length === 0) {
+                    kontejner.innerHTML = "<p class='text-zinc-600 text-center uppercase text-xs'>Nema kreiranih zapisnika.</p>";
+                    return;
+                }
+
+                poredani.forEach((red, index) => {
+                    const kartica = document.createElement('div');
+                    kartica.className = "bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-xl hover:border-cyan-400/30 transition duration-500";
+                    
+                    const cistiNaslov = red["Tekst izvještaja"].replace("AI_ZAPISNIK: ", "");
+                    const tekstZapisnika = (red["AI Analiza"] || "Nema teksta").replace(/`/g, '\\`').replace(/"/g, '&quot;');
+
+                    kartica.innerHTML = `
+                        <div class="flex justify-between items-center mb-4 border-b border-zinc-800 pb-2">
+                            <span class="text-cyan-400 font-black text-[10px] uppercase italic">ZAPISNIK #${poredani.length - index}</span>
+                            <span class="text-zinc-600 font-mono text-[10px]">${red["Datum"] || 'Bez datuma'}</span>
+                        </div>
+                        <h3 class="text-white font-black uppercase italic text-xl mb-3">${cistiNaslov}</h3>
+                        <div class="bg-black/60 p-4 rounded-xl border border-zinc-800/50 mb-4">
+                            <p class="text-zinc-400 text-sm font-mono whitespace-pre-line">${red["AI Analiza"] || 'AI kreira rezime i taskove...'}</p>
+                        </div>
+                        <button onclick="printajZapisnik('${cistiNaslov}', \`${tekstZapisnika}\`)" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-2 px-4 rounded-xl text-xs uppercase transition w-full sm:w-auto">
+                            🖨️ Isprintaj zapisnik / PDF
+                        </button>
+                    `;
+                    kontejner.appendChild(kartica);
+                });
+            } catch (err) {
+                kontejner.innerHTML = `<p class="text-red-600 font-bold text-center">GREŠKA: ${err.message}</p>`;
+            }
+        }
+
+        function printajZapisnik(naslov, tekst) {
+            const printProzor = window.open('', '_blank');
+            printProzor.document.write(`
+                <html>
+                <head>
+                    <title>Zapisnik - ${naslov}</title>
+                    <style>
+                        body { font-family: 'Arial', sans-serif; padding: 50px; color: #000; line-height: 1.6; }
+                        .no-print { background: #06b6d4; color: black; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; border-radius: 5px; margin-bottom: 30px; }
+                        @media print { .no-print { display: none; } }
+                        .sadrzaj { text-align: left; font-size: 14px; white-space: pre-line; }
+                        h2 { color: #06b6d4; border-b: 2px solid #ccc; padding-bottom: 10px; text-transform: uppercase; }
+                    </style>
+                </head>
+                <body>
+                    <button class="no-print" onclick="window.print()">🖨️ Odštampaj Zapisnik / Spasi PDF</button>
+                    <h2>ZAPISNIK SA SASTANKA: ${naslov}</h2>
+                    <div class="sadrzaj">${tekst}</div>
+                </body>
+                </html>
+            `);
+            printProzor.document.close();
+        }
+
+        function pokreniAlarm() { alert("🚨 ALARM AKTIVIRAN za firmu: " + firmaId); }
+        function odjaviSe() { localStorage.removeItem("prijavljenaFirma"); window.location.href = "index.html"; }
+
+        ucitajZapisnike();
+        setInterval(ucitajZapisnike, 20000);
+    </script>
+</body>
+</html>
