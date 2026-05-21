@@ -36,7 +36,7 @@
         </div>
     </div>
 
-  <script>
+  <<script>
     async function generisiFakturu() {
         const promptKorisnika = document.getElementById("ai-prompt-tekst").value.trim();
         const dugme = document.getElementById("dugme-generisi");
@@ -52,23 +52,24 @@
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ 
-                    // OVDJE SAM DODAO INSTRUKCIJU ZA ODVOJENU KOLONU
-                    userText: `ZADATAK: Generiši profesionalnu fakturu.
-                    KORISTI HTML TABLE TAGOVE.
-                    Tabela OBAVEZNO mora imati ove kolone: 
-                    'R.br', 'Opis usluge/materijala', 'Količina', 'Cijena materijala', 'Cijena rada', 'Ukupno'.
-                    Uključi <style> tag da tabela bude širine 100% (width: 100%), sa borderima i preglednim dizajnom.
-                    Uključi datum, broj fakture i podatke o kupcu.
-                    Detalji klijenta/posla: ` + promptKorisnika 
+                    // OVO JE KLJUČNO: Ovim ga prisiljavamo da radi sam, bez pitanja
+                    userText: `ZADATAK: Generiši fakturu na osnovu unosa. 
+                    TI SI PROFESIONALNI FAKTURIST. 
+                    NE TRAŽI DODATNE PODATKE.
+                    1. Ako fali datum, stavi današnji: 21.05.2026.
+                    2. Ako fali kupac, stavi: "Kupac nepoznat".
+                    3. Ako fali adresa, stavi: "Nepoznata adresa".
+                    4. SAM IZRAČUNAJ PDV od 17% i ukupne iznose.
+                    5. Formatiraj sve u čistu i preglednu HTML tabelu.
+                    Unos korisnika: ${promptKorisnika}`
                 })
             });
 
             const data = await response.json();
-            const odgovor = data.tekst || "Greška pri generisanju.";
+            // Provjera da li dobijamo odgovor
+            const odgovor = data.tekst || "Greška: AI nije vratio odgovor.";
 
             const container = document.getElementById("faktura-sadrzaj-render");
-            
-            // OČIŠĆENO OD KLASA KOJE SU KVARILE PRIKAZ TABELE
             container.innerHTML = odgovor;
 
             document.getElementById("glavni-kontejner").classList.add("hidden");
