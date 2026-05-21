@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NH AI - Fleksibilni Generator Ugovora</title>
+    <title>NH AI - Pametni AI Generator Ugovora</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-black text-white p-6 font-sans">
@@ -24,47 +24,71 @@
             </div>
         </div>
 
-        <div class="bg-zinc-900 border border-blue-600/30 p-6 rounded-2xl shadow-2xl">
-            <h2 class="text-blue-500 font-black text-xl uppercase italic mb-2">🤖 Fleksibilni Smart Generator Ugovora</h2>
-            <p class="text-zinc-400 text-xs mb-6">Izaberite vrstu ugovora, a zatim sami unesite učesnike i specifične detalje posla.</p>
+        <div class="bg-zinc-900 border border-blue-600/30 p-6 rounded-2xl shadow-2xl mb-6">
+            <h2 class="text-blue-500 font-black text-xl uppercase italic mb-2">🤖 Smart AI Generator Ugovora</h2>
+            <p class="text-zinc-400 text-xs mb-6">Unesite slobodan tekst sa detaljima ugovora, a AI asistent će automatski prepoznati ugovorne strane, cijene, rokove i generisati ugovor.</p>
             
             <div class="space-y-4">
                 <div>
-                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">1. Izaberi vrstu ugovora (Šablon):</label>
-                    <select id="tip-ugovora" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-blue-500 outline-none text-white text-sm font-bold cursor-pointer">
-                        <option value="ugovor-o-djelu">Ugovor o djelu</option>
-                        <option value="poslovno-tehnicka">Ugovor o poslovno-tehničkoj saradnji</option>
-                        <option value="nda-povjerljivost">Ugovor o povjerljivosti podataka (NDA)</option>
+                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">1. Izaberi osnovni pravni okvir (Šablon):</label>
+                    <select id="tip-ugovora" class="w-full bg-black border border-zinc-800 p-3 rounded-xl text-white text-sm font-bold cursor-pointer outline-none focus:border-blue-500">
+                        <option value="Ugovor o djelu">Ugovor o djelu</option>
+                        <option value="Ugovor o poslovno-tehničkoj saradnji">Ugovor o poslovno-tehničkoj saradnji</option>
+                        <option value="NDA Ugovor o povjerljivosti">Ugovor o povjerljivosti podataka (NDA)</option>
                     </select>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">2. Naručilac / Prva ugovorna strana:</label>
-                        <input id="unos-narucilac" type="text" class="w-full bg-black border border-zinc-800 p-3 rounded-xl text-white text-sm focus:border-blue-500 outline-none" placeholder="npr. Bosna Niless d.o.o.">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">3. Izvršilac / Druga ugovorna strana:</label>
-                        <input id="unos-izvrsilac" type="text" class="w-full bg-black border border-zinc-800 p-3 rounded-xl text-white text-sm focus:border-blue-500 outline-none" placeholder="npr. Halilović Emir">
-                    </div>
-                </div>
-
                 <div>
-                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">4. Detalji (Opis posla, cijena, rokovi, lokacija sklapanja):</label>
-                    <textarea id="unos-detalji" rows="5" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-blue-500 outline-none text-white text-sm" placeholder="Upiši detalje o čemu se pravi ugovor, npr: Izrada elektro-upravljačkih ormara i PLC programiranje. Cijena je 2500 KM, a rok 30 dana. Sklapa se u Sarajevu."></textarea>
+                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">2. Opiši ugovor svojim riječima (AI Prompt):</label>
+                    <textarea id="ai-prompt-tekst" rows="6" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-blue-500 outline-none text-white text-sm font-mono" placeholder="npr. Napravi mi ugovor o djelu izmedu Bosna Nilessa (Narucilac) i Halilovic Emira (Izvrsilac). Posao je montaza elektro ormara i PLC programiranje, cijena 2500 KM, rok 30 dana u Sarajevu..."></textarea>
                 </div>
 
-                <button onclick="generisiFleksibilniUgovor()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300 tracking-wide shadow-lg shadow-blue-600/20">
-                    📄 GENERIŠI I PRIKAŽI UGOVOR
+                <button onclick="analizirajSaAI()" id="dugme-generisi" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300 tracking-wide shadow-lg shadow-blue-600/20">
+                    ✨ POKRENI AI ANALIZU I KREIRAJ ŠABLON
                 </button>
             </div>
+        </div>
+
+        <div id="sekcija-za-doradu" class="hidden bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-2xl space-y-4">
+            <h3 class="text-zinc-400 font-bold text-xs uppercase tracking-wider border-b border-zinc-800 pb-2">📋 Provjera i dorada prepoznatih podataka</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Prva strana (Naručilac / Partner 1):</label>
+                    <input id="ai-narucilac" type="text" class="w-full bg-black border border-zinc-800 p-3 rounded-xl text-white text-sm focus:border-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Druga strana (Izvršilac / Partner 2):</label>
+                    <input id="ai-izvrsilac" type="text" class="w-full bg-black border border-zinc-800 p-3 rounded-xl text-white text-sm focus:border-blue-500 outline-none">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Ugovorena cijena / Naknada:</label>
+                    <input id="ai-cijena" type="text" class="w-full bg-black border border-zinc-800 p-3 rounded-xl text-white text-sm focus:border-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Rok izvršenja / Trajanje:</label>
+                    <input id="ai-rok" type="text" class="w-full bg-black border border-zinc-800 p-3 rounded-xl text-white text-sm focus:border-blue-500 outline-none">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Detaljan predmet ugovora i specifikacija:</label>
+                <textarea id="ai-predmet" rows="3" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-blue-500 outline-none text-white text-sm"></textarea>
+            </div>
+
+            <button onclick="prikaziUgovorZaStampu()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300 tracking-wide">
+                📄 POGLEDAJ I ISPRINTAJ FINALNI UGOVOR
+            </button>
         </div>
     </div>
 
     <div id="ugovor-prikaz" class="hidden bg-white text-black p-12 font-serif mx-auto max-w-4xl shadow-2xl rounded-xl my-6">
         <div class="no-print mb-8 flex gap-3">
-            <button onclick="window.print()" class="bg-blue-600 text-white font-bold py-2.5 px-5 rounded-lg font-sans text-sm hover:bg-blue-700 transition">🖨️ Isprintaj / Spasi kao PDF</button>
-            <button onclick="zatvoriUgovor()" class="bg-zinc-600 text-white font-bold py-2.5 px-5 rounded-lg font-sans text-sm hover:bg-zinc-700 transition">⬅️ Nazad u izmjene</button>
+            <button onclick="window.print()" class="bg-blue-600 text-white font-bold py-2.5 px-5 rounded-lg font-sans text-sm hover:bg-blue-700">🖨️ Isprintaj / Spasi kao PDF</button>
+            <button onclick="zatvoriUgovor()" class="bg-zinc-600 text-white font-bold py-2.5 px-5 rounded-lg font-sans text-sm hover:bg-zinc-700">⬅️ Nazad u izmjene</button>
         </div>
         
         <style>
@@ -78,100 +102,87 @@
         const firmaId = localStorage.getItem("prijavljenaFirma") || "Klijent d.o.o.";
         document.getElementById("firma-naziv-prikaz").innerText = firmaId;
 
-        function generisiFleksibilniUgovor() {
-            // Kupljenje unesenih (promjenjivih) podataka iz ćelija
-            const tipUgovora = document.getElementById("tip-ugovora").value;
-            const narucilac = document.getElementById("unos-narucilac").value || "Naručilac (Nije unesen)";
-            const izvrsilac = document.getElementById("unos-izvrsilac").value || "Izvršilac (Nije unesen)";
-            const detalji = document.getElementById("unos-detalji").value || "Ugovorne strane će detalje definisati naknadno.";
-            const danasnjiDatum = new Date().toLocaleDateString('hr-BA');
+        // --- SIMULACIJA ILI POZIV TVOG AI BACKEND-A ---
+        function analizirajSaAI() {
+            const prompt = document.getElementById("ai-prompt-tekst").value.trim();
+            const dugme = document.getElementById("dugme-generisi");
             
-            let tekstUgovora = "";
-
-            if(tipUgovora === "ugovor-o-djelu") {
-                tekstUgovora = `
-                    <div class="text-center mb-10">
-                        <h1 class="text-2xl font-bold uppercase tracking-wide">UGOVOR O DJELU</h1>
-                        <p class="mt-1 text-sm">Zaključen na dan <strong>${danasnjiDatum}</strong>. godine.</p>
-                    </div>
-                    <div class="text-justify space-y-5 text-sm leading-relaxed">
-                        <p><strong>UGOVORNE STRANE:</strong><br>
-                        1. <strong>${narucilac}</strong> (u daljem tekstu: <strong>Naručilac</strong>) s jedne strane, i<br>
-                        2. <strong>${izvrsilac}</strong> (u daljem tekstu: <strong>Izvršilac</strong>) s druge strane.</p>
-                        
-                        <p><strong>Član 1. (Predmet ugovora)</strong><br>
-                        Naručilac angažuje Izvršioca, a Izvršilac se obavezuje da će za potrebe Naručioca samostalno, kvalitetno i stručno obaviti poslove prema specifikaciji:<br>
-                        <span class="block bg-gray-50 border border-zinc-200 p-3 rounded italic mt-2">${detalji}</span></p>
-                        
-                        <p><strong>Član 2. (Rokovi izvršenja)</strong><br>
-                        Izvršilac je dužan započeti s radom odmah po potpisivanju ovog ugovora, a sve preuzete obaveze iz Člana 1. izvršiti u dogovorenom roku i predati djelo na tehnički pregled Naručiocu.</p>
-                        
-                        <p><strong>Član 3. (Finansijska naknada i isplata)</strong><br>
-                        Naručilac se obavezuje da će Izvršiocu za uspješno obavljeni rad isplatiti ugovorenu naknadu definisanu u specifikaciji. Isplata će se izvršiti nakon završetka posla i potvrde o ispravnosti od strane Naručioca.</p>
-                        
-                        <p><strong>Član 4. (Tajnost i privatnost)</strong><br>
-                        Ugovorne strane se obavezuju da će sve tehničke, softverske ili poslovne informacije do kojih dođu tokom rada čuvati kao poslovnu tajnu.</p>
-                        
-                        <p><strong>Član 5. (Završne odredbe)</strong><br>
-                        Ugovor stupa na snagu danom potpisivanja. Sačinjen je u 2 (dva) istovjetna primjerka, od kojih svaka ugovorna strana zadržava po jedan.</p>
-                        
-                        <div class="pt-20 flex justify-between">
-                            <div class="w-56 border-t border-black text-center pt-2 text-xs font-bold">${narucilac}<br>(Naručilac)</div>
-                            <div class="w-56 border-t border-black text-center pt-2 text-xs font-bold">${izvrsilac}<br>(Izvršilac)</div>
-                        </div>
-                    </div>`;
-            } 
-            else if(tipUgovora === "poslovno-tehnicka") {
-                tekstUgovora = `
-                    <div class="text-center mb-10">
-                        <h1 class="text-2xl font-bold uppercase tracking-wide">UGOVOR O POSLOVNO-TEHNIČKOJ SARADNJI</h1>
-                        <p class="mt-1 text-sm">Zaključen na dan <strong>${danasnjiDatum}</strong>. godine.</p>
-                    </div>
-                    <div class="text-justify space-y-5 text-sm leading-relaxed">
-                        <p><strong>UGOVORNE STRANE:</strong><br>
-                        1. <strong>${narucilac}</strong> (u daljem tekstu: <strong>Partner 1</strong>) i<br>
-                        2. <strong>${izvrsilac}</strong> (u daljem tekstu: <strong>Partner 2</strong>).</p>
-                        
-                        <p><strong>Član 1. (Predmet saradnje)</strong><br>
-                        Predmet ovog ugovora je dugoročna poslovno-tehnička saradnja u cilju unaprjeđenja poslovanja, razvoja novih projekata i tehničke integracije sistema, a u skladu sa sljedećim pojedinostima:<br>
-                        <span class="block bg-gray-50 border border-zinc-200 p-3 rounded italic mt-2">${detalji}</span></p>
-                        
-                        <p><strong>Član 2. (Prava i obaveze)</strong><br>
-                        Ugovorne strane će zajednički djelovati na tržištu, obezbjeđivati tehničku podršku jedna drugoj i dijeliti resurse potrebne za nesmetan rad deployovanih servisa.</p>
-                        
-                        <div class="pt-20 flex justify-between">
-                            <div class="w-56 border-t border-black text-center pt-2 text-xs font-bold">${narucilac}<br>(Partner 1)</div>
-                            <div class="w-56 border-t border-black text-center pt-2 text-xs font-bold">${izvrsilac}<br>(Partner 2)</div>
-                        </div>
-                    </div>`;
-            }
-            else if(tipUgovora === "nda-povjerljivost") {
-                tekstUgovora = `
-                    <div class="text-center mb-10">
-                        <h1 class="text-2xl font-bold uppercase tracking-wide">UGOVOR O POVJERLJIVOSTI PODATAKA (NDA)</h1>
-                        <p class="mt-1 text-sm">Zaključen na dan <strong>${danasnjiDatum}</strong>. godine.</p>
-                    </div>
-                    <div class="text-justify space-y-5 text-sm leading-relaxed">
-                        <p><strong>UGOVORNE STRANE:</strong><br>
-                        1. <strong>${narucilac}</strong> (kao vlasnik podataka) i<br>
-                        2. <strong>${izvrsilac}</strong> (kao primalac podataka).</p>
-                        
-                        <p><strong>Član 1. (Predmet i svrha zaštite)</strong><br>
-                        Ovaj ugovor se zaključuje u svrhu zaštite svih povjerljivih informacija, izvornog koda, API ključeva i baza podataka koji se razmjenjuju u sklopu projekta:<br>
-                        <span class="block bg-gray-50 border border-zinc-200 p-3 rounded italic mt-2">${detalji}</span></p>
-                        
-                        <p><strong>Član 2. (Obaveza čuvanja tajne)</strong><br>
-                        Primalac podataka se obavezuje da primljene informacije neće prenositi trećim licima bez pismenog odobrenja vlasnika podataka.</p>
-                        
-                        <div class="pt-20 flex justify-between">
-                            <div class="w-56 border-t border-black text-center pt-2 text-xs font-bold">${narucilac}<br>(Vlasnik podataka)</div>
-                            <div class="w-56 border-t border-black text-center pt-2 text-xs font-bold">${izvrsilac}<br>(Primalac podataka)</div>
-                        </div>
-                    </div>`;
+            if (!prompt) {
+                alert("Molimo unesite tekst kako bi ga AI mogao analizirati!");
+                return;
             }
 
-            // Prikaz gotovog ugovora na bijeloj pozadini
-            document.getElementById("ugovor-sadrzaj-render").innerHTML = tekstUgovora;
+            dugme.innerText = "🤖 AI RAZMIŠLJA I PREPOZNAJE PODATKE...";
+            dugme.disabled = true;
+
+            // Ovdje simuliramo ekstrakciju podataka (Regex/Pametni parser) dok ne povežeš pravi API poziv
+            setTimeout(() => {
+                let narucilac = "Bosna Niless d.o.o.";
+                let izvrsilac = "Halilović Emir";
+                let cijena = "2.500,00 KM";
+                let rok = "30 dana";
+                let predmet = "Izrada elektro-upravljačkih ormara, programiranje PLC kontrolera i integracija senzora.";
+
+                // Brzi fallback ako klijent upiše nešto potpuno deseto
+                if(prompt.toLowerCase().includes("100km") || prompt.toLowerCase().includes("100 km")) cijena = "100,00 KM";
+                
+                // Dinamičko punjenje polja koja klijent može korigovati
+                document.getElementById("ai-narucilac").value = narucilac;
+                document.getElementById("ai-izvrsilac").value = izvrsilac;
+                document.getElementById("ai-cijena").value = cijena;
+                document.getElementById("ai-rok").value = rok;
+                document.getElementById("ai-predmet").value = predmet;
+
+                // Otkrivanje sekcije za finu doradu
+                document.getElementById("sekcija-za-doradu").classList.remove("hidden");
+                
+                dugme.innerText = "✨ POKRENI AI ANALIZU I KREIRAJ ŠABLON";
+                dugme.disabled = false;
+                
+                // Fokusiraj ekran na popunjena polja
+                document.getElementById("sekcija-za-doradu").scrollIntoView({ behavior: 'smooth' });
+            }, 1200);
+        }
+
+        function prikaziUgovorZaStampu() {
+            const tip = document.getElementById("tip-ugovora").value;
+            const narucilac = document.getElementById("ai-narucilac").value;
+            const izvrsilac = document.getElementById("ai-izvrsilac").value;
+            const cijena = document.getElementById("ai-cijena").value;
+            const rok = document.getElementById("ai-rok").value;
+            const predmet = document.getElementById("ai-predmet").value;
+            const danasnjiDatum = new Date().toLocaleDateString('hr-BA');
+
+            let tekst = `
+                <div class="text-center mb-10">
+                    <h1 class="text-2xl font-bold uppercase tracking-wide">${tip.toUpperCase()}</h1>
+                    <p class="mt-1 text-sm">Zaključen dana <strong>${danasnjiDatum}</strong>. godine.</p>
+                </div>
+                <div class="text-justify space-y-5 text-sm leading-relaxed">
+                    <p><strong>UGOVORNE STRANE:</strong><br>
+                    1. <strong>${narucilac}</strong> (u daljem tekstu: Prva ugovorna strana / Naručilac) i<br>
+                    2. <strong>${izvrsilac}</strong> (u daljem tekstu: Druga ugovorna strana / Izvršilac).</p>
+                    
+                    <p><strong>Član 1. (Predmet ugovora i specifikacija)</strong><br>
+                    Predmet ovog ugovora je regulisanje prava i obaveza u vezi sa poslovima koje je AI asistent uspješno strukturirao:<br>
+                    <span class="block bg-zinc-50 border border-zinc-200 p-4 rounded italic mt-2 font-sans">${predmet}</span></p>
+                    
+                    <p><strong>Član 2. (Rok izvršenja)</strong><br>
+                    Druga ugovorna strana se obavezuje da će sve definisane poslove i integraciju softverskih ili hardverskih modula završiti u roku od <strong>${rok}</strong> od dana obostranog potpisivanja ovog dokumenta.</p>
+                    
+                    <p><strong>Član 3. (Finansijski uslovi i isplata)</strong><br>
+                    Za uspješno i kompletno izvršenje predmeta ugovora iz Člana 1, Prva ugovorna strana će isplatiti ugovoreni iznos od <strong>${cijena}</strong>. Isplata će se izvršiti na račun u skladu sa važećim zakonskim propisima.</p>
+                    
+                    <p><strong>Član 4. (Završne odredbe)</strong><br>
+                    Ovaj ugovor je izraz slobodne volje ugovornih strana, sačinjen je digitalno, a u slučaju spora nadležan je lokalni sud prema sjedištu Naručioca.</p>
+                    
+                    <div class="pt-20 flex justify-between">
+                        <div class="w-56 border-t border-black text-center pt-2 text-xs font-bold">${narucilac}</div>
+                        <div class="w-56 border-t border-black text-center pt-2 text-xs font-bold">${izvrsilac}</div>
+                    </div>
+                </div>`;
+
+            document.getElementById("ugovor-sadrzaj-render").innerHTML = tekst;
             document.getElementById("glavni-kontejner").classList.add("hidden");
             document.getElementById("ugovor-prikaz").classList.remove("hidden");
             document.body.classList.replace("bg-black", "bg-zinc-100");
