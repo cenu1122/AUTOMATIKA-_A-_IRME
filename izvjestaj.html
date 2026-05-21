@@ -10,14 +10,26 @@
 
     <div class="max-w-4xl mx-auto">
         
-        <div class="flex flex-col sm:flex-row justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-2xl mb-6 gap-4">
-            <div class="text-center sm:text-left">
+        <div class="flex flex-col md:flex-row justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-2xl mb-6 gap-4">
+            <div class="text-center md:text-left">
                 <span class="text-[10px] uppercase text-zinc-500 font-bold block">Prijavljeni klijent:</span>
                 <h2 id="firma-naziv-prikaz" class="text-blue-400 font-black text-xl uppercase italic">Učitavanje...</h2>
             </div>
-            <button onclick="odjaviSe()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white font-bold py-2 px-4 rounded-xl text-xs uppercase transition">
-                Odjavi se
-            </button>
+            
+            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-center">
+                <select onchange="location = this.value;" class="bg-zinc-900 border border-zinc-800 text-white text-xs font-bold p-2.5 rounded-xl outline-none cursor-pointer focus:border-blue-500">
+                    <option value="izvjestaj.html" selected>📋 Pregled Izvještaja</option>
+                    <option value="ugovori.html">🤖 AI Generator Ugovora</option>
+                    <option value="cv-generator.html">📄 AI CV / Biografija Generator</option>
+                    <option value="email-generator.html">✉️ AI Email / Pismo Generator</option>
+                    <option value="ponuda-generator.html">📊 AI Generator Ponuda / Predračuna</option>
+                    <option value="zapisnik-generator.html">📝 AI Zapisnik sa Sastanka</option>
+                </select>
+
+                <button onclick="odjaviSe()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white font-bold py-2.5 px-4 rounded-xl text-xs uppercase transition">
+                    Odjavi se
+                </button>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -74,7 +86,6 @@
             btn.innerText = "SLANJE U TOKU...";
             btn.disabled = true;
 
-            // Sad automatski upisuje stvarno ime firme u kolonu "Korisnik ID"
             const noviRed = {
                 "Datum": new Date().toLocaleString('hr-BA'),
                 "Korisnik ID": firmaId, 
@@ -164,7 +175,7 @@
                     <button class="btn-print no-print" onclick="window.print()">🖨️ Isprintaj / Spasi kao PDF</button>
                     
                     <div class="header">
-                        <div class="title">UGOCOR O POSLOVNO-TEHNIČKOJ SARADNJI</div>
+                        <div class="title">UGOVOR O POSLOVNO-TEHNIČKOJ SARADNJI</div>
                         <p>Zaključen na dan <strong>${datum}</strong> godine.</p>
                     </div>
 
@@ -186,7 +197,7 @@
 
                     <div class="section">
                         <strong>Član 3. (Obaveze Naručioca)</strong><br>
-                        Naručilac se obavezuje da će dodijeljeni korisnički nalog koristiti u skladu sa tehničkim uputstvima i redovno izmirivering ugovorene obaveze za održavanje sistema.
+                        Naručilac se obavezuje da će dodijeljeni korisnički nalog koristiti u skladu sa tehničkim uputstvima i redovno izmirivati ugovorene obaveze za održavanje sistema.
                     </div>
 
                     <div class="signatures">
@@ -201,7 +212,6 @@
 
         // --- FUNKCIJA ZA ALARM ---
         function pokreniAlarm() {
-            // Ovdje za prvu ruku iskače obavještenje, a unutra možemo povezati slanje na tvoj eksterni server / API
             alert("🚨 ALARM AKTIVIRAN!\nSistem za klijenta '" + firmaId + "' je upravo pokrenuo hitnu AI analizu i poslao upozorenje!");
             console.log("Hitan alarm aktiviran za: " + firmaId);
         }
