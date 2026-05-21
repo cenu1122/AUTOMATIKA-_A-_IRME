@@ -37,6 +37,10 @@
             <button onclick="generisiUgovorKlijentu()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-emerald-600/20 text-center text-sm">
                 📄 Preuzmi ugovor o saradnji
             </button>
+
+            <button onclick="generisiFakturu()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-blue-600/20 text-center text-sm">
+    💰 Generiši Fakturu
+</button>
             
             <button onclick="pokreniAlarm()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-amber-500/20 text-center text-sm">
                 🚨 Aktiviraj hitan AI alarm
@@ -104,35 +108,53 @@
 function generisiFakturu() {
     const prozorFakture = window.open('', '_blank');
     prozorFakture.document.write(`
-        <html>
-        <head>
-            <style>
-                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                th, td { border: 1px solid #000; padding: 10px; text-align: left; }
-                th { background-color: #f2f2f2; }
-                .total { font-weight: bold; font-size: 18px; }
-            </style>
-        </head>
-        <body>
-            <h1>FAKTURA br. 001</h1>
-            <p>Datum: 21.05.2026</p>
-            <table>
-                <thead>
-                    <tr><th>Rbr.</th><th>Opis usluge</th><th>Količina</th><th>Cijena</th><th>Ukupno</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td>1</td><td>Ekser (10kg)</td><td>10 kg</td><td>5 KM</td><td>50 KM</td></tr>
-                </tbody>
-            </table>
-            <div style="margin-top: 30px;">
-                <p>Ukupno bez PDV-a: 1050 KM</p>
-                <p>PDV (17%): 178,50 KM</p>
-                <p class="total">UKUPNO SA PDV-om: 1228,50 KM</p>
-            </div>
-            <button onclick="window.print()">🖨️ Printaj</button>
-        </body>
-        </html>
-    `);
+    <html>
+    <head>
+        <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #000; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+            .totals { margin-top: 20px; font-weight: bold; }
+        </style>
+    </head>
+    <body>
+        <h2>FAKTURA</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>R. br.</th>
+                    <th>Opis usluge</th>
+                    <th>Količina</th>
+                    <th>Cijena po jed.</th>
+                    <th>Ukupno</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Ekseri (10kg)</td>
+                    <td>10 kg</td>
+                    <td>5,00 KM</td>
+                    <td>50,00 KM</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Daske</td>
+                    <td>2 kubika</td>
+                    <td>600,00 KM</td>
+                    <td>1.200,00 KM</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="totals">
+            <p>Ukupno bez PDV-a: 1.250,00 KM</p>
+            <p>PDV (17%): 212,50 KM</p>
+            <p>UKUPNO SA PDV-om: 1.462,50 KM</p>
+        </div>
+    </body>
+    </html>
+`);
     prozorFakture.document.close();
 }
 
