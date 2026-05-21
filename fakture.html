@@ -53,12 +53,12 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 
                         userText: `ZADATAK: Generiši profesionalnu fakturu.
-                        KORISTI HTML TABLE TAGOVE.
-                        Tabela OBAVEZNO mora imati ove kolone: 
-                        'R.br', 'Opis usluge/materijala', 'Količina', 'Cijena materijala', 'Cijena rada', 'Ukupno'.
-                        Uključi <style> tag da tabela bude širine 100% (width: 100%), sa borderima i preglednim dizajnom.
-                        Uključi datum, broj fakture i podatke o kupcu.
-                        Detalji klijenta/posla: ` + promptKorisnika 
+TI SI INTELIGENTNI ASISTENT: 
+- Ako podaci o kupcu ili adresi fale, koristi "Kupac nepoznat".
+- AKO FALE IZRAČUNI (PDV, ukupno), SAM IH IZRAČUNAJ.
+- Ako korisnik unese samo osnovne podatke (npr. "2kg eksera, 5KM"), ti sam napravi tabelu, izračunaj PDV od 17% i prikaži sve uredno.
+- Ne traži od korisnika da ti računa!
+Detalji posla: ` + promptKorisnika
                     })
                 });
 
