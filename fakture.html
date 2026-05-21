@@ -28,60 +28,63 @@
     </div>
 
     <div id="faktura-prikaz" class="hidden bg-white text-black p-12 mx-auto max-w-4xl rounded-xl my-6 shadow-2xl">
-    <div id="faktura-sadrzaj-render" class="whitespace-pre-wrap text-justify text-sm leading-relaxed font-mono"></div>
-    
-    <div class="mt-8 flex gap-4">
-        <button onclick="window.print()" class="bg-blue-600 text-white py-2 px-6 rounded-lg font-bold hover:bg-blue-700">🖨️ Print / PDF</button>
-        <button onclick="zatvoriPrikaz()" class="bg-zinc-600 text-white py-2 px-6 rounded-lg font-bold hover:bg-zinc-700">⬅️ Nazad</button>
-    </div>
-</div>
-
-<script>
-    async function generisiFakturu() {
-        const promptKorisnika = document.getElementById("ai-prompt-tekst").value.trim();
-        const dugme = document.getElementById("dugme-generisi");
-        const URL_FUNKCIJE = "https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent";
-
-        if (!promptKorisnika) { alert("Unesite podatke za fakturu!"); return; }
+        <div id="faktura-sadrzaj-render"></div>
         
-        dugme.innerText = "⏳ KREIRAM FAKTURU...";
-        dugme.disabled = true;
+        <div class="mt-8 flex gap-4">
+            <button onclick="window.print()" class="bg-blue-600 text-white py-2 px-6 rounded-lg font-bold hover:bg-blue-700">🖨️ Print / PDF</button>
+            <button onclick="zatvoriPrikaz()" class="bg-zinc-600 text-white py-2 px-6 rounded-lg font-bold hover:bg-zinc-700">⬅️ Nazad</button>
+        </div>
+    </div>
 
-        try {
-            const response = await fetch(URL_FUNKCIJE, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    // Ovdje je instrukcija za AI da koristi HTML tabele i dizajn
-                    userText: "ZADATAK: Generiši profesionalnu fakturu. KORISTI HTML TABLE TAGOVE ZA TABELU. Uključi datum, broj fakture, podatke o kupcu i prodavcu. Uključi osnovni CSS u <style> tagu unutar odgovora da faktura ima linije (border) i lijep font. Detalji: " + promptKorisnika 
-                })
-            });
+    <script>
+        async function generisiFakturu() {
+            const promptKorisnika = document.getElementById("ai-prompt-tekst").value.trim();
+            const dugme = document.getElementById("dugme-generisi");
+            const URL_FUNKCIJE = "https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent";
 
-            const data = await response.json();
-            const odgovor = data.tekst || "Greška pri generisanju.";
-
-            const container = document.getElementById("faktura-sadrzaj-render");
+            if (!promptKorisnika) { alert("Unesite podatke za fakturu!"); return; }
             
-            // Renderovanje HTML-a koji je AI vratio
-            container.innerHTML = odgovor;
+            dugme.innerText = "⏳ KREIRAM FAKTURU...";
+            dugme.disabled = true;
 
-            document.getElementById("glavni-kontejner").classList.add("hidden");
-            document.getElementById("faktura-prikaz").classList.remove("hidden");
-            document.body.classList.replace("bg-black", "bg-zinc-100");
+            try {
+                const response = await fetch(URL_FUNKCIJE, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        userText: `ZADATAK: Generiši profesionalnu fakturu.
+                        KORISTI HTML TABLE TAGOVE.
+                        Tabela OBAVEZNO mora imati ove kolone: 
+                        'R.br', 'Opis usluge/materijala', 'Količina', 'Cijena materijala', 'Cijena rada', 'Ukupno'.
+                        Uključi <style> tag da tabela bude širine 100% (width: 100%), sa borderima i preglednim dizajnom.
+                        Uključi datum, broj fakture i podatke o kupcu.
+                        Detalji klijenta/posla: ` + promptKorisnika 
+                    })
+                });
 
-        } catch (error) {
-            alert("Greška pri povezivanju: " + error.message);
-        } finally {
-            dugme.innerText = "✨ GENERIŠI FAKTURU";
-            dugme.disabled = false;
+                const data = await response.json();
+                const odgovor = data.tekst || "Greška pri generisanju.";
+
+                const container = document.getElementById("faktura-sadrzaj-render");
+                container.innerHTML = odgovor;
+
+                document.getElementById("glavni-kontejner").classList.add("hidden");
+                document.getElementById("faktura-prikaz").classList.remove("hidden");
+                document.body.classList.replace("bg-black", "bg-zinc-100");
+
+            } catch (error) {
+                alert("Greška pri povezivanju: " + error.message);
+            } finally {
+                dugme.innerText = "✨ GENERIŠI FAKTURU";
+                dugme.disabled = false;
+            }
         }
-    }
 
-    function zatvoriPrikaz() {
-        document.getElementById("faktura-prikaz").classList.add("hidden");
-        document.getElementById("glavni-kontejner").classList.remove("hidden");
-        document.body.classList.replace("bg-zinc-100", "bg-black");
-    }
-</script>
+        function zatvoriPrikaz() {
+            document.getElementById("faktura-prikaz").classList.add("hidden");
+            document.getElementById("glavni-kontejner").classList.remove("hidden");
+            document.body.classList.replace("bg-zinc-100", "bg-black");
+        }
+    </script>
 </body>
 </html>
