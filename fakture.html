@@ -28,9 +28,13 @@
     </div>
 
     <div id="faktura-prikaz" class="hidden bg-white text-black p-12 mx-auto max-w-4xl rounded-xl my-6 shadow-2xl">
-        <div id="faktura-sadrzaj-render" class="whitespace-pre-wrap text-justify text-sm leading-relaxed font-mono"></div>
-        <button onclick="zatvoriPrikaz()" class="mt-8 bg-zinc-600 text-white py-2 px-6 rounded-lg font-bold hover:bg-zinc-700">⬅️ Nazad</button>
+    <div id="faktura-sadrzaj-render" class="whitespace-pre-wrap text-justify text-sm leading-relaxed font-mono"></div>
+    
+    <div class="mt-8 flex gap-4">
+        <button onclick="window.print()" class="bg-blue-600 text-white py-2 px-6 rounded-lg font-bold hover:bg-blue-700">🖨️ Print / PDF</button>
+        <button onclick="zatvoriPrikaz()" class="bg-zinc-600 text-white py-2 px-6 rounded-lg font-bold hover:bg-zinc-700">⬅️ Nazad</button>
     </div>
+</div>
 
 <script>
     async function generisiFakturu() {
@@ -48,8 +52,8 @@
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ 
-                    // Tražimo od AI-a da vrati čist HTML format, a ne tekst
-                    userText: "ZADATAK: Generiši profesionalnu fakturu u obliku čistog HTML koda (počni sa <table>). Detalji: " + promptKorisnika 
+                    // Ovdje je instrukcija za AI da koristi HTML tabele i dizajn
+                    userText: "ZADATAK: Generiši profesionalnu fakturu. KORISTI HTML TABLE TAGOVE ZA TABELU. Uključi datum, broj fakture, podatke o kupcu i prodavcu. Uključi osnovni CSS u <style> tagu unutar odgovora da faktura ima linije (border) i lijep font. Detalji: " + promptKorisnika 
                 })
             });
 
@@ -58,7 +62,7 @@
 
             const container = document.getElementById("faktura-sadrzaj-render");
             
-            // Sada koristimo innerHTML da bi browser prikazao tabelu, a ne kod
+            // Renderovanje HTML-a koji je AI vratio
             container.innerHTML = odgovor;
 
             document.getElementById("glavni-kontejner").classList.add("hidden");
