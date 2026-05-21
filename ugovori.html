@@ -22,18 +22,17 @@
 
     <div id="ugovor-prikaz" class="hidden bg-white text-black p-12 mx-auto max-w-4xl rounded-xl my-6">
         <div id="ugovor-sadrzaj-render" class="whitespace-pre-wrap text-justify text-sm leading-relaxed"></div>
-        <button onclick="zatvoriUgovor()" class="mt-8 bg-zinc-600 text-white py-2 px-4 rounded-lg">⬅️ Nazad</button>
+        <button onclick="zatvoriUgovor()" class="mt-8 bg-zinc-600 text-white py-2 px-4 rounded-lg">⬅️ Nazad u generator</button>
     </div>
 
     <script>
         async function generisiUgovor() {
             const promptKorisnika = document.getElementById("ai-prompt-tekst").value.trim();
             const dugme = document.getElementById("dugme-generisi");
-            
-            // OVO JE TVOJ TAČAN URL ZA AI-ASISTENT FUNKCIJU
             const URL_FUNKCIJE = "https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent";
 
             if (!promptKorisnika) { alert("Unesite tekst!"); return; }
+            
             dugme.innerText = "⏳ PIŠEM UGOVOR...";
             dugme.disabled = true;
 
@@ -45,9 +44,20 @@
                 });
 
                 const data = await response.json();
+                const odgovor = data.tekst || "Greška: Nema odgovora.";
+
+                // PRIKAZ LOGIKE:
+                const container = document.getElementById("ugovor-sadrzaj-render");
                 
-                // Prikaz rezultata
-                document.getElementById("ugovor-sadrzaj-render").innerText = data.tekst || "Greška: Nema odgovora od AI-ja.";
+                if (odgovor.includes("FALI:")) {
+                    container.innerHTML = `<div class="bg-red-100 p-6 rounded-lg text-red-900 border border-red-300">
+                        <h3 class="font-bold text-lg mb-2">⚠️ Nedostaju podaci:</h3>
+                        <pre class="font-sans whitespace-pre-wrap">${odgovor}</pre>
+                    </div>`;
+                } else {
+                    container.innerText = odgovor;
+                }
+
                 document.getElementById("glavni-kontejner").classList.add("hidden");
                 document.getElementById("ugovor-prikaz").classList.remove("hidden");
                 document.body.classList.replace("bg-black", "bg-zinc-100");
