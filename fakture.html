@@ -52,14 +52,15 @@
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 
-                        userText: `ZADATAK: Generiši ISKLJUČIVO HTML fakturu.
-                        PRAVILA:
-                        1. NE PIŠI nikakav uvodni tekst (npr. "Evo fakture").
-                        2. NE PIŠI nikakav tekst nakon tabele.
-                        3. Vrati SAMO čist HTML kod koji počinje sa <table> i završava sa </table>.
-                        4. Uključi <style> unutar tog HTML-a za lijep izgled fakture (širina 100%, borderi).
-                        5. Sve podatke (datum, kupac, PDV) stavi unutar tabele.
-                        Detalji posla: ${promptKorisnika}`
+                        userText: `ZADATAK: Generiši profesionalnu fakturu ISKLJUČIVO kao HTML tabelu.
+PRAVILA:
+1. NE PIŠI nikakav tekst ispred ili iza <table> tagova.
+2. Faktura mora početi sa zaglavljem (Faktura br., Datum, Kupac) u odvojenim redovima (koristi <br> ili posebne <tr>).
+3. Tabela mora imati jasne kolone: R.br, Opis, Količina, Cijena, Ukupno.
+4. Svaka stavka mora biti u novom <tr> redu.
+5. Obavezno izračunaj PDV (17%) i Ukupno na dnu tabele.
+6. Uključi <style> tag na početku koji postavlja "width: 100%; border-collapse: collapse; border: 1px solid black;" za cijelu tabelu.
+Detalji posla: ${promptKorisnika}`
                     })
                 });
 
