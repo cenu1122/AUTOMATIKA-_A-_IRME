@@ -106,55 +106,40 @@
         // Kada generišeš fakturu, umjesto običnog teksta, kreiraj ovakvu strukturu:
 // --- OVAKO TREBA DA IZGLEDA FUNKCIJA ---
 function generisiFakturu() {
+    // 1. Uzimamo vrijednosti direktno iz polja u formi
+    const naslov = document.getElementById('naslov').value;
+    const detalji = document.getElementById('detalji').value;
+
+    // 2. Provjera: ako je forma prazna, daj upozorenje
+    if(!naslov) { alert("Molim te, prvo upiši naslov u formu!"); return; }
+
     const prozorFakture = window.open('', '_blank');
     prozorFakture.document.write(`
-    <html>
-    <head>
-        <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #000; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; }
-            .totals { margin-top: 20px; font-weight: bold; }
-        </style>
-    </head>
-    <body>
-        <h2>FAKTURA</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>R. br.</th>
-                    <th>Opis usluge</th>
-                    <th>Količina</th>
-                    <th>Cijena po jed.</th>
-                    <th>Ukupno</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>1</td>
-                    <td>Ekseri (10kg)</td>
-                    <td>10 kg</td>
-                    <td>5,00 KM</td>
-                    <td>50,00 KM</td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td>Daske</td>
-                    <td>2 kubika</td>
-                    <td>600,00 KM</td>
-                    <td>1.200,00 KM</td>
-                </tr>
-            </tbody>
-        </table>
-        <div class="totals">
-            <p>Ukupno bez PDV-a: 1.250,00 KM</p>
-            <p>PDV (17%): 212,50 KM</p>
-            <p>UKUPNO SA PDV-om: 1.462,50 KM</p>
-        </div>
-    </body>
-    </html>
-`);
+        <html>
+        <head>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 40px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                th, td { border: 1px solid #333; padding: 12px; text-align: left; }
+                th { background-color: #f4f4f4; }
+            </style>
+        </head>
+        <body>
+            <h1>FAKTURA</h1>
+            <p><strong>Usluga:</strong> ${naslov}</p>
+            <p><strong>Detalji:</strong> ${detalji}</p>
+            <table>
+                <thead>
+                    <tr><th>Opis</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>${naslov}</td><td>Obavljeno</td></tr>
+                </tbody>
+            </table>
+            <button onclick="window.print()">🖨️ Printaj fakturu</button>
+        </body>
+        </html>
+    `);
     prozorFakture.document.close();
 }
 
