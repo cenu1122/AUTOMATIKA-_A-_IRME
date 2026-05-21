@@ -225,6 +225,23 @@
         // Pokretanje skripte
         ucitajSvePodatke();
         setInterval(ucitajSvePodatke, 30000);
+    // --- NOVE FUNKCIJE ZA PAMĆENJE I PRETRAGU ---
+        
+        // Funkcija za pamćenje klijenta
+        function zapamtiKlijenta(ime) {
+            localStorage.setItem('zadnjiKlijent', ime);
+        }
+
+        // Funkcija za provjeru cijene na internetu (ako je nema)
+        function provjeriCijenuNaNetu(predmet) {
+            alert("Cijena nije pronađena! Otvaram pretragu...");
+            window.open(`https://www.google.com/search?q=cijena+za+${encodeURIComponent(predmet)}`, '_blank');
+        }
+
+        // OVO VEĆ IMAŠ, SAMO PROVJERI DA LI JE SVE TU:
+        ucitajSvePodatke();
+        setInterval(ucitajSvePodatke, 30000);
     </script>
+    
 </body>
 </html>
