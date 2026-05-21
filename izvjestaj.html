@@ -117,6 +117,7 @@ function generisiFakturu() {
     prozorFakture.document.write(`
         <html>
         <head>
+        <p>Datum izdavanja: ${new Date().toLocaleDateString('hr-BA')}</p>
             <style>
                 body { font-family: Arial, sans-serif; padding: 40px; }
                 table { width: 100%; border-collapse: collapse; margin-top: 20px; }
