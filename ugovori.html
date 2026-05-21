@@ -9,7 +9,6 @@
 <body class="bg-black text-white p-6 font-sans">
 
     <div id="glavni-kontejner" class="max-w-4xl mx-auto">
-        
         <div class="flex flex-col md:flex-row justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-2xl mb-6 gap-4">
             <div class="text-center md:text-left">
                 <span class="text-[10px] uppercase text-zinc-500 font-bold block">Prijavljeni klijent:</span>
@@ -26,16 +25,16 @@
 
         <div class="bg-zinc-900 border border-blue-600/30 p-6 rounded-2xl shadow-2xl">
             <h2 class="text-blue-500 font-black text-xl uppercase italic mb-2">🤖 Smart AI Generator Ugovora</h2>
-            <p class="text-zinc-400 text-xs mb-6">Unesite zahtjev prirodnim jezikom. Supabase Edge funkcija će preko osiguranog API ključa generisati kompletan ugovor.</p>
+            <p class="text-zinc-400 text-xs mb-6">Unesite zahtjev, AI će generisati ugovor.</p>
             
             <div class="space-y-4">
                 <div>
-                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Opišite ugovor (AI Prompt):</label>
-                    <textarea id="ai-prompt-tekst" rows="6" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-blue-500 outline-none text-white text-sm" placeholder="npr. Napravi mi ugovor o djelu između Bosna Nilessa i Halilović Emira za montažu ormara i PLC programiranje, cijena 2500 KM, rok 30 dana..."></textarea>
+                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Opišite ugovor (Započni sa "ZADATAK: Generiši ugovor..."):</label>
+                    <textarea id="ai-prompt-tekst" rows="6" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-blue-500 outline-none text-white text-sm" placeholder="ZADATAK: Generiši ugovor o djelu između Bosna Niless i Halilović Emira za montažu ormara..."></textarea>
                 </div>
 
-                <button onclick="generisiUgovorPrekoEdgeFunkcije()" id="dugme-generisi" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300 tracking-wide shadow-lg shadow-blue-600/20">
-                    ✨ GENERIŠI UGOVOR POMOĆU AI
+                <button onclick="generisiUgovor()" id="dugme-generisi" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300">
+                    ✨ GENERIŠI UGOVOR
                 </button>
             </div>
         </div>
@@ -43,14 +42,9 @@
 
     <div id="ugovor-prikaz" class="hidden bg-white text-black p-12 font-serif mx-auto max-w-4xl shadow-2xl rounded-xl my-6">
         <div class="no-print mb-8 flex gap-3">
-            <button onclick="window.print()" class="bg-blue-600 text-white font-bold py-2.5 px-5 rounded-lg font-sans text-sm hover:bg-blue-700">🖨️ Isprintaj / Spasi kao PDF</button>
-            <button onclick="zatvoriUgovor()" class="bg-zinc-600 text-white font-bold py-2.5 px-5 rounded-lg font-sans text-sm hover:bg-zinc-700">⬅️ Nazad u generator</button>
+            <button onclick="window.print()" class="bg-blue-600 text-white font-bold py-2.5 px-5 rounded-lg font-sans text-sm hover:bg-blue-700">🖨️ Isprintaj</button>
+            <button onclick="zatvoriUgovor()" class="bg-zinc-600 text-white font-bold py-2.5 px-5 rounded-lg font-sans text-sm hover:bg-zinc-700">⬅️ Nazad</button>
         </div>
-        
-        <style>
-            @media print { .no-print { display: none !important; } body { background: white; color: black; padding: 0; } }
-        </style>
-
         <div id="ugovor-sadrzaj-render" class="whitespace-pre-wrap text-justify text-sm leading-relaxed"></div>
     </div>
 
@@ -58,54 +52,36 @@
         const firmaId = localStorage.getItem("prijavljenaFirma") || "Klijent d.o.o.";
         document.getElementById("firma-naziv-prikaz").innerText = firmaId;
 
-        async function generisiUgovorPrekoEdgeFunkcije() {
+        async function generisiUgovor() {
             const promptKorisnika = document.getElementById("ai-prompt-tekst").value.trim();
             const dugme = document.getElementById("dugme-generisi");
+            
+            // OVO JE TVOJ TAČAN URL FUNKCIJE
+            const URL_FUNKCIJE = "https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent";
 
-            if (!promptKorisnika) {
-                alert("Molimo unesite detalje ugovora!");
-                return;
-            }
-
-            dugme.innerText = "⚡ AI SAKUPLJA PODATKE I PIŠE UGOVOR...";
+            if (!promptKorisnika) { alert("Unesite tekst!"); return; }
+            dugme.innerText = "⏳ PIŠEM UGOVOR...";
             dugme.disabled = true;
 
             try {
-                // ZAMIJENI OVAJ LINK SA STVARNIM LINKOM TVOJE SUPABASE EDGE FUNKCIJE
-                // npr. https://xyz.supabase.co/functions/v1/generisi-ugovor
-                const EDGE_FUNKCIJA_URL = "https://PROJEKAT_ID.supabase.co/functions/v1/generisi-ugovor";
-
-                const response = await fetch(EDGE_FUNKCIJA_URL, {
+                const response = await fetch(URL_FUNKCIJE, {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ prompt: promptKorisnika })
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userText: promptKorisnika })
                 });
 
-                if (!response.ok) {
-                    throw new Error("Edge funkcija je vratila grešku.");
-                }
-
                 const data = await response.json();
-                
-                // Pretpostavljamo da funkcija vraća { ugovor: "tekst..." }
-                if (data.ugovor) {
-                    document.getElementById("ugovor-sadrzaj-render").innerText = data.ugovor;
-                    
-                    // Prebaci na bijeli ekran za print
-                    document.getElementById("glavni-kontejner").classList.add("hidden");
-                    document.getElementById("ugovor-prikaz").classList.remove("hidden");
-                    document.body.classList.replace("bg-black", "bg-zinc-100");
-                } else {
-                    alert("AI nije uspio generisati tekst ugovora.");
-                }
+                const tekst = data.tekst || data.ugovor || "Greška u odgovoru.";
+
+                document.getElementById("ugovor-sadrzaj-render").innerText = tekst;
+                document.getElementById("glavni-kontejner").classList.add("hidden");
+                document.getElementById("ugovor-prikaz").classList.remove("hidden");
+                document.body.classList.replace("bg-black", "bg-zinc-100");
 
             } catch (error) {
-                console.error(error);
-                alert("Došlo je do greške prilikom povezivanja sa Supabase Edge funkcijom.");
+                alert("Greška: " + error.message);
             } finally {
-                dugme.innerText = "✨ GENERIŠI UGOVOR POMOĆU AI";
+                dugme.innerText = "✨ GENERIŠI UGOVOR";
                 dugme.disabled = false;
             }
         }
@@ -114,11 +90,6 @@
             document.getElementById("ugovor-prikaz").classList.add("hidden");
             document.getElementById("glavni-kontejner").classList.remove("hidden");
             document.body.classList.replace("bg-zinc-100", "bg-black");
-        }
-
-        function odjaviSe() {
-            localStorage.removeItem("prijavljenaFirma");
-            window.location.href = "index.html";
         }
     </script>
 </body>
