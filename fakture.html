@@ -36,55 +36,57 @@
         </div>
     </div>
 
-    <script>
-        async function generisiFakturu() {
-            const promptKorisnika = document.getElementById("ai-prompt-tekst").value.trim();
-            const dugme = document.getElementById("dugme-generisi");
-            const URL_FUNKCIJE = "https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent";
+  <script>
+    async function generisiFakturu() {
+        const promptKorisnika = document.getElementById("ai-prompt-tekst").value.trim();
+        const dugme = document.getElementById("dugme-generisi");
+        const URL_FUNKCIJE = "https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent";
 
-            if (!promptKorisnika) { alert("Unesite podatke za fakturu!"); return; }
+        if (!promptKorisnika) { alert("Unesite podatke za fakturu!"); return; }
+        
+        dugme.innerText = "⏳ KREIRAM FAKTURU...";
+        dugme.disabled = true;
+
+        try {
+            const response = await fetch(URL_FUNKCIJE, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    // OVDJE SAM DODAO INSTRUKCIJU ZA ODVOJENU KOLONU
+                    userText: `ZADATAK: Generiši profesionalnu fakturu.
+                    KORISTI HTML TABLE TAGOVE.
+                    Tabela OBAVEZNO mora imati ove kolone: 
+                    'R.br', 'Opis usluge/materijala', 'Količina', 'Cijena materijala', 'Cijena rada', 'Ukupno'.
+                    Uključi <style> tag da tabela bude širine 100% (width: 100%), sa borderima i preglednim dizajnom.
+                    Uključi datum, broj fakture i podatke o kupcu.
+                    Detalji klijenta/posla: ` + promptKorisnika 
+                })
+            });
+
+            const data = await response.json();
+            const odgovor = data.tekst || "Greška pri generisanju.";
+
+            const container = document.getElementById("faktura-sadrzaj-render");
             
-            dugme.innerText = "⏳ KREIRAM FAKTURU...";
-            dugme.disabled = true;
+            // OČIŠĆENO OD KLASA KOJE SU KVARILE PRIKAZ TABELE
+            container.innerHTML = odgovor;
 
-            try {
-                const response = await fetch(URL_FUNKCIJE, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                        userText: `ZADATAK: Generiši profesionalnu fakturu.
-TI SI INTELIGENTNI ASISTENT: 
-- Ako podaci o kupcu ili adresi fale, koristi "Kupac nepoznat".
-- AKO FALE IZRAČUNI (PDV, ukupno), SAM IH IZRAČUNAJ.
-- Ako korisnik unese samo osnovne podatke (npr. "2kg eksera, 5KM"), ti sam napravi tabelu, izračunaj PDV od 17% i prikaži sve uredno.
-- Ne traži od korisnika da ti računa!
-Detalji posla: ` + promptKorisnika
-                    })
-                });
+            document.getElementById("glavni-kontejner").classList.add("hidden");
+            document.getElementById("faktura-prikaz").classList.remove("hidden");
+            document.body.classList.replace("bg-black", "bg-zinc-100");
 
-                const data = await response.json();
-                const odgovor = data.tekst || "Greška pri generisanju.";
-
-                const container = document.getElementById("faktura-sadrzaj-render");
-                container.innerHTML = odgovor;
-
-                document.getElementById("glavni-kontejner").classList.add("hidden");
-                document.getElementById("faktura-prikaz").classList.remove("hidden");
-                document.body.classList.replace("bg-black", "bg-zinc-100");
-
-            } catch (error) {
-                alert("Greška pri povezivanju: " + error.message);
-            } finally {
-                dugme.innerText = "✨ GENERIŠI FAKTURU";
-                dugme.disabled = false;
-            }
+        } catch (error) {
+            alert("Greška pri povezivanju: " + error.message);
+        } finally {
+            dugme.innerText = "✨ GENERIŠI FAKTURU";
+            dugme.disabled = false;
         }
+    }
 
-        function zatvoriPrikaz() {
-            document.getElementById("faktura-prikaz").classList.add("hidden");
-            document.getElementById("glavni-kontejner").classList.remove("hidden");
-            document.body.classList.replace("bg-zinc-100", "bg-black");
-        }
-    </script>
-</body>
+    function zatvoriPrikaz() {
+        document.getElementById("faktura-prikaz").classList.add("hidden");
+        document.getElementById("glavni-kontejner").classList.remove("hidden");
+        document.body.classList.replace("bg-zinc-100", "bg-black");
+    }
+</script>
 </html>
