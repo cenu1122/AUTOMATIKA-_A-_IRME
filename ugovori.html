@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NH AI - Generator Ugovora iz Primjera</title>
+    <title>NH AI - Generator Ugovora</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-black text-white p-6 font-sans">
@@ -20,27 +20,27 @@
                     <option value="ugovori.html" selected>🤖 AI Generator Ugovora</option>
                     <option value="izvjestaj.html">📋 Pregled Izvještaja</option>
                 </select>
-                <button onclick="odjaviSe()" class="bg-zinc-800 text-zinc-400 font-bold py-2.5 px-4 rounded-xl text-xs uppercase hover:text-white">Odjavi se</button>
+                <button onclick="odjaviSe()" class="bg-zinc-800 text-zinc-400 font-bold py-2.5 px-4 rounded-xl text-xs uppercase hover:text-white transition">Odjavi se</button>
             </div>
         </div>
 
         <div class="bg-zinc-900 border border-blue-600/30 p-6 rounded-2xl shadow-2xl">
             <h2 class="text-blue-500 font-black text-xl uppercase italic mb-2">🤖 Smart AI Generator Ugovora</h2>
-            <p class="text-zinc-400 text-xs mb-6">Izaberite jedan od predefinisanih primjera ugovora iz padajuće liste ispod i sistem će generisati kompletan pravni dokument.</p>
+            <p class="text-zinc-400 text-xs mb-6">Izaberite željeni primjer iz padajuće liste. Sistem će automatski povući sve podatke u puni pravni šablon.</p>
             
             <div class="space-y-4">
                 <div>
-                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Izaberi primjer ugovora za generisanje:</label>
-                    <select id="izbor-primjera" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-blue-500 outline-none text-white text-sm font-bold cursor-pointer">
+                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Izaberi tip i primjer ugovora:</label>
+                    <select id="izbor-primjera-ugovora" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-blue-500 outline-none text-white text-sm font-bold cursor-pointer">
                         <option value="ugovor-o-djelu">Ugovor o djelu (Između Bosna Niless i Halilović - Automatizacija)</option>
                         <option value="poslovno-tehnicka">Ugovor o poslovno-tehničkoj saradnji (NH AI-Automation & Klijent)</option>
-                        <option value="nda-povjerljivost">Ugovor o povjerljivosti podataka / NDA (Zaštita izvornog koda i baza)</option>
-                        <option value="odrzavanje-sistema">Ugovor o održavanju softvera i AI glasovnih asistenata</option>
+                        <option value="nda-povjerljivost">Ugovor o povjerljivosti podataka / NDA (Zaštita koda i baza)</option>
+                        <option value="odrzavanje-softvera">Ugovor o tehničkom održavanju i monitoringu AI aplikacija</option>
                     </select>
                 </div>
 
-                <button onclick="generisiUgovorIzPrimjera()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300 tracking-wide">
-                    📄 GENERIŠI OVAJ UGOVOR ODMAH
+                <button onclick="pokreniGenerisanjeUgovora()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300 tracking-wide shadow-lg shadow-blue-600/20">
+                    📄 GENERIŠI I PRIKAŽI UGOVOR
                 </button>
             </div>
         </div>
@@ -48,8 +48,8 @@
 
     <div id="ugovor-prikaz" class="hidden bg-white text-black p-12 font-serif mx-auto max-w-4xl shadow-2xl rounded-xl my-6">
         <div class="no-print mb-8 flex gap-3">
-            <button onclick="window.print()" class="bg-blue-600 text-white font-bold py-2.5 px-5 rounded-lg font-sans text-sm hover:bg-blue-700">🖨️ Isprintaj / Spasi kao PDF</button>
-            <button onclick="zatvoriUgovor()" class="bg-zinc-600 text-white font-bold py-2.5 px-5 rounded-lg font-sans text-sm hover:bg-zinc-700">⬅️ Nazad u generator</button>
+            <button onclick="window.print()" class="bg-blue-600 text-white font-bold py-2.5 px-5 rounded-lg font-sans text-sm hover:bg-blue-700 transition">🖨️ Isprintaj / Spasi kao PDF</button>
+            <button onclick="zatvoriUgovor()" class="bg-zinc-600 text-white font-bold py-2.5 px-5 rounded-lg font-sans text-sm hover:bg-zinc-700 transition">⬅️ Nazad u generator</button>
         </div>
         
         <style>
@@ -60,16 +60,18 @@
     </div>
 
     <script>
-        const firmaId = localStorage.getItem("prijavljenaFirma") || "Nepoznata Firma";
+        // Povlačenje firme iz prijave
+        const firmaId = localStorage.getItem("prijavljenaFirma") || "Klijent d.o.o.";
         document.getElementById("firma-naziv-prikaz").innerText = firmaId;
 
-        function generisiUgovorIzPrimjera() {
-            const tip = document.getElementById("izbor-primjera").value;
+        function pokreniGenerisanjeUgovora() {
+            // Čitanje vrijednosti iz padajuće liste (ćelije)
+            const izabraniTip = document.getElementById("izbor-primjera-ugovora").value;
             const danasnjiDatum = new Date().toLocaleDateString('hr-BA');
-            let tekst = "";
+            let konacniTekst = "";
 
-            if(tip === "ugovor-o-djelu") {
-                tekst = `
+            if(izabraniTip === "ugovor-o-djelu") {
+                konacniTekst = `
                     <div class="text-center mb-10">
                         <h1 class="text-2xl font-bold uppercase tracking-wide">UGOVOR O DJELU</h1>
                         <p class="mt-1 text-sm">Zaključen u Sarajevu, dana <strong>${danasnjiDatum}</strong>. godine.</p>
@@ -88,11 +90,8 @@
                         <p><strong>Član 3. (Cijena i način plaćanja)</strong><br>
                         Za kompletno i kvalitetno izvršenje posla iz Člana 1., Naručilac se obavezuje da će Izvršiocu isplatiti fiksnu neto naknadu u iznosu od <strong>2.500,00 KM</strong> (slovima: dvijehiljade petsto konvertibilnih maraka). Isplata će se izvršiti preko žiro-računa Izvršioca u roku od 7 dana nakon potpisivanja zapisnika o primopredaji.</p>
                         
-                        <p><strong>Član 4. (Materijali i alati)</strong><br>
-                        Naručilac preuzima obavezu da o svom trošku nabavi sav potreban repromaterijal, elektro-komponente i reduktore koji su predmet automatizacije, dok je Izvršilac dužan obezbijediti vlastiti profesionalni alat i softverske licence za programiranje.</p>
-                        
-                        <p><strong>Član 5. (Završne odredbe)</strong><br>
-                        U slučaju spora, ugovorne strane će pokušati sve riješiti mirnim putem, u suprotnom ugovara se nadležnost Opštinskog suda u Sarajevu. Ugovor je sačinjen u dva istovjetna primjerka.</p>
+                        <p><strong>Član 4. (Tajnost podataka)</strong><br>
+                        Izvršilac se obavezuje da će sve poslovne i tehničke podatke do kojih dođe tokom realizacije ovog posla čuvati kao strogu poslovnu tajnu.</p>
                         
                         <div class="pt-20 flex justify-between">
                             <div class="w-56 border-t border-black text-center pt-2 text-xs font-bold">Bosna Niless d.o.o.<br>(Naručilac)</div>
@@ -100,8 +99,8 @@
                         </div>
                     </div>`;
             } 
-            else if(tip === "poslovno-tehnicka") {
-                tekst = `
+            else if(izabraniTip === "poslovno-tehnicka") {
+                konacniTekst = `
                     <div class="text-center mb-10">
                         <h1 class="text-2xl font-bold uppercase tracking-wide">UGOVOR O POSLOVNO-TEHNIČKOJ SARADNJI</h1>
                         <p class="mt-1 text-sm">Zaključen dana <strong>${danasnjiDatum}</strong>. godine.</p>
@@ -117,17 +116,14 @@
                         <p><strong>Član 2. (Tehnički nivo usluge - SLA)</strong><br>
                         Izvršilac se obavezuje da će obezbijediti stabilnost deployovanih cloud rješenja na platformama Supabase i Netlify, sa garantovanim stepenom dostupnosti sistema od 99.9% na mjesečnom nivou.</p>
                         
-                        <p><strong>Član 3. (Finansijski uslovi)</strong><br>
-                        Vrijednost i obim pojedinačnih projekata unutar ove saradnje definisaće se posebnim aneksima ili predračunima. Naručilac se obavezuje da će sve ispostavljene fakture izmirivati u roku od 15 dana.</p>
-                        
                         <div class="pt-20 flex justify-between">
                             <div class="w-56 border-t border-black text-center pt-2 text-xs font-bold">NH AI-Automation<br>(Izvršilac)</div>
                             <div class="w-56 border-t border-black text-center pt-2 text-xs font-bold">${firmaId}<br>(Naručilac)</div>
                         </div>
                     </div>`;
             }
-            else if(tip === "nda-povjerljivost") {
-                tekst = `
+            else if(izabraniTip === "nda-povjerljivost") {
+                konacniTekst = `
                     <div class="text-center mb-10">
                         <h1 class="text-2xl font-bold uppercase tracking-wide">UGOVOR O POVJERLJIVOSTI PODATAKA (NDA)</h1>
                         <p class="mt-1 text-sm">Zaključen u Sarajevu, dana <strong>${danasnjiDatum}</strong>. godine.</p>
@@ -138,20 +134,14 @@
                         <p><strong>Član 1. (Definicija povjerljivih informacija)</strong><br>
                         Povjerljivim informacijama smatraju se svi podaci vezani za izvorni kod (source code), strukturu baza podataka, API ključeve, poslovne logove, kao i lične podatke klijenata i zaposlenih do kojih strane dođu tokom saradnje.</p>
                         
-                        <p><strong>Član 2. (Zabrana neovlaštenog korištenja)</strong><br>
-                        Nijedna ugovorna strana ne smije kopirati, prepisivati, dijeliti trećim licima ili na bilo koji način zloupotrijebiti povjerljive informacije bez izričite pismene saglasnosti druge ugovorne strane.</p>
-                        
-                        <p><strong>Član 3. (Ugovorna kazna)</strong><br>
-                        U slučaju kršenja odredbi ovog ugovora, strana koja je prekršila povjerljivost obavezuje se da će drugoj strani nadoknaditi svu direktnu i indirektnu štetu prouzrokovanu curenjem podataka.</p>
-                        
                         <div class="pt-20 flex justify-between">
                             <div class="w-56 border-t border-black text-center pt-2 text-xs font-bold">NH AI-Automation<br>(Predavalac)</div>
                             <div class="w-56 border-t border-black text-center pt-2 text-xs font-bold">${firmaId}<br>(Primalac)</div>
                         </div>
                     </div>`;
             }
-            else if(tip === "odrzavanje-sistema") {
-                tekst = `
+            else if(izabraniTip === "odrzavanje-softvera") {
+                konacniTekst = `
                     <div class="text-center mb-10">
                         <h1 class="text-2xl font-bold uppercase tracking-wide">UGOVOR O TEHNIČKOM ODRŽAVANJU AI SISTEMA</h1>
                         <p class="mt-1 text-sm">Zaključen dana <strong>${danasnjiDatum}</strong>. godine.</p>
@@ -161,10 +151,7 @@
                         <strong>PRUŽALAC USLUGE:</strong> <strong>NH AI-Automation</strong></p>
                         
                         <p><strong>Član 1. (Predmet održavanja)</strong><br>
-                        Predmet ovog ugovora je redovno tehničko održavanje, monitoring i ažuriranje glasovnih AI asistenata, automatizovanih obrazaca izvještavanja, te redovno brisanje i optimizacija `.gradle` keša i razvojnih okruženja u pozadini sistema.</p>
-                        
-                        <p><strong>Član 2. (Hitne intervencije)</strong><br>
-                        Pružalac usluge se obavezuje da će u slučaju pada sistema ili kritičnih grešaka (npr. HTTP 404/500 greške na serveru) intervenisati u roku od najviše 2 sata od momenta pismene ili telefonske prijave klijenta.</p>
+                        Predmet ovog ugovora je redovno tehničko održavanje, monitoring i ažuriranje glasovnih AI asistenata, automatizovanih obrazaca izvještavanja, te redovna optimizacija baza podataka.</p>
                         
                         <div class="pt-20 flex justify-between">
                             <div class="w-56 border-t border-black text-center pt-2 text-xs font-bold">NH AI-Automation<br>(Pružalac)</div>
@@ -173,8 +160,8 @@
                     </div>`;
             }
 
-            // Prikazivanje izabranog teksta ugovora
-            document.getElementById("ugovor-sadrzaj-render").innerHTML = tekst;
+            // Upisivanje teksta i prebacivanje na bijeli ekran za print
+            document.getElementById("ugovor-sadrzaj-render").innerHTML = konacniTekst;
             document.getElementById("glavni-kontejner").classList.add("hidden");
             document.getElementById("ugovor-prikaz").classList.remove("hidden");
             document.body.classList.replace("bg-black", "bg-zinc-100");
