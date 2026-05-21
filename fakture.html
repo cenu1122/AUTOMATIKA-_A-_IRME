@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NH AI - AI Generator Faktura</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white p-6 font-sans">
+
+    <div id="glavni-kontejner" class="max-w-4xl mx-auto">
+        <nav class="flex gap-6 mb-6 border-b border-zinc-800 pb-4">
+            <a href="ugovori.html" class="text-zinc-500 hover:text-blue-500 transition">📄 Ugovori</a>
+            <a href="fakture.html" class="text-blue-500 font-bold border-b-2 border-blue-500">💰 Fakture</a>
+        </nav>
+
+        <div class="bg-zinc-900 border border-emerald-600/30 p-6 rounded-2xl shadow-2xl">
+            <h2 class="text-emerald-500 font-black text-xl uppercase italic mb-2">💰 Smart AI Generator Faktura</h2>
+            <p class="text-zinc-400 text-xs mb-6">Unesite podatke o poslu, klijentu i iznosu. AI će napraviti profesionalnu fakturu.</p>
+            
+            <div class="space-y-4">
+                <textarea id="ai-prompt-tekst" rows="6" class="w-full bg-black border border-zinc-800 p-3 rounded-xl text-white text-sm focus:border-emerald-500 outline-none" placeholder="ZADATAK: Generiši fakturu za: Firma ABC Sistemi, iznos 2500 KM, usluga: Montaža ormara i PLC programiranje..."></textarea>
+                <button onclick="generisiFakturu()" id="dugme-generisi" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl uppercase italic transition shadow-lg shadow-emerald-900/20">
+                    ✨ GENERIŠI FAKTURU
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="faktura-prikaz" class="hidden bg-white text-black p-12 mx-auto max-w-4xl rounded-xl my-6 shadow-2xl">
+        <div id="faktura-sadrzaj-render" class="whitespace-pre-wrap text-justify text-sm leading-relaxed font-mono"></div>
+        <button onclick="zatvoriPrikaz()" class="mt-8 bg-zinc-600 text-white py-2 px-6 rounded-lg font-bold hover:bg-zinc-700">⬅️ Nazad</button>
+    </div>
+
+    <script>
+        async function generisiFakturu() {
+            const promptKorisnika = document.getElementById("ai-prompt-tekst").value.trim();
+            const dugme = document.getElementById("dugme-generisi");
+            const URL_FUNKCIJE = "https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent";
+
+            if (!promptKorisnika) { alert("Unesite podatke za fakturu!"); return; }
+            
+            dugme.innerText = "⏳ KREIRAM FAKTURU...";
+            dugme.disabled = true;
+
+            try {
+                const response = await fetch(URL_FUNKCIJE, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        userText: "ZADATAK: Generiši fakturu. Detalji: " + promptKorisnika 
+                    })
+                });
+
+                const data = await response.json();
+                const odgovor = data.tekst || "Greška pri generisanju.";
+
+                const container = document.getElementById("faktura-sadrzaj-render");
+                
+                if (odgovor.includes("FALI:")) {
+                    container.innerHTML = `<div class="bg-red-50 p-6 rounded-lg text-red-900 border border-red-200">
+                        <h3 class="font-bold text-lg mb-2">⚠️ Nedostaju podaci:</h3>
+                        <pre class="font-sans whitespace-pre-wrap">${odgovor}</pre>
+                    </div>`;
+                } else {
+                    container.innerText = odgovor;
+                }
+
+                document.getElementById("glavni-kontejner").classList.add("hidden");
+                document.getElementById("faktura-prikaz").classList.remove("hidden");
+                document.body.classList.replace("bg-black", "bg-zinc-100");
+
+            } catch (error) {
+                alert("Greška pri povezivanju: " + error.message);
+            } finally {
+                dugme.innerText = "✨ GENERIŠI FAKTURU";
+                dugme.disabled = false;
+            }
+        }
+
+        function zatvoriPrikaz() {
+            document.getElementById("faktura-prikaz").classList.add("hidden");
+            document.getElementById("glavni-kontejner").classList.remove("hidden");
+            document.body.classList.replace("bg-zinc-100", "bg-black");
+        }
+    </script>
+</body>
+</html>
