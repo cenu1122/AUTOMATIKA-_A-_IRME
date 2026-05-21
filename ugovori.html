@@ -76,7 +76,7 @@
         const firmaId = localStorage.getItem("prijavljenaFirma") || "Nepoznata Firma";
         document.getElementById("firma-naziv-prikaz").innerText = firmaId;
 
-        // 1. SLANJE PODATAKA U TABELU
+        // 1. SLANJE PODATAKA U GOOGLE TABELU
         document.getElementById('alarm-forma').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-slanje');
@@ -113,7 +113,7 @@
             }
         });
 
-        // 2. UCITAVANJE PODATAKA
+        // 2. UCITAVANJE PODATAKA IZ BAZE
         async function ucitajSvePodatke() {
             const kontejner = document.getElementById('svi-izvjestaji');
             try {
@@ -151,78 +151,53 @@
             }
         }
 
-        // --- NOVA, SIGURNA FUNKCIJA ZA OTVARANJE UGOVORA BEZ SKOČNIH PROZORA ---
+        // 3. GENERISANJE UGOVORA DIREKTNO NA STRANICI (ZAOBILAZI POP-UP BLOKERE)
         function generisiUgovorKlijentu() {
             const datum = new Date().toLocaleDateString('hr-BA');
             
-            // Kreiramo kompletan HTML kod ugovora kao tekstualni sadržaj
-            const ugovorHTML = `
-                <!DOCTYPE html>
-                <html lang="hr">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>Ugovor o saradnji - ${firmaId}</title>
-                    <style>
-                        body { font-family: 'Times New Roman', serif; padding: 40px; color: #000; line-height: 1.6; background: #fff; }
-                        .header { text-align: center; margin-bottom: 50px; }
-                        .title { font-size: 22px; font-weight: bold; text-transform: uppercase; margin-bottom: 30px; }
-                        .section { margin-bottom: 20px; text-align: justify; }
-                        .signatures { margin-top: 80px; display: flex; justify-content: space-between; }
-                        .sig-box { width: 200px; border-top: 1px solid #000; text-align: center; padding-top: 5px; }
-                        @media print { .no-print { display: none; } }
-                        .btn-print { background: #4299e1; color: white; border: none; padding: 12px 24px; font-weight: bold; cursor: pointer; border-radius: 6px; margin-bottom: 20px; font-family: sans-serif; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-                    </style>
-                </head>
-                <body>
-                    <button class="btn-print no-print" onclick="window.print()">🖨️ Isprintaj / Spasi kao PDF</button>
+            document.body.innerHTML = `
+                <div style="font-family: 'Times New Roman', serif; padding: 40px; color: #000; line-height: 1.6; background: #fff; min-height: 100vh;">
+                    <div style="margin-bottom: 20px;" class="no-print">
+                        <button onclick="window.print()" style="background: #2563eb; color: white; border: none; padding: 12px 24px; font-weight: bold; cursor: pointer; border-radius: 8px; margin-right: 10px; font-family: sans-serif;">🖨️ Isprintaj / Spasi kao PDF</button>
+                        <button onclick="window.location.reload()" style="background: #4b5563; color: white; border: none; padding: 12px 24px; font-weight: bold; cursor: pointer; border-radius: 8px; font-family: sans-serif;">⬅️ Nazad na aplikaciju</button>
+                    </div>
                     
-                    <div class="header">
-                        <div class="title">UGOVOR O POSLOVNO-TEHNIČKOJ SARADNJI</div>
+                    <style>
+                        @media print { .no-print { display: none !important; } body { padding: 0; } }
+                    </style>
+
+                    <div style="text-align: center; margin-bottom: 50px;">
+                        <div style="font-size: 22px; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;">UGOVOR O POSLOVNO-TEHNIČKOJ SARADNJI</div>
                         <p>Zaključen na dan <strong>${datum}</strong> godine.</p>
                     </div>
 
-                    <div class="section">
+                    <div style="margin-bottom: 20px; text-align: justify;">
                         <strong>UGOVORNE STRANE:</strong><br>
                         1. <strong>NH AI-Automation</strong>, kao pružalac usluga automatizacije i AI sistema (u daljem tekstu: Izvršilac), i<br>
                         2. <strong>${firmaId}</strong>, kao korisnik usluga (u daljem tekstu: Naručilac).
                     </div>
 
-                    <div class="section">
+                    <div style="margin-bottom: 20px; text-align: justify;">
                         <strong>Član 1. (Predmet ugovora)</strong><br>
                         Predmet ovog ugovora je regulisanje prava i obaveza u vezi sa implementacijom vještačke inteligencije, glasovnih asistenata te sistema automatizacije poslovnih izvještaja za potrebe Naručioca.
                     </div>
 
-                    <div class="section">
+                    <div style="margin-bottom: 20px; text-align: justify;">
                         <strong>Član 2. (Obaveze Izvršioca)</strong><br>
                         Izvršilac se obavezuje da će dodijeljeni sistem ("NH AI-Voice / Obrada izvještaja") održavati funkcionalnim, osigurati stabilnu vezu sa AI modelima, te garantovati privatnost podataka unutar baze.
                     </div>
 
-                    <div class="section">
+                    <div style="margin-bottom: 20px; text-align: justify;">
                         <strong>Član 3. (Obaveze Naručioca)</strong><br>
                         Naručilac se obavezuje da će dodijeljeni korisnički nalog koristiti u skladu sa tehničkim uputstvima i redovno izmirivati ugovorene obaveze za održavanje sistema.
                     </div>
 
-                    <div class="signatures">
-                        <div class="sig-box">NH AI-Automation<br>(Izvršilac)</div>
-                        <div class="sig-box">${firmaId}<br>(Naručilac)</div>
+                    <div style="margin-top: 80px; display: flex; justify-content: space-between;">
+                        <div style="width: 200px; border-top: 1px solid #000; text-align: center; padding-top: 5px;">NH AI-Automation<br>(Izvršilac)</div>
+                        <div style="width: 200px; border-top: 1px solid #000; text-align: center; padding-top: 5px;">${firmaId}<br>(Naručilac)</div>
                     </div>
-                </body>
-                </html>
+                </div>
             `;
-
-            // Pretvaramo HTML string u "Blob" (objekat binarnih podataka) i kreiramo siguran URL za novi tab
-            const blob = new Blob([ugovorHTML], { type: 'text/html' });
-            const blobURL = URL.createObjectURL(blob);
-
-            // Kreiramo skriveni link, zadajemo mu _blank i simuliramo klik
-            const tempLink = document.createElement('a');
-            tempLink.href = blobURL;
-            tempLink.target = '_blank';
-            document.body.appendChild(tempLink);
-            tempLink.click();
-            
-            // Čistimo za sobom element iz DOM-a
-            document.body.removeChild(tempLink);
         }
 
         function pokreniAlarm() {
