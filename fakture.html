@@ -32,57 +32,52 @@
         <button onclick="zatvoriPrikaz()" class="mt-8 bg-zinc-600 text-white py-2 px-6 rounded-lg font-bold hover:bg-zinc-700">⬅️ Nazad</button>
     </div>
 
-    <script>
-        async function generisiFakturu() {
-            const promptKorisnika = document.getElementById("ai-prompt-tekst").value.trim();
-            const dugme = document.getElementById("dugme-generisi");
-            const URL_FUNKCIJE = "https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent";
+<script>
+    async function generisiFakturu() {
+        const promptKorisnika = document.getElementById("ai-prompt-tekst").value.trim();
+        const dugme = document.getElementById("dugme-generisi");
+        const URL_FUNKCIJE = "https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent";
 
-            if (!promptKorisnika) { alert("Unesite podatke za fakturu!"); return; }
+        if (!promptKorisnika) { alert("Unesite podatke za fakturu!"); return; }
+        
+        dugme.innerText = "⏳ KREIRAM FAKTURU...";
+        dugme.disabled = true;
+
+        try {
+            const response = await fetch(URL_FUNKCIJE, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    // Tražimo od AI-a da vrati čist HTML format, a ne tekst
+                    userText: "ZADATAK: Generiši profesionalnu fakturu u obliku čistog HTML koda (počni sa <table>). Detalji: " + promptKorisnika 
+                })
+            });
+
+            const data = await response.json();
+            const odgovor = data.tekst || "Greška pri generisanju.";
+
+            const container = document.getElementById("faktura-sadrzaj-render");
             
-            dugme.innerText = "⏳ KREIRAM FAKTURU...";
-            dugme.disabled = true;
+            // Sada koristimo innerHTML da bi browser prikazao tabelu, a ne kod
+            container.innerHTML = odgovor;
 
-            try {
-                const response = await fetch(URL_FUNKCIJE, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                        userText: "ZADATAK: Generiši fakturu. Detalji: " + promptKorisnika 
-                    })
-                });
+            document.getElementById("glavni-kontejner").classList.add("hidden");
+            document.getElementById("faktura-prikaz").classList.remove("hidden");
+            document.body.classList.replace("bg-black", "bg-zinc-100");
 
-                const data = await response.json();
-                const odgovor = data.tekst || "Greška pri generisanju.";
-
-                const container = document.getElementById("faktura-sadrzaj-render");
-                
-                if (odgovor.includes("FALI:")) {
-                    container.innerHTML = `<div class="bg-red-50 p-6 rounded-lg text-red-900 border border-red-200">
-                        <h3 class="font-bold text-lg mb-2">⚠️ Nedostaju podaci:</h3>
-                        <pre class="font-sans whitespace-pre-wrap">${odgovor}</pre>
-                    </div>`;
-                } else {
-                    container.innerText = odgovor;
-                }
-
-                document.getElementById("glavni-kontejner").classList.add("hidden");
-                document.getElementById("faktura-prikaz").classList.remove("hidden");
-                document.body.classList.replace("bg-black", "bg-zinc-100");
-
-            } catch (error) {
-                alert("Greška pri povezivanju: " + error.message);
-            } finally {
-                dugme.innerText = "✨ GENERIŠI FAKTURU";
-                dugme.disabled = false;
-            }
+        } catch (error) {
+            alert("Greška pri povezivanju: " + error.message);
+        } finally {
+            dugme.innerText = "✨ GENERIŠI FAKTURU";
+            dugme.disabled = false;
         }
+    }
 
-        function zatvoriPrikaz() {
-            document.getElementById("faktura-prikaz").classList.add("hidden");
-            document.getElementById("glavni-kontejner").classList.remove("hidden");
-            document.body.classList.replace("bg-zinc-100", "bg-black");
-        }
-    </script>
+    function zatvoriPrikaz() {
+        document.getElementById("faktura-prikaz").classList.add("hidden");
+        document.getElementById("glavni-kontejner").classList.remove("hidden");
+        document.body.classList.replace("bg-zinc-100", "bg-black");
+    }
+</script>
 </body>
 </html>
