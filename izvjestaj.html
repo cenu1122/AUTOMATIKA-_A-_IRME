@@ -99,23 +99,42 @@
             } catch (err) { alert("Greška: " + err.message); } finally { btn.innerText = "POŠALJI U GOOGLE TABELU"; btn.disabled = false; }
         });
 
-        // 2. UCITAVANJE PODATAKA
-        async function ucitajSvePodatke() {
-            const kontejner = document.getElementById('svi-izvjestaji');
-            try {
-                const podaci = await (await fetch(API_URL + '?t=' + Date.now())).json();
-                const lista = Array.isArray(podaci) ? podaci : [];
-                if (lista.length === 0) { kontejner.innerHTML = "<p class='text-zinc-600 text-center uppercase text-xs'>Tabela je prazna.</p>"; return; }
-                
-                kontejner.innerHTML = '';
-                [...lista].reverse().forEach((red, i) => {
-                    const kartica = document.createElement('div');
-                    kartica.className = "bg-zinc-900 border border-zinc-800 p-6 rounded-2xl";
-                    kartica.innerHTML = `<div class="flex justify-between mb-2 border-b border-zinc-800 pb-2"><span class="text-red-500 text-[10px] uppercase font-black">ZAPIS #${lista.length - i}</span><span class="text-zinc-600 text-[10px]">${red["Datum"]}</span></div><h3 class="text-white text-xl font-black mb-2">${red["Tekst izvještaja"]}</h3><p class="text-zinc-400 text-sm">${red["AI Analiza"]}</p>`;
-                    kontejner.appendChild(kartica);
-                });
-            } catch (err) { kontejner.innerHTML = `<p class="text-red-600">GREŠKA: ${err.message}</p>`; }
-        }
+        // Kada generišeš fakturu, umjesto običnog teksta, kreiraj ovakvu strukturu:
+// --- OVAKO TREBA DA IZGLEDA FUNKCIJA ---
+function generisiFakturu() {
+    const prozorFakture = window.open('', '_blank');
+    prozorFakture.document.write(`
+        <html>
+        <head>
+            <style>
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                th, td { border: 1px solid #000; padding: 10px; text-align: left; }
+                th { background-color: #f2f2f2; }
+                .total { font-weight: bold; font-size: 18px; }
+            </style>
+        </head>
+        <body>
+            <h1>FAKTURA br. 001</h1>
+            <p>Datum: 21.05.2026</p>
+            <table>
+                <thead>
+                    <tr><th>Rbr.</th><th>Opis usluge</th><th>Količina</th><th>Cijena</th><th>Ukupno</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>1</td><td>Ekser (10kg)</td><td>10 kg</td><td>5 KM</td><td>50 KM</td></tr>
+                </tbody>
+            </table>
+            <div style="margin-top: 30px;">
+                <p>Ukupno bez PDV-a: 1050 KM</p>
+                <p>PDV (17%): 178,50 KM</p>
+                <p class="total">UKUPNO SA PDV-om: 1228,50 KM</p>
+            </div>
+            <button onclick="window.print()">🖨️ Printaj</button>
+        </body>
+        </html>
+    `);
+    prozorFakture.document.close();
+}
 
         // 3. POMOĆNE FUNKCIJE
         function generisiUgovorKlijentu() { /* ... tvoj kod za ugovor ... */ alert("Generisanje ugovora..."); }
