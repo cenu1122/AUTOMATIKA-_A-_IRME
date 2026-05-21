@@ -18,13 +18,13 @@
             
             <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-center">
                 <select onchange="location = this.value;" class="bg-zinc-900 border border-zinc-800 text-white text-xs font-bold p-2.5 rounded-xl outline-none cursor-pointer focus:border-blue-500">
-    <option value="ugovori.html" selected>🤖 AI Generator Ugovora</option>
-    <option value="izvjestaj.html">📋 Pregled Izvještaja</option>
-    <option value="cv-generator.html">📄 AI CV / Biografija Generator</option>
-    <option value="email-generator.html">✉️ AI Email / Pismo Generator</option>
-    <option value="ponuda-generator.html">📊 AI Generator Ponuda / Predračuna</option>
-    <option value="zapisnik-generator.html">📝 AI Zapisnik sa Sastanka</option>
-</select>
+                    <option value="ugovori.html" selected>🤖 AI Generator Ugovora</option>
+                    <option value="izvjestaj.html">📋 Pregled Izvještaja</option>
+                    <option value="cv-generator.html">📄 AI CV / Biografija Generator</option>
+                    <option value="email-generator.html">✉️ AI Email / Pismo Generator</option>
+                    <option value="ponuda-generator.html">📊 AI Generator Ponuda / Predračuna</option>
+                    <option value="zapisnik-generator.html">📝 AI Zapisnik sa Sastanka</option>
+                </select>
 
                 <button onclick="odjaviSe()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white font-bold py-2.5 px-4 rounded-xl text-xs uppercase transition">
                     Odjavi se
@@ -44,6 +44,11 @@
                         <option value="povjerljivost">Ugovor o povjerljivosti podataka (NDA)</option>
                         <option value="odrzavanje">Ugovor o održavanju AI i automatizovanih sistema</option>
                     </select>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Detalji i specifičnost ugovora (šta se ugovara):</label>
+                    <textarea id="ugovor-detalji-unos" rows="5" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-blue-500 outline-none transition text-white text-sm" placeholder="npr. Izvršilac se obavezuje da će klijentu izraditi glasovnog asistenta za podršku, integrisati Supabase bazu podataka i obezbijediti 12 mjeseci održavanja po cijeni od..."></textarea>
                 </div>
 
                 <button onclick="pokreniGenerisanjeUgovora()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-blue-600/20 tracking-wide">
@@ -77,8 +82,8 @@
             </div>
 
             <div>
-                <strong>Član 1. (Predmet ugovora)</strong><br>
-                Predmet ovog ugovora je regulisanje prava i obaveza u vezi sa implementacijom vještačke inteligencije, glasovnih asistenata te sistema automatizacije poslovnih procesa za potrebe Naručioca, u skladu sa izabranim modelom saradnje.
+                <strong>Član 1. (Predmet ugovora i specifikacija)</strong><br>
+                Predmet ovog ugovora je regulisanje prava i obaveza u vezi sa implementacijom vještačke inteligencije, glasovnih asistenata te sistema automatizacije poslovnih procesa. <span id="ugovor-detalji-prikaz" class="underline"></span>
             </div>
 
             <div>
@@ -105,6 +110,7 @@
 
         function pokreniGenerisanjeUgovora() {
             const selektovaniTip = document.getElementById("tip-ugovora").value;
+            const unosDetalji = document.getElementById("ugovor-detalji-unos").value;
             const datum = new Date().toLocaleDateString('hr-BA');
             
             // Postavljanje dinamičkih vrijednosti u ugovor
@@ -120,6 +126,13 @@
             document.getElementById("ugovor-klijent").innerText = firmaId;
             document.getElementById("potpis-naručilac").innerHTML = firmaId + "<br>(Naručilac)";
 
+            // Ako je korisnik nešto upisao, dodajemo to u Član 1. Ako nije, ostaje podrazumijevani tekst.
+            if(unosDetalji.trim() !== "") {
+                document.getElementById("ugovor-detalji-prikaz").innerText = "Ugovorne strane su saglasne sa sljedećim specifičnostima: " + unosDetalji;
+            } else {
+                document.getElementById("ugovor-detalji-prikaz").innerText = "Saradnja se odvija u skladu sa izabranim modelom i tehničkom specifikacijom.";
+            }
+
             // Sakrij formu i prikaži čist ugovor preko cijelog ekrana
             document.getElementById("glavni-kontejner").classList.add("hidden");
             document.getElementById("ugovor-prikaz").classList.remove("hidden");
@@ -127,7 +140,6 @@
         }
 
         function zatvoriUgovor() {
-            // Vrati sve u prvobitno stanje aplikacije
             document.getElementById("ugovor-prikaz").classList.add("hidden");
             document.getElementById("glavni-kontejner").classList.remove("hidden");
             document.body.classList.replace("bg-zinc-100", "bg-black");
