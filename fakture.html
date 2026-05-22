@@ -47,13 +47,15 @@
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 
-                        userText: `ZADATAK: Generiši ISKLJUČIVO HTML fakturu.
-                        CSS PRAVILA:
-                        1. Tabela mora imati width: 100%.
-                        2. Kolone 'Cijena' i 'Ukupno' moraju imati 'text-align: right' (poravnanje udesno).
-                        3. Zadnji redovi (Ukupno, PDV, Za uplatu) moraju biti poravnati udesno.
-                        4. Ne piši uvodni tekst, samo HTML.
-                        Unos: ${puniPrompt}` // Ovdje sada koristimo ispravan promjenljivu
+                        userText: `ZADATAK: Generiši kompletnu fakturu kao HTML dokument. 
+OVO JE OBAVEZNA STRUKTURA:
+1. NA VRHU: Zaglavlje sa nazivom firme, adresom i "Faktura br: 001/2026".
+2. TABELA: Tabela sa punim ivicama (border="1") i zaglavljem: R.br | Opis | Kol | Cijena | Ukupno.
+3. NA DNU: Obračun: Ukupno bez PDV-a, PDV (17%), Ukupno sa PDV-om.
+4. STIL: Obavezno dodaj <style> tag na početku koji postavlja "width: 100%; border-collapse: collapse; font-family: sans-serif;".
+5. PORAVNANJE: Brojeve u kolonama Cijena i Ukupno poravnaj udesno (text-align: right).
+
+OVDJE SU PODACI ZA POPUNITI: ${puniPrompt}`
                     })
                 });
 
