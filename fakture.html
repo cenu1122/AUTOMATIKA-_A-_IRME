@@ -3,36 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NH AI - AI Generator Faktura</title>
+    <title>NH AI - Professional Fakture</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-black text-white p-6 font-sans">
 
     <div id="glavni-kontejner" class="max-w-4xl mx-auto">
-        <nav class="flex gap-6 mb-6 border-b border-zinc-800 pb-4">
-            <a href="ugovori.html" class="text-zinc-500 hover:text-blue-500 transition">📄 Ugovori</a>
-            <a href="fakture.html" class="text-blue-500 font-bold border-b-2 border-blue-500">💰 Fakture</a>
-        </nav>
-
-        <div class="bg-zinc-900 border border-emerald-600/30 p-6 rounded-2xl shadow-2xl">
-            <h2 class="text-emerald-500 font-black text-xl uppercase italic mb-2">💰 Smart AI Generator Faktura</h2>
-            <p class="text-zinc-400 text-xs mb-6">Unesite podatke o poslu, klijentu i iznosu.</p>
-            
-            <div class="space-y-4">
-                <textarea id="ai-prompt-tekst" rows="6" class="w-full bg-black border border-zinc-800 p-3 rounded-xl text-white text-sm focus:border-emerald-500 outline-none" placeholder="Unesite detalje posla..."></textarea>
-                <button onclick="generisiFakturu()" id="dugme-generisi" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl uppercase italic transition shadow-lg shadow-emerald-900/20">
-                    ✨ GENERIŠI FAKTURU
-                </button>
-            </div>
+        <div class="bg-zinc-900 p-6 rounded-2xl border border-zinc-800">
+            <h2 class="text-emerald-500 font-black text-xl mb-4">💰 Smart AI Generator</h2>
+            <textarea id="ai-prompt-tekst" rows="6" class="w-full bg-black border border-zinc-800 p-4 rounded-xl text-sm" placeholder="Npr. 10 kg eksera po 5 KM, 2 kubika daske po 600 KM..."></textarea>
+            <button onclick="generisiFakturu()" id="dugme-generisi" class="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 py-3 rounded-xl font-black uppercase italic transition">
+                ✨ GENERIŠI FAKTURU
+            </button>
         </div>
     </div>
 
     <div id="faktura-prikaz" class="hidden bg-white text-black p-12 mx-auto max-w-4xl rounded-xl my-6 shadow-2xl">
         <div id="faktura-sadrzaj-render"></div>
-        
         <div class="mt-8 flex gap-4">
-            <button onclick="window.print()" class="bg-blue-600 text-white py-2 px-6 rounded-lg font-bold hover:bg-blue-700">🖨️ Print / PDF</button>
-            <button onclick="zatvoriPrikaz()" class="bg-zinc-600 text-white py-2 px-6 rounded-lg font-bold hover:bg-zinc-700">⬅️ Nazad</button>
+            <button onclick="window.print()" class="bg-blue-600 text-white py-2 px-6 rounded-lg font-bold">🖨️ Print / PDF</button>
+            <button onclick="zatvoriPrikaz()" class="bg-zinc-600 text-white py-2 px-6 rounded-lg font-bold">⬅️ Nazad</button>
         </div>
     </div>
 
@@ -44,7 +34,7 @@
 
             if (!promptKorisnika) { alert("Unesite podatke!"); return; }
             
-            dugme.innerText = "⏳ KREIRAM FAKTURU...";
+            dugme.innerText = "⏳ KREIRAM...";
             dugme.disabled = true;
 
             try {
@@ -52,21 +42,19 @@
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 
-                        userText: `ZADATAK: Generiši ISKLJUČIVO HTML tabelu fakture. 
-                        PRAVILA:
-                        1. Ne piši nikakav uvodni tekst, samo kod tabele.
-                        2. Koristi ovaj CSS: <style>table {width:100%; border-collapse:collapse;} th, td {border:1px solid #000; padding:8px; text-align:left;}</style>
-                        3. Kolone: R.br, Opis, Kol, Cijena, Ukupno.
-                        4. Na kraju obavezno zbrajanje sa PDV-om (17%).
+                        userText: `ZADATAK: Generiši ISKLJUČIVO HTML fakturu.
+                        CSS PRAVILA:
+                        1. Tabela mora imati width: 100%.
+                        2. Kolone 'Cijena' i 'Ukupno' moraju imati 'text-align: right' (poravnanje udesno).
+                        3. Zadnji redovi (Ukupno, PDV, Za uplatu) moraju biti poravnati udesno.
+                        4. Ne piši uvodni tekst.
                         Unos: ${promptKorisnika}` 
                     })
                 });
 
                 const data = await response.json();
-                const odgovor = data.tekst || data.content || "Greška pri učitavanju.";
-
-                const container = document.getElementById("faktura-sadrzaj-render");
-                container.innerHTML = odgovor;
+                const odgovor = data.tekst || data.content || "Greška.";
+                document.getElementById("faktura-sadrzaj-render").innerHTML = odgovor;
                 
                 document.getElementById("faktura-prikaz").classList.remove("hidden");
                 document.getElementById("glavni-kontejner").classList.add("hidden");
