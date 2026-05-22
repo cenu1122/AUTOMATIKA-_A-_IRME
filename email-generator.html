@@ -36,17 +36,39 @@
 
         <div class="bg-zinc-900 border border-orange-600/30 p-6 rounded-2xl mb-12 shadow-2xl">
             <h2 class="text-orange-500 font-black text-xl uppercase italic mb-4">✉️ NH AI — Generator Poslovnih Emailova</h2>
+            
+            <div class="mb-5">
+                <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-2">Odaberi ton emaila:</label>
+                <div class="grid grid-cols-3 gap-3">
+                    <button type="button" onclick="postaviTon('profesionalan', this)" class="ton-dugme bg-orange-600 text-white py-2.5 px-4 rounded-xl font-bold text-xs uppercase border border-orange-600 shadow-lg shadow-orange-600/10">
+                        💼 Profesionalan
+                    </button>
+                    <button type="button" onclick="postaviTon('opusten', this)" class="ton-dugme bg-zinc-950 hover:bg-zinc-800 text-zinc-400 py-2.5 px-4 rounded-xl font-bold text-xs uppercase border border-zinc-800">
+                        🤝 Prijateljski
+                    </button>
+                    <button type="button" onclick="postaviTon('hitan', this)" class="ton-dugme bg-zinc-950 hover:bg-zinc-800 text-zinc-400 py-2.5 px-4 rounded-xl font-bold text-xs uppercase border border-zinc-800">
+                        🚨 Hitan / Ozbiljan
+                    </button>
+                </div>
+            </div>
+
             <form id="email-forma" class="space-y-4">
                 <div>
                     <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Tema / Svrha emaila:</label>
                     <input type="text" id="email-tema" required placeholder="npr. Kašnjenje isporuke robe, Ponuda za saradnju, Izvinjenje klijentu..." 
                            class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-orange-500 outline-none transition text-white">
                 </div>
+                
                 <div>
-                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Kratke natuknice (Šta AI mora pomenuti i u kakvom tonu):</label>
-                    <textarea id="email-detalji" rows="4" required placeholder="npr. Ton: Ljubazan ali oštar. Pomeni da kasnimo jer dobavljač nije poslao dijelove, ali da stiže u utorak i dajemo popust 10%..." 
+                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Kratke natuknice (Šta AI mora pomenuti):</label>
+                    <textarea id="email-detalji" rows="4" required placeholder="Napiši detalje ovdje ili iskoristi mikrofon ispod..." 
                               class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-orange-500 outline-none transition text-white"></textarea>
                 </div>
+
+                <button type="button" id="mikrofon-dugme" onclick="pokreniMikrofon()" class="w-full bg-zinc-950 hover:bg-zinc-800 text-red-500 font-black py-3 rounded-xl text-xs uppercase italic border border-zinc-800 transition shadow-md">
+                    🎤 DIKTIRAJ NATUKNICE U MIKROFON
+                </button>
+
                 <button type="submit" id="btn-slanje" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-orange-600/20">
                     ✉️ GENERIŠI PROFESIONALAN EMAIL
                 </button>
@@ -66,6 +88,50 @@
         const firmaId = localStorage.getItem("prijavljenaFirma") || "Nepoznata Firma";
         document.getElementById("firma-naziv-prikaz").innerText = firmaId;
 
+        let trenutniTon = "profesionalan";
+
+        // Logika za odabir tona (mijenja stilove dugmadi na klik)
+        function postaviTon(ton, dugme) {
+            trenutniTon = ton;
+            document.querySelectorAll('.ton-dugme').forEach(btn => {
+                btn.classList.remove('bg-orange-600', 'text-white', 'border-orange-600', 'shadow-lg', 'shadow-orange-600/10');
+                btn.classList.add('bg-zinc-950', 'text-zinc-400', 'border-zinc-800');
+            });
+            dugme.classList.remove('bg-zinc-950', 'text-zinc-400', 'border-zinc-800');
+            dugme.classList.add('bg-orange-600', 'text-white', 'border-orange-600', 'shadow-lg', 'shadow-orange-600/10');
+        }
+
+        // Logika za glasovno diktiranje preko mikrofona
+        function pokreniMikrofon() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) { alert("Tvoj browser ne podržava mikrofon!"); return; }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = "hr-HR";
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.start();
+
+            const mikrofonDugme = document.getElementById("mikrofon-dugme");
+            mikrofonDugme.innerText = "🎤 SLUŠAM TE, PRIČAJ...";
+            mikrofonDugme.classList.remove("text-red-500", "bg-zinc-950");
+            mikrofonDugme.classList.add("text-black", "bg-yellow-500");
+
+            recognition.onresult = function(event) {
+                const tekst = event.results[0][0].transcript;
+                document.getElementById("email-detalji").value += " " + tekst;
+            };
+
+            recognition.onend = function() {
+                mikrofonDugme.innerText = "🎤 DIKTIRAJ NATUKNICE U MIKROFON";
+                mikrofonDugme.classList.remove("text-black", "bg-yellow-500");
+                mikrofonDugme.classList.add("text-red-500", "bg-zinc-950");
+            };
+
+            recognition.onerror = function(event) { console.error(event); alert("Greška sa mikrofonom!"); };
+        }
+
+        // Slanje forme na SheetDB bazu podataka
         document.getElementById('email-forma').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-slanje');
@@ -75,11 +141,14 @@
             btn.innerText = "AI PIŠE EMAIL...";
             btn.disabled = true;
 
+            // Spajamo izabrani ton i natuknice u tekst zahtjeva kako bi backend znao šta da radi
+            const puniOpisZaAI = `[TON: ${trenutniTon.toUpperCase()}] — ${detalji}`;
+
             const noviRed = {
                 "Datum": new Date().toLocaleString('hr-BA'),
                 "Korisnik ID": firmaId, 
                 "Tekst izvještaja": "AI_EMAIL: " + tema,
-                "AI Analiza": "U izradi... [Svrha: " + detalji + "]"
+                "AI Analiza": "U izradi... [Svrha: " + puniOpisZaAI + "]"
             };
 
             try {
@@ -102,6 +171,7 @@
             }
         });
 
+        // Učitavanje i renderovanje emailova iz baze
         async function ucitajEmailove() {
             const kontejner = document.getElementById('svi-emailovi');
             try {
@@ -145,7 +215,7 @@
             }
         }
 
-        // FUNKCIJA ZA KOPIRANJE TEKSTA U JEDAN KLIK
+        // Kopiranje na klik
         function kopirajTekst(dugme) {
             const tekst = dugme.previousElementSibling.innerText;
             navigator.clipboard.writeText(tekst).then(() => {
@@ -166,7 +236,3 @@
     </script>
 </body>
 </html>
-
-💎 Šta je ovdje genijalno urađeno za tvoj backend:
-
-S
