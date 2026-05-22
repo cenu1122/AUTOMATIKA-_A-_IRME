@@ -35,21 +35,23 @@
             text-align: right;
         }
 
+        /* OVAJ DIO SAKRIVA DUGMAD NA PAPIRU/PDF-u */
         @media print {
             body {
                 background: white;
             }
 
             #input-dio,
-            #print-dugme,
-            #mikrofon-dugme {
-                display: none;
+            .akcija-dugmad,
+            #kontrolna-traka {
+                display: none !important;
             }
 
             #faktura-prikaz {
                 box-shadow: none;
                 margin: 0;
                 max-width: 100%;
+                padding: 0;
             }
         }
     </style>
@@ -72,17 +74,24 @@
 3 utičnice po 5KM,
 1 osigurač po 15KM"></textarea>
 
-        <button id="mikrofon-dugme" onclick="pokreniMikrofon()" class="mt-4 w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-bold">
+        <button id="mikrofon-dugme" onclick="pokreniMikrofon()" class="mt-4 w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-bold akcija-dugmad">
             🎤 DIKTIRAJ U MIKROFON
         </button>
 
-        <button onclick="generisiFakturu()" id="dugme-generisi" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold text-lg">
+        <button onclick="generisiFakturu()" id="dugme-generisi" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold text-lg akcija-dugmad">
             KREIRAJ FAKTURU
         </button>
 
     </div>
 
-    <div id="faktura-prikaz" class="hidden max-w-4xl mx-auto bg-white p-12 shadow-2xl mt-8 rounded-2xl">
+    <div id="kontrolna-traka" class="hidden max-w-4xl mx-auto mb-4 flex justify-between items-center bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-md">
+        <span class="text-blue-800 font-semibold">✨ Faktura je uspješno generisana!</span>
+        <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-md transition-all">
+            🖨️ PRINTAJ / SPASI U PDF
+        </button>
+    </div>
+
+    <div id="faktura-prikaz" class="hidden max-w-4xl mx-auto bg-white p-12 shadow-2xl rounded-2xl">
 
         <div class="flex justify-between border-b-2 border-black pb-6 mb-6">
             <div>
@@ -104,10 +113,6 @@
 
         <div id="faktura-sadrzaj-render"></div>
 
-        <button id="print-dugme" onclick="window.print()" class="mt-8 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold">
-            PRINTAJ FAKTURU
-        </button>
-
     </div>
 
     <script>
@@ -117,7 +122,7 @@
             "Datum: " + danas.toLocaleDateString("bs-BA");
 
         // =========================
-        // MIKROFON
+        // MIKROFON LOGIKA
         // =========================
         function pokreniMikrofon() {
             const SpeechRecognition =
@@ -160,7 +165,7 @@
         }
 
         // =========================
-        // GENERISI FAKTURU
+        // GENERISANJE FAKTURE
         // =========================
         async function generisiFakturu() {
             const tekst = document.getElementById("ai-prompt-tekst").value;
@@ -184,7 +189,9 @@
                         },
                         body: JSON.stringify({
                             userText: `
-Generiši ISKLJUČIVO HTML tabelu.
+Generiši HTML tabelu sa stavkama.
+
+Na samom vrhu tabele (ili unutar naslovnog reda) jasno napiši unikatni "Broj fakture" u formatu (Broj/Godina).
 
 Kolone:
 - R.br
@@ -193,9 +200,9 @@ Kolone:
 - Cijena
 - Ukupno
 
-NE dodavati ukupne sume.
-NE dodavati tekst prije ili poslije.
-Samo HTML tabele.
+Uključi i redove za Subtotal, PDV (17%) i UKUPNO na dnu tabele.
+NE dodavati nikakav tekst prije ili poslije tabele.
+Samo HTML tabela.
 
 Podaci:
 ${tekst}
@@ -209,78 +216,21 @@ ${tekst}
                 }
 
                 const data = await response.json();
-                console.log(data);
 
                 const kontejner = document.getElementById("faktura-sadrzaj-render");
 
-                // UBACI HTML IZ AI ODGOVORA
+                // UBACI TABELU OD AI-JA
                 kontejner.innerHTML =
                     data.tekst ||
                     data.content ||
                     data.response ||
                     "<p>Greška pri generisanju.</p>";
 
-                const tabela = kontejner.querySelector("table");
-
-                if (tabela) {
-                    const redovi = tabela.querySelectorAll("tr");
-                    let ukupno = 0;
-
-                    redovi.forEach((red, index) => {
-                        // Preskoči naslovni red (R.br, Opis...)
-                        if (index === 0) return;
-
-                        const kolone = red.querySelectorAll("td");
-
-                        if (kolone.length >= 5) {
-                            let vrijednost = kolone[4].innerText;
-
-                            // NAPREDNO ČIŠĆENJE: Zamjenjuje zarez tačkom i briše sve osim brojeva i tačke
-                            vrijednost = vrijednost
-                                .replace(",", ".")
-                                .replace(/[^\d.]/g, "")
-                                .trim();
-
-                            const broj = parseFloat(vrijednost);
-
-                            // Saberi samo ako je izvučen ispravan broj (ignoriše tekstove "po dogovoru")
-                            if (!isNaN(broj)) {
-                                ukupno += broj;
-                            }
-                        }
-                    });
-
-                    const pdv = ukupno * 0.17;
-                    const zaUplatu = ukupno + pdv;
-
-                    // GENERISANJE BLOKA SA MATEMATIKOM NA DNJU
-                    const sumaHTML = `
-                        <div style="
-                            margin-top: 30px;
-                            width: 350px;
-                            margin-left: auto;
-                            font-size: 18px;
-                        ">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                                <strong>Ukupno bez PDV:</strong>
-                                <span>${ukupno.toFixed(2)} KM</span>
-                            </div>
-                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                                <strong>PDV 17%:</strong>
-                                <span>${pdv.toFixed(2)} KM</span>
-                            </div>
-                            <div style="display:flex; justify-content:space-between; border-top:2px solid black; padding-top:12px; font-size:24px;">
-                                <strong>ZA UPLATU:</strong>
-                                <strong>${zaUplatu.toFixed(2)} KM</strong>
-                            </div>
-                        </div>
-                    `;
-
-                    kontejner.innerHTML += sumaHTML;
-                }
-
-                // SAKRIJ INPUT I PRIKAŽI FAKTURU
+                // SAKRIJ UNOS POLJA
                 document.getElementById("input-dio").classList.add("hidden");
+                
+                // PRIKAŽI KONTROLNU TRAKU SA PRINT DUGMETOM I FAKTURU
+                document.getElementById("kontrolna-traka").classList.remove("hidden");
                 document.getElementById("faktura-prikaz").classList.remove("hidden");
 
             } catch (error) {
