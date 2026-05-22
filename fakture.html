@@ -36,69 +36,44 @@
         </div>
     </div>
 
-    <script>
-        async function generisiFakturu() {
-            const promptKorisnika = document.getElementById("ai-prompt-tekst").value.trim();
-            const dugme = document.getElementById("dugme-generisi");
-            const URL_FUNKCIJE = "https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent";
+  <script>
+    async function generisiFakturu() {
+        const promptKorisnika = document.getElementById("ai-prompt-tekst").value.trim();
+        const dugme = document.getElementById("dugme-generisi");
+        // Provjeri da li je ovo ispravan URL tvoje Supabase funkcije
+        const URL_FUNKCIJE = "https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent";
 
-            if (!promptKorisnika) { alert("Unesite podatke za fakturu!"); return; }
+        if (!promptKorisnika) { alert("Unesite podatke za fakturu!"); return; }
+        
+        dugme.innerText = "⏳ KREIRAM FAKTURU...";
+        dugme.disabled = true;
+
+        try {
+            const response = await fetch(URL_FUNKCIJE, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    userText: `ZADATAK: Generiši profesionalnu fakturu kao HTML tabelu. 
+                    NE TRAŽI dodatne podatke. Ako nešto fali, izmisli.
+                    Formatiraj kao čist <table>.
+                    Unos korisnika: ${promptKorisnika}` 
+                })
+            });
+
+            const data = await response.json();
+            // Prikaz rezultata
+            const container = document.getElementById("faktura-sadrzaj-render");
+            container.innerHTML = data.tekst || "Greška: AI nije vratio odgovor.";
             
-            dugme.innerText = "⏳ KREIRAM FAKTURU...";
-            dugme.disabled = true;
-
-            try {
-                const response = await fetch(URL_FUNKCIJE, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                        userText: `ZADATAK: Generiši fakturu kao HTML tabelu.
-SAM IZRAČUNAJ CIJENE. Ne traži podatke od korisnika.
-Ako podaci fale, popuni ih sa: 
-- Datum: 21.05.2026. 
-- Kupac: "Nepoznat"
-- PDV: 17%
-
-OBAVEZNO IZRAČUNAJ:
-1. Ukupno po stavci (Količina * Cijena).
-2. Ukupno bez PDV-a (zbir svih stavki).
-3. PDV iznos (17% od zbira).
-4. Ukupno sa PDV-om.
-
-OVO JE FORMAT TABELE (koristi ga):
-<table border="1" style="width:100%; border-collapse:collapse;">
-  <tr><th>Stavka</th><th>Kol.</th><th>Cijena</th><th>Ukupno</th></tr>
-  </table>
-<p>Ukupno bez PDV: [IZNOS]</p>
-<p>PDV (17%): [IZNOS]</p>
-<p>UKUPNO SA PDV: [IZNOS]</p>
-
-Detalji posla: ${promptKorisnika}`
-                });
-
-                const data = await response.json();
-                const odgovor = data.tekst || "Greška: AI nije vratio odgovor.";
-
-                const container = document.getElementById("faktura-sadrzaj-render");
-                container.innerHTML = odgovor;
-
-                document.getElementById("glavni-kontejner").classList.add("hidden");
-                document.getElementById("faktura-prikaz").classList.remove("hidden");
-                document.body.classList.replace("bg-black", "bg-zinc-100");
-
-            } catch (error) {
-                alert("Greška pri povezivanju: " + error.message);
-            } finally {
-                dugme.innerText = "✨ GENERIŠI FAKTURU";
-                dugme.disabled = false;
-            }
+            document.getElementById("faktura-prikaz").classList.remove("hidden");
+            document.getElementById("glavni-kontejner").classList.add("hidden");
+        } catch (error) {
+            alert("Greška: " + error.message);
+        } finally {
+            dugme.innerText = "✨ GENERIŠI FAKTURU";
+            dugme.disabled = false;
         }
-
-        function zatvoriPrikaz() {
-            document.getElementById("faktura-prikaz").classList.add("hidden");
-            document.getElementById("glavni-kontejner").classList.remove("hidden");
-            document.body.classList.replace("bg-zinc-100", "bg-black");
-        }
-    </script>
+    }
+</script>
 </body>
 </html>
