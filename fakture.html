@@ -2,80 +2,64 @@
 <html lang="hr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NH AI - Professional Fakture</title>
+    <title>Profesionalni Faktura Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* OVO OSIGURAVA DA TABELA UVIJEK IZGLEDA KAO DOKUMENT */
+        #faktura-sadrzaj-render table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        #faktura-sadrzaj-render th { background: #f3f4f6; border: 1px solid #000; padding: 10px; }
+        #faktura-sadrzaj-render td { border: 1px solid #000; padding: 10px; }
+        .text-right { text-align: right; }
+    </style>
 </head>
-<body class="bg-black text-white p-6 font-sans">
+<body class="bg-zinc-100 p-6">
 
-    <div id="glavni-kontejner" class="max-w-4xl mx-auto">
-        <div class="bg-zinc-900 p-6 rounded-2xl border border-zinc-800">
-            <h2 class="text-emerald-500 font-black text-xl mb-4">💰 Smart AI Generator</h2>
-            <textarea id="ai-prompt-tekst" rows="6" class="w-full bg-black border border-zinc-800 p-4 rounded-xl text-sm" placeholder="Npr. 10 kg eksera po 5 KM, 2 kubika daske po 600 KM..."></textarea>
-            <button onclick="generisiFakturu()" id="dugme-generisi" class="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 py-3 rounded-xl font-black uppercase italic transition">
-                ✨ GENERIŠI FAKTURU
-            </button>
-        </div>
+    <div id="input-dio" class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+        <h1 class="text-2xl font-bold mb-4">Unos podataka za fakturu</h1>
+        <textarea id="ai-prompt-tekst" rows="5" class="w-full border p-4 rounded-lg" placeholder="Npr: 10m kabla po 2KM, 1 utičnica po 5KM..."></textarea>
+        <button onclick="generisiFakturu()" id="dugme-generisi" class="mt-4 w-full bg-blue-600 text-white py-3 rounded-lg font-bold">KREIRAJ FAKTURU</button>
     </div>
 
-    <div id="faktura-prikaz" class="hidden bg-white text-black p-12 mx-auto max-w-4xl rounded-xl my-6 shadow-2xl">
-        <div id="faktura-sadrzaj-render"></div>
-        <div class="mt-8 flex gap-4">
-            <button onclick="window.print()" class="bg-blue-600 text-white py-2 px-6 rounded-lg font-bold">🖨️ Print / PDF</button>
-            <button onclick="zatvoriPrikaz()" class="bg-zinc-600 text-white py-2 px-6 rounded-lg font-bold">⬅️ Nazad</button>
+    <div id="faktura-prikaz" class="hidden max-w-3xl mx-auto bg-white p-12 shadow-2xl mt-8">
+        <div class="flex justify-between border-b-2 border-black pb-6 mb-6">
+            <div>
+                <h2 class="text-3xl font-bold">MOJA FIRMA D.O.O.</h2>
+                <p>Ulica bb, 71000 Sarajevo</p>
+                <p>ID: 420000000000</p>
+            </div>
+            <div class="text-right">
+                <h3 class="text-xl font-bold uppercase">Faktura</h3>
+                <p>Datum: 22.05.2026.</p>
+            </div>
         </div>
+
+        <div id="faktura-sadrzaj-render"></div>
     </div>
 
     <script>
         async function generisiFakturu() {
-            // 1. Prvo uzmi vrijednost iz inputa
-            const promptKorisnika = document.getElementById("ai-prompt-tekst").value.trim();
-            
-            // 2. Onda kreiraj puni prompt
-            const puniPrompt = "Napravi kompletnu profesionalnu fakturu sa zaglavljem, tabelom i obračunom PDV-a. " + promptKorisnika;
-            
+            const tekst = document.getElementById("ai-prompt-tekst").value;
             const dugme = document.getElementById("dugme-generisi");
-            const URL_FUNKCIJE = "https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent";
-
-            if (!promptKorisnika) { alert("Unesite podatke!"); return; }
             
-            dugme.innerText = "⏳ KREIRAM...";
-            dugme.disabled = true;
-
+            dugme.innerText = "Računam...";
+            
             try {
-                const response = await fetch(URL_FUNKCIJE, {
+                const response = await fetch("https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 
-                        userText: `ZADATAK: Generiši kompletnu fakturu kao HTML dokument. 
-OVO JE OBAVEZNA STRUKTURA:
-1. NA VRHU: Zaglavlje sa nazivom firme, adresom i "Faktura br: 001/2026".
-2. TABELA: Tabela sa punim ivicama (border="1") i zaglavljem: R.br | Opis | Kol | Cijena | Ukupno.
-3. NA DNU: Obračun: Ukupno bez PDV-a, PDV (17%), Ukupno sa PDV-om.
-4. STIL: Obavezno dodaj <style> tag na početku koji postavlja "width: 100%; border-collapse: collapse; font-family: sans-serif;".
-5. PORAVNANJE: Brojeve u kolonama Cijena i Ukupno poravnaj udesno (text-align: right).
-
-OVDJE SU PODACI ZA POPUNITI: ${puniPrompt}`
+                        userText: `Napravi samo HTML tabelu (bez zaglavlja i bez teksta okolo). 
+                        Kolone: R.br, Opis, Kol, Cijena, Ukupno. 
+                        Na kraju dodaj redove za: Ukupno, PDV 17%, Za uplatu.
+                        Podaci: ${tekst}` 
                     })
                 });
 
                 const data = await response.json();
-                const odgovor = data.tekst || data.content || "Greška.";
-                document.getElementById("faktura-sadrzaj-render").innerHTML = odgovor;
-                
+                document.getElementById("faktura-sadrzaj-render").innerHTML = data.tekst || data.content;
+                document.getElementById("input-dio").classList.add("hidden");
                 document.getElementById("faktura-prikaz").classList.remove("hidden");
-                document.getElementById("glavni-kontejner").classList.add("hidden");
-            } catch (error) {
-                alert("Greška: " + error.message);
-            } finally {
-                dugme.innerText = "✨ GENERIŠI FAKTURU";
-                dugme.disabled = false;
-            }
-        }
-
-        function zatvoriPrikaz() {
-            document.getElementById("faktura-prikaz").classList.add("hidden");
-            document.getElementById("glavni-kontejner").classList.remove("hidden");
+            } catch(e) { alert("Greška!"); }
         }
     </script>
 </body>
