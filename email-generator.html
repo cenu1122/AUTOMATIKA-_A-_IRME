@@ -52,20 +52,19 @@
                 </div>
             </div>
 
-            <form id="email-forma" onsubmit="generisiMojEmail(event)" class="space-y-4">
+            <form id="email-forma" class="space-y-4">
                 <div>
                     <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Tema / Svrha emaila:</label>
-                    <input type="text" id="email-tema" required placeholder="npr. Kašnjenje isporuke robe, Ponuda za saradnju..." 
+                    <input type="text" id="email-tema" required placeholder="npr. Kašnjenje isporuke robe, Ponuda za saradnju, Izvinjenje klijentu..." 
                            class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-orange-500 outline-none transition text-white">
                 </div>
-                
                 <div>
-                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Kratke natuknice (Šta AI mora pomenuti):</label>
-                    <textarea id="email-detalji" rows="4" required placeholder="Napiši detalje ovdje ili iskoristi mikrofon ispod..." 
+                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Kratke natuknice (Šta AI mora pomenuti i u kakvom tonu):</label>
+                    <textarea id="email-detalji" rows="4" required placeholder="npr. Pomeni da kasnimo jer dobavljač nije poslao dijelove..." 
                               class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-orange-500 outline-none transition text-white"></textarea>
                 </div>
 
-                <button type="button" id="mikrofon-dugme" onclick="pokreniMikrofon()" class="w-full bg-zinc-950 hover:bg-zinc-800 text-red-500 font-black py-3 rounded-xl text-xs uppercase italic border border-zinc-800 transition shadow-md">
+                <button type="button" id="mikrofon-dugme" onclick="pokreniMikrofon()" class="w-full bg-zinc-950 hover:bg-zinc-800 text-red-500 border border-zinc-800 font-black py-3 rounded-xl text-xs uppercase italic transition shadow-md">
                     🎤 DIKTIRAJ NATUKNICE U MIKROFON
                 </button>
 
@@ -90,58 +89,41 @@
 
         let trenutniTon = "profesionalan";
 
-        // Popravljena logika za odabir tona preko ID-jeva (sigurnija varijanta)
+        // Mijenjanje izgleda dugmadi za ton
         function postaviTon(ton) {
             trenutniTon = ton;
-            
-            // Resetuj svu dugmad u tamno stanje
-            const gumbi = ['ton-profesionalan', 'ton-opusten', 'ton-hitan'];
-            gumbi.forEach(id => {
-                const el = document.getElementById(id);
-                if(el) {
-                    el.className = "bg-zinc-950 text-zinc-400 py-2.5 px-4 rounded-xl font-bold text-xs uppercase border border-zinc-800";
-                }
+            ['ton-profesionalan', 'ton-opusten', 'ton-hitan'].forEach(id => {
+                document.getElementById(id).className = "bg-zinc-950 text-zinc-400 py-2.5 px-4 rounded-xl font-bold text-xs uppercase border border-zinc-800";
             });
-
-            // Aktiviraj ono koje je kliknuto
-            const aktivni = document.getElementById('ton-' + ton);
-            if(aktivni) {
-                aktivni.className = "bg-orange-600 text-white py-2.5 px-4 rounded-xl font-bold text-xs uppercase border border-orange-600 shadow-lg shadow-orange-600/10";
-            }
+            document.getElementById('ton-' + ton).className = "bg-orange-600 text-white py-2.5 px-4 rounded-xl font-bold text-xs uppercase border border-orange-600 shadow-lg shadow-orange-600/10";
         }
 
-        // Glasovno diktiranje
+        // Mikrofon diktiranje
         function pokreniMikrofon() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) { alert("Tvoj browser ne podržava mikrofon!"); return; }
+            if (!SpeechRecognition) { alert("Browser ne podržava mikrofon!"); return; }
 
             const recognition = new SpeechRecognition();
             recognition.lang = "hr-HR";
-            recognition.continuous = false;
-            recognition.interimResults = false;
             recognition.start();
 
             const mikrofonDugme = document.getElementById("mikrofon-dugme");
             mikrofonDugme.innerText = "🎤 SLUŠAM TE, PRIČAJ...";
-            mikrofonDugme.className = "w-full bg-yellow-500 text-black font-black py-3 rounded-xl text-xs uppercase italic border border-transparent transition shadow-md";
+            mikrofonDugme.className = "w-full bg-yellow-500 text-black font-black py-3 rounded-xl text-xs uppercase italic transition shadow-md";
 
             recognition.onresult = function(event) {
-                const tekst = event.results[0][0].transcript;
-                document.getElementById("email-detalji").value += " " + tekst;
+                document.getElementById("email-detalji").value += " " + event.results[0][0].transcript;
             };
 
             recognition.onend = function() {
                 mikrofonDugme.innerText = "🎤 DIKTIRAJ NATUKNICE U MIKROFON";
-                mikrofonDugme.className = "w-full bg-zinc-950 hover:bg-zinc-800 text-red-500 font-black py-3 rounded-xl text-xs uppercase italic border border-zinc-800 transition shadow-md";
+                mikrofonDugme.className = "w-full bg-zinc-950 hover:bg-zinc-800 text-red-500 border border-zinc-800 font-black py-3 rounded-xl text-xs uppercase italic transition shadow-md";
             };
-
-            recognition.onerror = function(event) { console.error(event); alert("Greška sa mikrofonom!"); };
         }
 
-        // POTPUNO KORIGOVANA I SIGURNA FUNKCIJA ZA SLANJE
-        async function generisiMojEmail(e) {
-            e.preventDefault(); // Zaustavi osvežavanje stranice
-            
+        // SLANJE U TVOJU GOOGLE TABELU (SHEETDB)
+        document.getElementById('email-forma').addEventListener('submit', async (e) => {
+            e.preventDefault();
             const btn = document.getElementById('btn-slanje');
             const tema = document.getElementById('email-tema').value;
             const detalji = document.getElementById('email-detalji').value;
@@ -149,14 +131,14 @@
             btn.innerText = "AI PIŠE EMAIL...";
             btn.disabled = true;
 
-            // Pakovanje tona i natuknica u format koji tvoja skripta prepoznaje
-            const puniOpisZaAI = `[TON: ${trenutniTon.toUpperCase()}] — ${detalji}`;
+            // Spajamo izabrani ton i tekst natuknica u jedan string koji ide tvojoj skripti
+            const konacneNatuknice = "Ton: " + trenutniTon.toUpperCase() + ". " + detalji;
 
             const noviRed = {
                 "Datum": new Date().toLocaleString('hr-BA'),
                 "Korisnik ID": firmaId, 
                 "Tekst izvještaja": "AI_EMAIL: " + tema,
-                "AI Analiza": "U izradi... [Svrha: " + puniOpisZaAI + "]"
+                "AI Analiza": "U izradi... [Svrha: " + konacneNatuknice + "]"
             };
 
             try {
@@ -167,21 +149,19 @@
                 });
 
                 if(res.ok) {
-                    alert("Zahtjev uspješno poslan! AI sada kreira tekst maila u Google tabeli. Sačekaj malo pa osvježi listu ispod.");
+                    alert("Zahtjev poslan! Tvoj vanjski AI sada generiše tekst maila u tabeli. Sačekaj par sekundi pa pogledaj listu ispod.");
                     document.getElementById('email-forma').reset();
                     await ucitajEmailove(); 
-                } else {
-                    alert("Greška pri slanju na bazu (SheetDB). Status: " + res.status);
                 }
             } catch (err) {
-                alert("Sistemska greška: " + err.message);
+                alert("Greška: " + err.message);
             } finally {
                 btn.innerText = "✉️ GENERIŠI PROFESIONALAN EMAIL";
                 btn.disabled = false;
             }
-        }
+        });
 
-        // Čitanje i prikaz iz SheetDB-a
+        // ČITANJE IZ TABELE I PRIKAZ NA DNU STRANICE
         async function ucitajEmailove() {
             const kontejner = document.getElementById('svi-emailovi');
             try {
@@ -189,7 +169,7 @@
                 const podaci = await odgovor.json();
                 const listaPodataka = Array.isArray(podaci) ? podaci : [];
 
-                const emailLista = listaPodataka.filter(red => red["Korisnik ID"] === firmaId && red["Tekst izvještaja"] && red["Tekst izvještaja"].startsWith("AI_EMAIL:"));
+                const emailLista = listaPodataka.filter(red => red["Korisnik ID"] === firmaId && red["Tekst izvještaja"].startsWith("AI_EMAIL:"));
                 const poredani = [...emailLista].reverse();
                 
                 kontejner.innerHTML = '';
@@ -221,11 +201,10 @@
                     kontejner.appendChild(kartica);
                 });
             } catch (err) {
-                console.error(err);
+                kontejner.innerHTML = `<p class="text-red-600 font-bold text-center">GREŠKA: ${err.message}</p>`;
             }
         }
 
-        // Kopiranje
         function kopirajTekst(dugme) {
             const tekst = dugme.previousElementSibling.innerText;
             navigator.clipboard.writeText(tekst).then(() => {
@@ -241,7 +220,6 @@
         function pokreniAlarm() { alert("🚨 ALARM AKTIVIRAN za firmu: " + firmaId); }
         function odjaviSe() { localStorage.removeItem("prijavljenaFirma"); window.location.href = "index.html"; }
 
-        // Pokreni odmah učitavanje
         ucitajEmailove();
         setInterval(ucitajEmailove, 20000);
     </script>
