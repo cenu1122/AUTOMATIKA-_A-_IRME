@@ -28,7 +28,12 @@
 
     <script>
         async function generisiFakturu() {
+            // 1. Prvo uzmi vrijednost iz inputa
             const promptKorisnika = document.getElementById("ai-prompt-tekst").value.trim();
+            
+            // 2. Onda kreiraj puni prompt
+            const puniPrompt = "Napravi kompletnu profesionalnu fakturu sa zaglavljem, tabelom i obračunom PDV-a. " + promptKorisnika;
+            
             const dugme = document.getElementById("dugme-generisi");
             const URL_FUNKCIJE = "https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent";
 
@@ -47,8 +52,8 @@
                         1. Tabela mora imati width: 100%.
                         2. Kolone 'Cijena' i 'Ukupno' moraju imati 'text-align: right' (poravnanje udesno).
                         3. Zadnji redovi (Ukupno, PDV, Za uplatu) moraju biti poravnati udesno.
-                        4. Ne piši uvodni tekst.
-                        Unos: ${promptKorisnika}` 
+                        4. Ne piši uvodni tekst, samo HTML.
+                        Unos: ${puniPrompt}` // Ovdje sada koristimo ispravan promjenljivu
                     })
                 });
 
