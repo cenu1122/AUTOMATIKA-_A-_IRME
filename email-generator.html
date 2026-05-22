@@ -34,7 +34,7 @@
             </div>
         </div>
 
-        <div class="bg-zinc-900 border border-orange-600/30 p-6 rounded-2xl mb-12 shadow-2xl">
+        <div class="bg-zinc-900 border border-orange-600/30 p-6 rounded-2xl mb-8 shadow-2xl">
             <h2 class="text-orange-500 font-black text-xl uppercase italic mb-4">✉️ NH AI — Generator Poslovnih Emailova</h2>
             
             <div class="mb-5">
@@ -52,56 +52,67 @@
                 </div>
             </div>
 
-            <form id="email-forma" class="space-y-4">
+            <form id="email-forma" onsubmit="generisiMojEmailOvdje(event)" class="space-y-4">
                 <div>
                     <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Tema / Svrha emaila:</label>
-                    <input type="text" id="email-tema" required placeholder="npr. Kašnjenje isporuke robe, Ponuda za saradnju, Izvinjenje klijentu..." 
+                    <input type="text" id="email-tema" required placeholder="npr. Kašnjenje isporuke robe, Ponuda za saradnju..." 
                            class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-orange-500 outline-none transition text-white">
                 </div>
+                
                 <div>
-                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Kratke natuknice (Šta AI mora pomenuti i u kakvom tonu):</label>
-                    <textarea id="email-detalji" rows="4" required placeholder="npr. Pomeni da kasnimo jer dobavljač nije poslao dijelove..." 
+                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Kratke natuknice (Šta AI mora pomenuti):</label>
+                    <textarea id="email-detalji" rows="4" required placeholder="Napiši detalje ovdje ili iskoristi mikrofon ispod..." 
                               class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-orange-500 outline-none transition text-white"></textarea>
                 </div>
 
-                <button type="button" id="mikrofon-dugme" onclick="pokreniMikrofon()" class="w-full bg-zinc-950 hover:bg-zinc-800 text-red-500 border border-zinc-800 font-black py-3 rounded-xl text-xs uppercase italic transition shadow-md">
+                <button type="button" id="mikrofon-dugme" onclick="pokreniMikrofon()" class="w-full bg-zinc-950 hover:bg-zinc-800 text-red-500 font-black py-3 rounded-xl text-xs uppercase italic border border-zinc-800 transition shadow-md">
                     🎤 DIKTIRAJ NATUKNICE U MIKROFON
                 </button>
 
                 <button type="submit" id="btn-slanje" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-orange-600/20">
-                    ✉️ GENERIŠI PROFESIONALAN EMAIL
+                    ⚡ GENERIŠI EMAIL ODMAH
                 </button>
             </form>
         </div>
 
-        <hr class="border-zinc-800 mb-12">
-
-        <h1 class="text-orange-500 font-black text-3xl italic mb-8 uppercase tracking-tighter">VAŠI GENERISANI EMAIL-OVI</h1>
-        <div id="svi-emailovi" class="space-y-6">
-            <p class="text-zinc-500 animate-pulse uppercase text-xs text-center">Učitavam emailove...</p>
+        <div id="ai-rezultat-kontejner" class="hidden bg-zinc-900 border-2 border-emerald-500/30 p-6 rounded-2xl mb-12 shadow-2xl animate-fade-in">
+            <div class="flex justify-between items-center mb-4 border-b border-zinc-800 pb-3">
+                <h3 class="text-emerald-400 font-black uppercase italic text-lg flex items-center gap-2">
+                    ✨ VAŠ GENERISANI EMAIL:
+                </h3>
+                <button onclick="kopirajDirektanTekst()" id="btn-kopiraj-direktno" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-5 rounded-xl text-xs uppercase transition shadow-lg">
+                    📋 KOPIRAJ EMAIL
+                </button>
+            </div>
+            <div id="ai-gotov-mail" class="bg-black border border-zinc-800 p-5 rounded-xl text-zinc-200 text-sm font-mono leading-relaxed whitespace-pre-wrap"></div>
         </div>
+
     </div>
 
     <script>
-        const API_URL = 'https://sheetdb.io/api/v1/rjhvmuxlef6zk';
+        const SHEET_API_URL = 'https://sheetdb.io/api/v1/rjhvmuxlef6zk';
+        // Ovdje ide tvoja glavna Supabase Edge Funkcija koja je povezana na Groq/AI
+        const AI_EDGE_URL = 'https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent'; 
+        
         const firmaId = localStorage.getItem("prijavljenaFirma") || "Nepoznata Firma";
         document.getElementById("firma-naziv-prikaz").innerText = firmaId;
 
         let trenutniTon = "profesionalan";
 
-        // Mijenjanje izgleda dugmadi za ton
         function postaviTon(ton) {
             trenutniTon = ton;
-            ['ton-profesionalan', 'ton-opusten', 'ton-hitan'].forEach(id => {
-                document.getElementById(id).className = "bg-zinc-950 text-zinc-400 py-2.5 px-4 rounded-xl font-bold text-xs uppercase border border-zinc-800";
+            const gumbi = ['ton-profesionalan', 'ton-opusten', 'ton-hitan'];
+            gumbi.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.className = "bg-zinc-950 text-zinc-400 py-2.5 px-4 rounded-xl font-bold text-xs uppercase border border-zinc-800";
             });
-            document.getElementById('ton-' + ton).className = "bg-orange-600 text-white py-2.5 px-4 rounded-xl font-bold text-xs uppercase border border-orange-600 shadow-lg shadow-orange-600/10";
+            const aktivni = document.getElementById('ton-' + ton);
+            if(aktivni) aktivni.className = "bg-orange-600 text-white py-2.5 px-4 rounded-xl font-bold text-xs uppercase border border-orange-600 shadow-lg shadow-orange-600/10";
         }
 
-        // Mikrofon diktiranje
         function pokreniMikrofon() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) { alert("Browser ne podržava mikrofon!"); return; }
+            if (!SpeechRecognition) { alert("Tvoj browser ne podržava mikrofon!"); return; }
 
             const recognition = new SpeechRecognition();
             recognition.lang = "hr-HR";
@@ -109,7 +120,7 @@
 
             const mikrofonDugme = document.getElementById("mikrofon-dugme");
             mikrofonDugme.innerText = "🎤 SLUŠAM TE, PRIČAJ...";
-            mikrofonDugme.className = "w-full bg-yellow-500 text-black font-black py-3 rounded-xl text-xs uppercase italic transition shadow-md";
+            mikrofonDugme.className = "w-full bg-yellow-500 text-black font-black py-3 rounded-xl text-xs uppercase italic border border-transparent transition shadow-md";
 
             recognition.onresult = function(event) {
                 document.getElementById("email-detalji").value += " " + event.results[0][0].transcript;
@@ -117,111 +128,91 @@
 
             recognition.onend = function() {
                 mikrofonDugme.innerText = "🎤 DIKTIRAJ NATUKNICE U MIKROFON";
-                mikrofonDugme.className = "w-full bg-zinc-950 hover:bg-zinc-800 text-red-500 border border-zinc-800 font-black py-3 rounded-xl text-xs uppercase italic transition shadow-md";
+                mikrofonDugme.className = "w-full bg-zinc-950 hover:bg-zinc-800 text-red-500 font-black py-3 rounded-xl text-xs uppercase italic border border-zinc-800 transition shadow-md";
             };
         }
 
-        // SLANJE U TVOJU GOOGLE TABELU (SHEETDB)
-        document.getElementById('email-forma').addEventListener('submit', async (e) => {
+        // DIREKTNO GENERISANJE PREKO AI-JA (BEZ ČEKANJA TABELE)
+        async function generisiMojEmailOvdje(e) {
             e.preventDefault();
+            
             const btn = document.getElementById('btn-slanje');
             const tema = document.getElementById('email-tema').value;
             const detalji = document.getElementById('email-detalji').value;
+            const rezultatKontejner = document.getElementById('ai-rezultat-kontejner');
+            const ispisTeksta = document.getElementById('ai-gotov-mail');
 
-            btn.innerText = "AI PIŠE EMAIL...";
+            btn.innerText = "AI RAZMIŠLJA I PIŠE...";
             btn.disabled = true;
 
-            // Spajamo izabrani ton i tekst natuknica u jedan string koji ide tvojoj skripti
-            const konacneNatuknice = "Ton: " + trenutniTon.toUpperCase() + ". " + detalji;
-
-            const noviRed = {
-                "Datum": new Date().toLocaleString('hr-BA'),
-                "Korisnik ID": firmaId, 
-                "Tekst izvještaja": "AI_EMAIL: " + tema,
-                "AI Analiza": "U izradi... [Svrha: " + konacneNatuknice + "]"
-            };
+            // Sakrij stari rezultat ako postoji
+            rezultatKontejner.classList.add('hidden');
 
             try {
-                const res = await fetch(API_URL, {
+                // 1. KORAK: Šaljemo direktno na Supabase Edge funkciju da AI odmah vrati tekst
+                const aiResponse = await fetch(AI_EDGE_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        userText: `Sastavi email na bosanskom jeziku. Predmet/Tema: ${tema}. Detalji i kontekst: ${detalji}. Ton komunikacije mora biti: ${trenutniTon.toUpperCase()}. Vrati samo gotov tekst emaila, bez tvojih komentara.`
+                    })
+                });
+
+                if(!aiResponse.ok) throw new Error("AI server nije odgovorio.");
+
+                const aiData = await aiResponse.json();
+                // Izvlačenje čistog teksta iz tvog AI odgovora
+                let generisaniEmail = aiData.tekst || aiData.content || aiData.response || "";
+
+                if (!generisaniEmail) {
+                    throw new Error("AI je vratio prazan odgovor.");
+                }
+
+                // Prikazujemo gotov email na ekranu ODMAH!
+                ispisTeksta.innerText = generisaniEmail.trim();
+                rezultatKontejner.classList.remove('hidden');
+
+                // 2. KORAK: U pozadini, tiho upisujemo ovaj gotov mail u SheetDB (za arhivu, da ne gubiš istoriju)
+                fetch(SHEET_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: [noviRed] })
-                });
+                    body: JSON.stringify({
+                        data: [{
+                            "Datum": new Date().toLocaleString('hr-BA'),
+                            "Korisnik ID": firmaId, 
+                            "Tekst izvještaja": "AI_EMAIL: " + tema,
+                            "AI Analiza": generisaniEmail.trim()
+                        }]
+                    })
+                }).catch(err => console.log("Tabela spora, ali nema veze jer je AI već završio!"));
 
-                if(res.ok) {
-                    alert("Zahtjev poslan! Tvoj vanjski AI sada generiše tekst maila u tabeli. Sačekaj par sekundi pa pogledaj listu ispod.");
-                    document.getElementById('email-forma').reset();
-                    await ucitajEmailove(); 
-                }
+                document.getElementById('email-forma').reset();
+
             } catch (err) {
-                alert("Greška: " + err.message);
+                alert("Greška sa AI generatorom: " + err.message);
             } finally {
-                btn.innerText = "✉️ GENERIŠI PROFESIONALAN EMAIL";
+                btn.innerText = "⚡ GENERIŠI EMAIL ODMAH";
                 btn.disabled = false;
-            }
-        });
-
-        // ČITANJE IZ TABELE I PRIKAZ NA DNU STRANICE
-        async function ucitajEmailove() {
-            const kontejner = document.getElementById('svi-emailovi');
-            try {
-                const odgovor = await fetch(API_URL + '?t=' + Date.now());
-                const podaci = await odgovor.json();
-                const listaPodataka = Array.isArray(podaci) ? podaci : [];
-
-                const emailLista = listaPodataka.filter(red => red["Korisnik ID"] === firmaId && red["Tekst izvještaja"].startsWith("AI_EMAIL:"));
-                const poredani = [...emailLista].reverse();
-                
-                kontejner.innerHTML = '';
-                
-                if(poredani.length === 0) {
-                    kontejner.innerHTML = "<p class='text-zinc-600 text-center uppercase text-xs'>Nema generisanih emailova.</p>";
-                    return;
-                }
-
-                poredani.forEach((red, index) => {
-                    const kartica = document.createElement('div');
-                    kartica.className = "bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-xl hover:border-orange-600/30 transition duration-500";
-                    
-                    const cistaTema = red["Tekst izvještaja"].replace("AI_EMAIL: ", "");
-
-                    kartica.innerHTML = `
-                        <div class="flex justify-between items-center mb-4 border-b border-zinc-800 pb-2">
-                            <span class="text-orange-500 font-black text-[10px] uppercase italic">EMAIL #${poredani.length - index}</span>
-                            <span class="text-zinc-600 font-mono text-[10px]">${red["Datum"] || 'Bez datuma'}</span>
-                        </div>
-                        <h3 class="text-white font-black uppercase italic text-xl mb-3">Predmet: ${cistaTema}</h3>
-                        <div class="bg-black/60 p-4 rounded-xl border border-zinc-800/50 mb-4">
-                            <p class="text-zinc-400 text-sm font-mono whitespace-pre-line">${red["AI Analiza"] || 'AI piše tekst...'}</p>
-                        </div>
-                        <button onclick="kopirajTekst(this)" class="bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-2 px-4 rounded-xl text-xs uppercase transition w-full sm:w-auto">
-                            📋 Kopiraj tekst emaila
-                        </button>
-                    `;
-                    kontejner.appendChild(kartica);
-                });
-            } catch (err) {
-                kontejner.innerHTML = `<p class="text-red-600 font-bold text-center">GREŠKA: ${err.message}</p>`;
             }
         }
 
-        function kopirajTekst(dugme) {
-            const tekst = dugme.previousElementSibling.innerText;
+        // Kopiranje direktnog teksta
+        function kopirajDirektanTekst() {
+            const tekst = document.getElementById('ai-gotov-mail').innerText;
+            const dugme = document.getElementById('btn-kopiraj-direktno');
+            
             navigator.clipboard.writeText(tekst).then(() => {
                 dugme.innerText = "✔️ KOPIRANO!";
-                dugme.className = "bg-emerald-600 text-white font-bold py-2 px-4 rounded-xl text-xs uppercase transition w-full sm:w-auto";
+                dugme.className = "bg-emerald-500 text-white font-bold py-2 px-5 rounded-xl text-xs uppercase transition shadow-lg";
                 setTimeout(() => {
-                    dugme.innerText = "📋 Kopiraj tekst emaila";
-                    dugme.className = "bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-2 px-4 rounded-xl text-xs uppercase transition w-full sm:w-auto";
+                    dugme.innerText = "📋 KOPIRAJ EMAIL";
+                    dugme.className = "bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-5 rounded-xl text-xs uppercase transition shadow-lg";
                 }, 2000);
             });
         }
 
         function pokreniAlarm() { alert("🚨 ALARM AKTIVIRAN za firmu: " + firmaId); }
         function odjaviSe() { localStorage.removeItem("prijavljenaFirma"); window.location.href = "index.html"; }
-
-        ucitajEmailove();
-        setInterval(ucitajEmailove, 20000);
     </script>
 </body>
 </html>
