@@ -40,22 +40,22 @@
             <div class="mb-5">
                 <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-2">Odaberi ton emaila:</label>
                 <div class="grid grid-cols-3 gap-3">
-                    <button type="button" onclick="postaviTon('profesionalan', this)" class="ton-dugme bg-orange-600 text-white py-2.5 px-4 rounded-xl font-bold text-xs uppercase border border-orange-600 shadow-lg shadow-orange-600/10">
+                    <button type="button" id="ton-profesionalan" onclick="postaviTon('profesionalan')" class="bg-orange-600 text-white py-2.5 px-4 rounded-xl font-bold text-xs uppercase border border-orange-600 shadow-lg shadow-orange-600/10">
                         💼 Profesionalan
                     </button>
-                    <button type="button" onclick="postaviTon('opusten', this)" class="ton-dugme bg-zinc-950 hover:bg-zinc-800 text-zinc-400 py-2.5 px-4 rounded-xl font-bold text-xs uppercase border border-zinc-800">
+                    <button type="button" id="ton-opusten" onclick="postaviTon('opusten')" class="bg-zinc-950 text-zinc-400 py-2.5 px-4 rounded-xl font-bold text-xs uppercase border border-zinc-800">
                         🤝 Prijateljski
                     </button>
-                    <button type="button" onclick="postaviTon('hitan', this)" class="ton-dugme bg-zinc-950 hover:bg-zinc-800 text-zinc-400 py-2.5 px-4 rounded-xl font-bold text-xs uppercase border border-zinc-800">
+                    <button type="button" id="ton-hitan" onclick="postaviTon('hitan')" class="bg-zinc-950 text-zinc-400 py-2.5 px-4 rounded-xl font-bold text-xs uppercase border border-zinc-800">
                         🚨 Hitan / Ozbiljan
                     </button>
                 </div>
             </div>
 
-            <form id="email-forma" class="space-y-4">
+            <form id="email-forma" onsubmit="generisiMojEmail(event)" class="space-y-4">
                 <div>
                     <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Tema / Svrha emaila:</label>
-                    <input type="text" id="email-tema" required placeholder="npr. Kašnjenje isporuke robe, Ponuda za saradnju, Izvinjenje klijentu..." 
+                    <input type="text" id="email-tema" required placeholder="npr. Kašnjenje isporuke robe, Ponuda za saradnju..." 
                            class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-orange-500 outline-none transition text-white">
                 </div>
                 
@@ -90,18 +90,27 @@
 
         let trenutniTon = "profesionalan";
 
-        // Logika za odabir tona (mijenja stilove dugmadi na klik)
-        function postaviTon(ton, dugme) {
+        // Popravljena logika za odabir tona preko ID-jeva (sigurnija varijanta)
+        function postaviTon(ton) {
             trenutniTon = ton;
-            document.querySelectorAll('.ton-dugme').forEach(btn => {
-                btn.classList.remove('bg-orange-600', 'text-white', 'border-orange-600', 'shadow-lg', 'shadow-orange-600/10');
-                btn.classList.add('bg-zinc-950', 'text-zinc-400', 'border-zinc-800');
+            
+            // Resetuj svu dugmad u tamno stanje
+            const gumbi = ['ton-profesionalan', 'ton-opusten', 'ton-hitan'];
+            gumbi.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    el.className = "bg-zinc-950 text-zinc-400 py-2.5 px-4 rounded-xl font-bold text-xs uppercase border border-zinc-800";
+                }
             });
-            dugme.classList.remove('bg-zinc-950', 'text-zinc-400', 'border-zinc-800');
-            dugme.classList.add('bg-orange-600', 'text-white', 'border-orange-600', 'shadow-lg', 'shadow-orange-600/10');
+
+            // Aktiviraj ono koje je kliknuto
+            const aktivni = document.getElementById('ton-' + ton);
+            if(aktivni) {
+                aktivni.className = "bg-orange-600 text-white py-2.5 px-4 rounded-xl font-bold text-xs uppercase border border-orange-600 shadow-lg shadow-orange-600/10";
+            }
         }
 
-        // Logika za glasovno diktiranje preko mikrofona
+        // Glasovno diktiranje
         function pokreniMikrofon() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) { alert("Tvoj browser ne podržava mikrofon!"); return; }
@@ -114,8 +123,7 @@
 
             const mikrofonDugme = document.getElementById("mikrofon-dugme");
             mikrofonDugme.innerText = "🎤 SLUŠAM TE, PRIČAJ...";
-            mikrofonDugme.classList.remove("text-red-500", "bg-zinc-950");
-            mikrofonDugme.classList.add("text-black", "bg-yellow-500");
+            mikrofonDugme.className = "w-full bg-yellow-500 text-black font-black py-3 rounded-xl text-xs uppercase italic border border-transparent transition shadow-md";
 
             recognition.onresult = function(event) {
                 const tekst = event.results[0][0].transcript;
@@ -124,16 +132,16 @@
 
             recognition.onend = function() {
                 mikrofonDugme.innerText = "🎤 DIKTIRAJ NATUKNICE U MIKROFON";
-                mikrofonDugme.classList.remove("text-black", "bg-yellow-500");
-                mikrofonDugme.classList.add("text-red-500", "bg-zinc-950");
+                mikrofonDugme.className = "w-full bg-zinc-950 hover:bg-zinc-800 text-red-500 font-black py-3 rounded-xl text-xs uppercase italic border border-zinc-800 transition shadow-md";
             };
 
             recognition.onerror = function(event) { console.error(event); alert("Greška sa mikrofonom!"); };
         }
 
-        // Slanje forme na SheetDB bazu podataka
-        document.getElementById('email-forma').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // POTPUNO KORIGOVANA I SIGURNA FUNKCIJA ZA SLANJE
+        async function generisiMojEmail(e) {
+            e.preventDefault(); // Zaustavi osvežavanje stranice
+            
             const btn = document.getElementById('btn-slanje');
             const tema = document.getElementById('email-tema').value;
             const detalji = document.getElementById('email-detalji').value;
@@ -141,7 +149,7 @@
             btn.innerText = "AI PIŠE EMAIL...";
             btn.disabled = true;
 
-            // Spajamo izabrani ton i natuknice u tekst zahtjeva kako bi backend znao šta da radi
+            // Pakovanje tona i natuknica u format koji tvoja skripta prepoznaje
             const puniOpisZaAI = `[TON: ${trenutniTon.toUpperCase()}] — ${detalji}`;
 
             const noviRed = {
@@ -159,19 +167,21 @@
                 });
 
                 if(res.ok) {
-                    alert("Zahtjev poslan! AI kreira tekst maila. Osvježi listu ispod za par trenutaka.");
+                    alert("Zahtjev uspješno poslan! AI sada kreira tekst maila u Google tabeli. Sačekaj malo pa osvježi listu ispod.");
                     document.getElementById('email-forma').reset();
                     await ucitajEmailove(); 
+                } else {
+                    alert("Greška pri slanju na bazu (SheetDB). Status: " + res.status);
                 }
             } catch (err) {
-                alert("Greška: " + err.message);
+                alert("Sistemska greška: " + err.message);
             } finally {
                 btn.innerText = "✉️ GENERIŠI PROFESIONALAN EMAIL";
                 btn.disabled = false;
             }
-        });
+        }
 
-        // Učitavanje i renderovanje emailova iz baze
+        // Čitanje i prikaz iz SheetDB-a
         async function ucitajEmailove() {
             const kontejner = document.getElementById('svi-emailovi');
             try {
@@ -179,7 +189,7 @@
                 const podaci = await odgovor.json();
                 const listaPodataka = Array.isArray(podaci) ? podaci : [];
 
-                const emailLista = listaPodataka.filter(red => red["Korisnik ID"] === firmaId && red["Tekst izvještaja"].startsWith("AI_EMAIL:"));
+                const emailLista = listaPodataka.filter(red => red["Korisnik ID"] === firmaId && red["Tekst izvještaja"] && red["Tekst izvještaja"].startsWith("AI_EMAIL:"));
                 const poredani = [...emailLista].reverse();
                 
                 kontejner.innerHTML = '';
@@ -211,11 +221,11 @@
                     kontejner.appendChild(kartica);
                 });
             } catch (err) {
-                kontejner.innerHTML = `<p class="text-red-600 font-bold text-center">GREŠKA: ${err.message}</p>`;
+                console.error(err);
             }
         }
 
-        // Kopiranje na klik
+        // Kopiranje
         function kopirajTekst(dugme) {
             const tekst = dugme.previousElementSibling.innerText;
             navigator.clipboard.writeText(tekst).then(() => {
@@ -231,6 +241,7 @@
         function pokreniAlarm() { alert("🚨 ALARM AKTIVIRAN za firmu: " + firmaId); }
         function odjaviSe() { localStorage.removeItem("prijavljenaFirma"); window.location.href = "index.html"; }
 
+        // Pokreni odmah učitavanje
         ucitajEmailove();
         setInterval(ucitajEmailove, 20000);
     </script>
