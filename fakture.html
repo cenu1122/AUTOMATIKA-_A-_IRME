@@ -16,10 +16,10 @@
 
         <div class="bg-zinc-900 border border-emerald-600/30 p-6 rounded-2xl shadow-2xl">
             <h2 class="text-emerald-500 font-black text-xl uppercase italic mb-2">💰 Smart AI Generator Faktura</h2>
-            <p class="text-zinc-400 text-xs mb-6">Unesite podatke o poslu, klijentu i iznosu. AI će napraviti profesionalnu fakturu.</p>
+            <p class="text-zinc-400 text-xs mb-6">Unesite podatke o poslu, klijentu i iznosu.</p>
             
             <div class="space-y-4">
-                <textarea id="ai-prompt-tekst" rows="6" class="w-full bg-black border border-zinc-800 p-3 rounded-xl text-white text-sm focus:border-emerald-500 outline-none" placeholder="ZADATAK: Generiši fakturu za: Firma ABC Sistemi, iznos 2500 KM, usluga: Montaža ormara i PLC programiranje..."></textarea>
+                <textarea id="ai-prompt-tekst" rows="6" class="w-full bg-black border border-zinc-800 p-3 rounded-xl text-white text-sm focus:border-emerald-500 outline-none" placeholder="Unesite detalje posla..."></textarea>
                 <button onclick="generisiFakturu()" id="dugme-generisi" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl uppercase italic transition shadow-lg shadow-emerald-900/20">
                     ✨ GENERIŠI FAKTURU
                 </button>
@@ -36,44 +36,52 @@
         </div>
     </div>
 
-  <script>
-    async function generisiFakturu() {
-        const promptKorisnika = document.getElementById("ai-prompt-tekst").value.trim();
-        const dugme = document.getElementById("dugme-generisi");
-        // Provjeri da li je ovo ispravan URL tvoje Supabase funkcije
-        const URL_FUNKCIJE = "https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent";
+    <script>
+        async function generisiFakturu() {
+            const promptKorisnika = document.getElementById("ai-prompt-tekst").value.trim();
+            const dugme = document.getElementById("dugme-generisi");
+            const URL_FUNKCIJE = "https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/ai-asistent";
 
-        if (!promptKorisnika) { alert("Unesite podatke za fakturu!"); return; }
-        
-        dugme.innerText = "⏳ KREIRAM FAKTURU...";
-        dugme.disabled = true;
-
-        try {
-            const response = await fetch(URL_FUNKCIJE, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    userText: `ZADATAK: Generiši profesionalnu fakturu kao HTML tabelu. 
-                    NE TRAŽI dodatne podatke. Ako nešto fali, izmisli.
-                    Formatiraj kao čist <table>.
-                    Unos korisnika: ${promptKorisnika}` 
-                })
-            });
-
-            const data = await response.json();
-            // Prikaz rezultata
-            const container = document.getElementById("faktura-sadrzaj-render");
-            container.innerHTML = data.tekst || "Greška: AI nije vratio odgovor.";
+            if (!promptKorisnika) { alert("Unesite podatke!"); return; }
             
-            document.getElementById("faktura-prikaz").classList.remove("hidden");
-            document.getElementById("glavni-kontejner").classList.add("hidden");
-        } catch (error) {
-            alert("Greška: " + error.message);
-        } finally {
-            dugme.innerText = "✨ GENERIŠI FAKTURU";
-            dugme.disabled = false;
+            dugme.innerText = "⏳ KREIRAM FAKTURU...";
+            dugme.disabled = true;
+
+            try {
+                const response = await fetch(URL_FUNKCIJE, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        userText: `ZADATAK: Generiši ISKLJUČIVO HTML tabelu fakture. 
+                        PRAVILA:
+                        1. Ne piši nikakav uvodni tekst, samo kod tabele.
+                        2. Koristi ovaj CSS: <style>table {width:100%; border-collapse:collapse;} th, td {border:1px solid #000; padding:8px; text-align:left;}</style>
+                        3. Kolone: R.br, Opis, Kol, Cijena, Ukupno.
+                        4. Na kraju obavezno zbrajanje sa PDV-om (17%).
+                        Unos: ${promptKorisnika}` 
+                    })
+                });
+
+                const data = await response.json();
+                const odgovor = data.tekst || data.content || "Greška pri učitavanju.";
+
+                const container = document.getElementById("faktura-sadrzaj-render");
+                container.innerHTML = odgovor;
+                
+                document.getElementById("faktura-prikaz").classList.remove("hidden");
+                document.getElementById("glavni-kontejner").classList.add("hidden");
+            } catch (error) {
+                alert("Greška: " + error.message);
+            } finally {
+                dugme.innerText = "✨ GENERIŠI FAKTURU";
+                dugme.disabled = false;
+            }
         }
-    }
-</script>
+
+        function zatvoriPrikaz() {
+            document.getElementById("faktura-prikaz").classList.add("hidden");
+            document.getElementById("glavni-kontejner").classList.remove("hidden");
+        }
+    </script>
 </body>
 </html>
