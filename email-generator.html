@@ -248,21 +248,81 @@ PRAVILA:
             console.log(data);
 
             const emailTekst =
-                data.tekst ||
-                data.response ||
-                data.content ||
-                data.output ||
-                "";
+    data.tekst ||
+    data.response ||
+    data.content ||
+    data.output ||
+    "";
 
-            if (!emailTekst) {
-                throw new Error("AI nije vratio tekst.");
-            }
+if (!emailTekst) {
+    throw new Error("AI nije vratio tekst.");
+}
 
-            rezultatText.innerText =
-                emailTekst.trim();
+// AUTOMATSKO TRAŽENJE EMAILA U TEKSTU
 
-            rezultatBox.classList.remove("hidden");
+const regex =
+    /[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi;
 
+const emails =
+    detalji.match(regex);
+
+if (!emails || emails.length === 0) {
+
+    throw new Error(
+        "Nisam pronašao email adresu u tekstu."
+    );
+}
+
+const primaoc =
+    emails[0];
+
+// AUTOMATSKO SLANJE MAILA
+
+const sendResponse =
+    await fetch(
+        "https://lvvidixbdtdjfwxxxqzr.supabase.co/functions/v1/send-email",
+        {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type":
+                    "application/json"
+            },
+
+            body: JSON.stringify({
+
+                primaoc: primaoc,
+
+                tema: tema,
+
+                sadrzaj: emailTekst
+            })
+        }
+    );
+
+if (!sendResponse.ok) {
+
+    throw new Error(
+        "Greška kod slanja maila."
+    );
+}
+
+// PRIKAZ MAILA
+
+rezultatText.innerText =
+    emailTekst.trim();
+
+rezultatBox.classList.remove(
+    "hidden"
+);
+
+alert(
+    "✅ EMAIL USPJEŠNO POSLAN NA:\n\n" +
+    primaoc
+);
+
+            
         } catch (err) {
 
             console.error(err);
