@@ -334,12 +334,11 @@ async function posaljiZahtjevZaEmail(e) {
 
             data = await response.json();
 
-        } catch (jsonErr) {
-
-            throw new Error(
-                "Server nije vratio validan JSON odgovor."
-            );
-        }
+        } catch (err) {
+    console.error("DEBUG GREŠKA:", err);
+    // OVO ĆE TI IZBACITI TAČAN TEKST GREŠKE NA EKRAN
+    alert("TAČNA GREŠKA: " + err.message); 
+}
 
         console.log("STATUS:", response.status);
         console.log("SERVER DATA:", data);
