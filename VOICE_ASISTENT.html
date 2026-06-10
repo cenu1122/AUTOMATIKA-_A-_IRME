@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Call Center CRM FULL</title>
+
+<style>
+html, body {
+margin: 0;
+padding: 0;
+width: 100vw;
+height: 100vh;
+overflow: hidden;
+background: #0f0f0f;
+font-family: sans-serif;
+display: flex !important;
+}
+
+.sidebar {
+width:280px;
+background:#1b1b1b;
+padding:15px;
+height:100vh;
+overflow:auto;
+box-sizing: border-box;
+}
+
+.main {
+flex:1;
+padding:20px;
+display: flex;
+flex-direction: column;
+}
+
+input, textarea, button {
+width:100%;
+padding:10px;
+margin-top:8px;
+border-radius:6px;
+border:none;
+box-sizing:border-box;
+}
+
+input, textarea {
+background:#2a2a2a;
+color:white;
+}
+
+textarea {
+height:140px;
+resize:none;
+}
+
+.btn { background:#00adb5; color:white; cursor:pointer; }
+.btn2 { background:#9b59b6; color:white; cursor:pointer; }
+.btn3 { background:#2ecc71; color:white; cursor:pointer; }
+
+.client {
+background:#2a2a2a;
+padding:10px;
+margin-top:8px;
+border-radius:6px;
+cursor:pointer;
+}
+
+.client:hover { background:#333; }
+
+.chat {
+height:320px;
+overflow:auto;
+background:#1e1e1e;
+padding:10px;
+border-radius:10px;
+}
+
+.user { color:#00adb5; margin:5px 0; }
+.ai { color:#9b59b6; margin:5px 0; }
+</style>
+
+</head>
+
+<body>
+
+<div class="sidebar">
+
+<h3>👥 Klijenti</h3>
+
+<input id="clientName" placeholder="Ime klijenta">
+<input id="clientPhone" placeholder="Telefon">
+
+<button class="btn" onclick="addClient()">Dodaj klijenta</button>
+
+<div id="list"></div>
+
+<hr>
+
+<h3>🧠 AI Prompt</h3>
+
+<textarea id="systemPrompt"></textarea>
+
+<button class="btn" onclick="savePrompt()">💾 Save Prompt</button>
+
+</div>
+
+<div class="main">
+
+<h2 id="title">📂 Nema izabranog klijenta</h2>
+
+<div class="chat" id="chat"></div>
+
+<input id="msg" placeholder="Poruka...">
+
+<button class="btn" onclick="send()">Pošalji AI</button>
+<button class="btn2" onclick="voice()">🎤 Voice</button>
+<button class="btn3" onclick="call()">📞 Call AI</button>
+
+</div>
+
+<script>
+const FUNCTION_URL = "https://mpgbpgmsorunfbdskbwn.supabase.co/functions/v1/telnyx-webhook";
+
+let clients = JSON.parse(localStorage.getItem("clients") || "{}");
+let active = null;
+
+const defaultPrompt = `Ti si profesionalni AI sales agent u call centru.
+Tvoj zadatak je:
+- kratki i jasni odgovori
+- fokus na prodaju
+- vodi korisnika ka akciji
+- koristi lokalni jezik (BHS)`;
+
+function save() {
+    localStorage.setItem("clients", JSON.stringify(clients));
+}
+
+function savePrompt() {
+    const el = document.getElementById("systemPrompt");
+    localStorage.setItem("system_prompt", el.value || defaultPrompt);
+    alert("Prompt sačuvan!");
+}
+
+function loadPrompt() {
+    const el = document.getElementById("systemPrompt");
+    el.value = localStorage.getItem("system_prompt") || defaultPrompt;
+}
+
+    function speak(text) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "bs-BA";
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    window.speechSynthesis.speak(utterance);
+}
+
+function addClient() {
+    const name = document.getElementById("clientName").value.trim();
+    const phone = document.getElementById("clientPhone").value.trim();
+
+    if (!name || !phone) return alert("Popuni polja!");
+
+    if (!clients[name]) {
+        clients[name] = { phone, chat: [] };
+    }
+
+    save();
+    render();
+
+    document.getElementById("clientName").value = "";
+    document.getElementById("clientPhone").value = "";
+}
+
+function render() {
+    const listEl = document.getElementById("list");
+    const titleEl = document.getElementById("title");
+
+    listEl.innerHTML = "";
+
+    Object.keys(clients).forEach(name => {
+        const div = document.createElement("div");
+        div.className = "client";
+
+        div.innerHTML = `<strong>${name}</strong><br><small>📞 ${clients[name].phone}</small>`;
+
+        div.onclick = () => {
+            active = name;
+            titleEl.innerText = "📂 " + name;
+            draw();
+        };
+
+        listEl.appendChild(div);
+    });
+}
+
+async function ai(messages) {
+    const system = localStorage.getItem("system_prompt") || defaultPrompt;
+
+    try {
+        const res = await fetch(FUNCTION_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                action: "chat",
+                systemPrompt: system,
+                messages
+            })
+        });
+
+        const data = await res.json().catch(() => ({}));
+        return data.reply ?? "AI nema odgovor.";
+    } catch (err) {
+        console.error(err);
+        return "Greška u komunikaciji sa serverom.";
+    }
+}
+
+async function send() {
+    const input = document.getElementById("msg");
+
+    if (!active) return alert("Izaberi klijenta");
+    if (!input.value.trim()) return;
+
+    if (!clients[active].chat) clients[active].chat = [];
+
+    const text = input.value.trim();
+
+    clients[active].chat.push({ role: "user", content: text });
+    draw();
+
+    input.value = "";
+
+    const reply = await ai(clients[active].chat);
+
+    clients[active].chat.push({ role: "assistant", content: reply });
+
+    save();
+    draw();
+speak(reply);
+}
+
+function draw() {
+    const chatEl = document.getElementById("chat");
+    chatEl.innerHTML = "";
+
+    if (!active || !clients[active]) return;
+
+    const chat = clients[active].chat || [];
+
+    chat.forEach(m => {
+        const div = document.createElement("div");
+        div.className = m.role === "user" ? "user" : "ai";
+        div.innerText = (m.role === "user" ? "TI: " : "AI: ") + m.content;
+        chatEl.appendChild(div);
+    });
+
+    chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function voice() {
+    const msgInput = document.getElementById("msg");
+    const S = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!S) return alert("Voice nije podržan u ovom browseru");
+
+    const r = new S();
+    r.lang = "bs-BA";
+    r.interimResults = false;
+
+    r.onstart = () => {
+        msgInput.value = "Slušam...";
+    };
+
+    r.onresult = (e) => {
+        msgInput.value = e.results[0][0].transcript;
+    };
+
+    r.onerror = (e) => {
+        msgInput.value = "";
+        alert("Voice error: " + e.error);
+    };
+
+    r.start();
+}
+
+async function call() {
+    if (!active) return alert("Izaberi klijenta");
+
+    try {
+        const res = await fetch(FUNCTION_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                action: "call",
+                to: clients[active].phone,
+                name: active
+            })
+        });
+
+        if (res.ok) {
+            alert("Poziv pokrenut!");
+        } else {
+            alert("Server greška pri pozivu.");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Nema konekcije sa serverom.");
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    render();
+    loadPrompt();
+});
+</script>
+
+</body>
+</html>
