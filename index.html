@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NH AI-Automation | Poslovni Portal</title>
+    <title>NH AI-Automation | Control Panel</title>
     <style>
         body { 
-            font-family: 'Segoe UI', sans-serif; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             background-color: #1a202c; 
             color: #e2e8f0; 
             display: flex; 
@@ -18,7 +18,7 @@
             flex-direction: column;
         }
         
-        /* Biranje jezika gornji desni ugao */
+        /* Biranje jezika u gornjem desnom uglu */
         .lang-switcher {
             position: absolute;
             top: 20px;
@@ -28,11 +28,12 @@
             background: #2d3748;
             color: white;
             border: 1px solid #4a5568;
-            padding: 8px 12px;
+            padding: 8px 14px;
             cursor: pointer;
-            border-radius: 4px;
+            border-radius: 6px;
             font-weight: bold;
             margin-left: 5px;
+            transition: all 0.3s ease;
         }
         .lang-btn.active {
             background: #4299e1;
@@ -41,27 +42,40 @@
 
         .card { 
             background: #2d3748; 
-            padding: 2rem; 
+            padding: 2.5rem; 
             border-radius: 12px; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
             width: 100%; 
-            max-width: 400px; 
+            max-width: 420px; 
             border: 1px solid #4a5568; 
             box-sizing: border-box;
         }
-        h1 { color: #63b3ed; text-align: center; cursor: pointer; margin-bottom: 30px; } 
-        input, textarea { width: 100%; padding: 12px; margin-bottom: 1rem; border-radius: 6px; border: 1px solid #4a5568; background: #1a202c; color: white; box-sizing: border-box; }
         
-        button { width: 100%; padding: 12px; background-color: #4299e1; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
-        button:hover { background-color: #3182ce; }
+        h1 { color: #63b3ed; text-align: center; margin-bottom: 5px; font-size: 2rem; }
+        .subtitle { text-align: center; color: #a0aec0; margin-bottom: 30px; font-size: 0.95rem; }
+        
+        label { display: block; margin-bottom: 6px; font-size: 0.9rem; color: #cbd5e0; }
+        input { width: 100%; padding: 12px; margin-bottom: 1.2rem; border-radius: 6px; border: 1px solid #4a5568; background: #1a202c; color: white; box-sizing: border-box; font-size: 1rem; }
+        input:focus { border-color: #4299e1; outline: none; }
+        
+        /* Primarno dugme za Login */
+        .btn-login { width: 100%; padding: 14px; background-color: #4299e1; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem; margin-bottom: 15px; transition: background 0.2s; }
+        .btn-login:hover { background-color: #3182ce; }
+        
+        /* Sekcija za dodatna dugmad (Demo i Registracija) u jednom redu */
+        .action-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        .btn-secondary { flex: 1; padding: 12px; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem; text-align: center; text-decoration: none; transition: background 0.2s; }
+        
         .btn-demo { background-color: #48bb78; }
         .btn-demo:hover { background-color: #38a169; }
         
-        #dashboard, #admin-panel { display: none; margin-top: 20px; }
-        .admin-header { color: #f6ad55; border-top: 1px solid #4a5568; padding-top: 20px; margin-top: 20px; font-size: 1.2rem; margin-bottom: 15px; }
-        #mic-btn { background-color: #e53e3e; }
-        #mic-btn:hover { background-color: #c53030; }
-        #statusMsg { font-size: 0.9rem; margin-top: 10px; min-height: 20px; }
+        .btn-register { background-color: #718096; }
+        .btn-register:hover { background-color: #4a5568; }
+        
         button:disabled { background-color: #4a5568; cursor: not-allowed; }
     </style>
 </head>
@@ -74,207 +88,135 @@
     </div>
 
     <div class="card">
-        <!-- Klikom 5 puta se i dalje otvara Admin Panel -->
-        <h1 onclick="openAdmin()">NH AI-Automation</h1>
+        <h1>NH AI-Automation</h1>
+        <p class="subtitle" id="lbl-subtitle">AI Automation and Voice Assistants Control Panel</p>
 
-        <!-- LOGIN SEKCIJA -->
+        <!-- FORMALNA LOGIN SEKCIJA -->
         <div id="login-section">
-            <p id="lbl-login-title" style="text-align: center; margin-bottom: 20px;">Client Login / Client Login</p>
-            <input type="text" id="companyId" placeholder="User ID">
-            <input type="password" id="password" placeholder="Password">
+            <label id="lbl-username-tag">Username / User ID:</label>
+            <input type="text" id="companyId" placeholder="Enter your User ID">
             
-            <!-- Glavno dugme za prijavu (Tvoja stara logika) -->
-            <button id="loginBtn" onclick="handleLogin()">Login / Prijavi se</button>
+            <label id="lbl-password-tag">Password:</label>
+            <input type="password" id="password" placeholder="Enter your password">
             
-            <!-- Novo dugme za direktan demo prolaz na izvjestaj.html -->
-            <button id="demoBtn" class="btn-demo" onclick="window.location.href='izvjestaj.html'">Try Demo / Direct Access</button>
-        </div>
-
-        <!-- DASHBOARD -->
-        <div id="dashboard">
-            <h3><span id="lbl-welcome">Welcome</span>, <span id="displayFirma" style="color: #63b3ed;"></span></h3>
+            <!-- Glavno dugme za Login -->
+            <button id="loginBtn" class="btn-login" onclick="handleLogin()">Login</button>
             
-            <label id="lbl-voice-report">Voice Report:</label>
-            <button id="mic-btn" onclick="startDictation()">🎤 Click & Speak</button>
-
-            <textarea id="userInput" rows="4" placeholder="Your speech will appear here..."></textarea>
-            <button id="sendBtn" onclick="sendToAI()">Send to Analysis</button>
-            <p id="statusMsg" style="color: #68d391; text-align: center;"></p>
-        </div>
-
-        <!-- ADMIN PANEL -->
-        <div id="admin-panel">
-            <h2 class="admin-header">Admin Panel</h2>
-            <p id="lbl-add-user">Add new user:</p>
-            <input type="text" id="newFirmaID" placeholder="New user_id">
-            <input type="text" id="newFirmaPass" placeholder="New password">
-            <input type="text" id="newFirmaStatus" placeholder="Status (aktivan)" value="aktivan">
-            <button onclick="saveNewCompany()" style="background-color: #f6ad55;" id="btn-save-db">Save to Database</button>
+            <!-- Grupa dugmadi za Demo i Registraciju jedno pored drugog -->
+            <div class="action-group">
+                <button id="demoBtn" class="btn-secondary btn-demo" onclick="window.location.href='izvjestaj.html'">Try Demo</button>
+                <button id="registerBtn" class="btn-secondary btn-register" onclick="handleRegisterClick()">Register</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // Tvoj originalni URL Google skripte
+        // Tvoj ispravni URL Google Apps Script skripte za bazu podataka
         const scriptURL = "https://script.google.com/macros/s/AKfycbweiMSOZNQI8UFdwTaB8Lf93WHAO5Ev7co_t-PmFkQ8chU9ngtuJxx-2KO-q_G65xQO/exec";
 
-        let loggedInUserId = ""; 
-        let clicks = 0;
-
-        // Prevodi za jezike
+        // Prevodi za dvojezičnu strukturu
         const translations = {
             en: {
-                loginTitle: "Client Login",
-                userId: "User ID",
-                password: "Password",
+                subtitle: "AI Automation and Voice Assistants Control Panel",
+                usernameTag: "Username / User ID:",
+                passwordTag: "Password:",
+                usernamePlaceholder: "Enter your User ID",
+                passwordPlaceholder: "Enter your password",
                 loginBtn: "Login",
-                demoBtn: "Try Demo / Direct Access",
-                welcome: "Welcome",
-                voiceReport: "Voice Report:",
-                micBtn: "🎤 Click & Speak",
-                micListening: "🔴 Listening...",
-                micError: "🎤 Error, try again",
-                placeholderSpeech: "Your speech will appear here...",
-                sendBtn: "Send to Analysis",
-                addUser: "Add new user:",
-                newStatus: "Status (active)",
-                saveDb: "Save to Database"
+                demoBtn: "Try Demo",
+                registerBtn: "Register",
+                checking: "Checking..."
             },
             de: {
-                loginTitle: "Client-Login",
-                userId: "Benutzer-ID",
-                password: "Passwort",
+                subtitle: "KI-Automatisierung und Sprachassistenten-Kontrollzentrum",
+                usernameTag: "Benutzername / Benutzer-ID:",
+                passwordTag: "Passwort:",
+                usernamePlaceholder: "Geben Sie Ihre Benutzer-ID ein",
+                passwordPlaceholder: "Geben Sie Ihr Passwort ein",
                 loginBtn: "Einloggen",
-                demoBtn: "Demo testen / Direkter Zugang",
-                welcome: "Willkommen",
-                voiceReport: "Sprachbericht:",
-                micBtn: "🎤 Klicken & Sprechen",
-                micListening: "🔴 Höre zu...",
-                micError: "🎤 Fehler, erneut versuchen",
-                placeholderSpeech: "Ihre Sprache wird hier angezeigt...",
-                sendBtn: "Zur Analyse senden",
-                addUser: "Neuen Benutzer hinzufügen:",
-                newStatus: "Status (aktiv)",
-                saveDb: "In Datenbank speichern"
+                demoBtn: "Demo testen",
+                registerBtn: "Registrieren",
+                checking: "Überprüfung..."
             }
         };
 
-        // Funkcija za prebacivanje jezika
+        // Funkcija za dinamičku promjenu jezika bez osvježavanja stranice
         function setLanguage(lang) {
-            document.getElementById('lbl-login-title').innerText = translations[lang].loginTitle;
-            document.getElementById('companyId').placeholder = translations[lang].userId;
-            document.getElementById('password').placeholder = translations[lang].password;
+            document.getElementById('lbl-subtitle').innerText = translations[lang].subtitle;
+            document.getElementById('lbl-username-tag').innerText = translations[lang].usernameTag;
+            document.getElementById('lbl-password-tag').innerText = translations[lang].passwordTag;
+            document.getElementById('companyId').placeholder = translations[lang].usernamePlaceholder;
+            document.getElementById('password').placeholder = translations[lang].passwordPlaceholder;
             document.getElementById('loginBtn').innerText = translations[lang].loginBtn;
             document.getElementById('demoBtn').innerText = translations[lang].demoBtn;
-            document.getElementById('lbl-welcome').innerText = translations[lang].welcome;
-            document.getElementById('lbl-voice-report').innerText = translations[lang].voiceReport;
-            document.getElementById('mic-btn').innerText = translations[lang].micBtn;
-            document.getElementById('userInput').placeholder = translations[lang].placeholderSpeech;
-            document.getElementById('sendBtn').innerText = translations[lang].sendBtn;
-            document.getElementById('lbl-add-user').innerText = translations[lang].addUser;
-            document.getElementById('newFirmaStatus').placeholder = translations[lang].newStatus;
-            document.getElementById('btn-save-db').innerText = translations[lang].saveDb;
+            document.getElementById('registerBtn').innerText = translations[lang].registerBtn;
 
+            // Aktiviraj stil na izabranom dugmetu
             const buttons = document.querySelectorAll('.lang-btn');
             buttons.forEach(btn => btn.classList.remove('active'));
             if(lang === 'en') buttons[0].classList.add('active');
             else buttons[1].classList.add('active');
         }
 
-        // Postavi engleski kao početni jezik pri učitavanju
+        // Postavi engleski kao početni jezik pri učitavanju portala
         window.onload = function() {
             setLanguage('en');
         };
 
-        function openAdmin() {
-            clicks++;
-            if (clicks >= 5) {
-                document.getElementById('admin-panel').style.display = 'block';
-                alert("Admin Panel otključan!");
-                clicks = 0;
-            }
-        }
-
-        function startDictation() {
-            if (window.hasOwnProperty('webkitSpeechRecognition') || window.hasOwnProperty('SpeechRecognition')) {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                const recognition = new SpeechRecognition();
-                const micBtn = document.getElementById('mic-btn');
-                const currentLang = document.querySelector('.lang-btn.active').innerText.toLowerCase();
-
-                recognition.continuous = false;
-                recognition.interimResults = false;
-                recognition.lang = "hr-HR"; 
-                
-                recognition.start();
-                micBtn.innerText = currentLang === 'en' ? "🔴 Listening..." : "🔴 Höre zu...";
-
-                recognition.onresult = function(e) {
-                    document.getElementById('userInput').value = e.results[0][0].transcript;
-                    recognition.stop();
-                    micBtn.innerText = currentLang === 'en' ? "🎤 Click & Speak" : "🎤 Klicken & Sprechen";
-                };
-
-                recognition.onerror = function(e) {
-                    recognition.stop();
-                    micBtn.innerText = currentLang === 'en' ? "🎤 Error, try again" : "🎤 Fehler, erneut versuchen";
-                };
-            } else {
-                alert("Vaš browser ne podržava glasovni unos. Koristite Chrome.");
-            }
-        }
-
+        // Logika za prijavu i komunikaciju sa Google Sheet bazom podataka
         async function handleLogin() {
             const uneseniId = document.getElementById('companyId').value.trim();
             const unesenaSifra = document.getElementById('password').value.trim();
             const btn = document.getElementById('loginBtn');
+            const currentLang = document.querySelector('.lang-btn.active').innerText.toLowerCase();
 
             if (!uneseniId || !unesenaSifra) {
-                alert("Molimo unesite ID i lozinku.");
+                alert(currentLang === 'en' ? "Please enter both User ID and Password." : "Bitte geben Sie sowohl die Benutzer-ID als auch das Passwort ein.");
                 return;
             }
 
             btn.disabled = true;
-            btn.innerText = "Provjera...";
+            btn.innerText = translations[currentLang].checking;
 
             try {
+                // Sprječavanje keširanja dodavanjem vremenskog pečata (?t=...)
                 const response = await fetch(scriptURL + "?t=" + new Date().getTime());
                 const rezultat = await response.json();
 
                 if (rezultat.error) {
-                    alert("GREŠKA U SKRIPTI: " + rezultat.error);
+                    alert("Database Error: " + rezultat.error);
                     resetBtn(btn);
                     return;
                 }
 
                 const korisnici = Array.isArray(rezultat) ? rezultat : [];
-                const korisnikPoId = korisnici.find(k => (k.user_id || "").toString().trim() === uneseniId);
+                const korisnik = korisnici.find(k => (k.user_id || "").toString().trim() === uneseniId);
 
-                if (!korisnikPoId) {
-                    alert("Korisnički ID ne postoji!");
+                if (!korisnik) {
+                    alert(currentLang === 'en' ? "User ID does not exist!" : "Benutzer-ID existiert nicht!");
                     resetBtn(btn);
                     return;
                 }
 
-                if ((korisnikPoId.password || "").toString().trim() !== unesenaSifra) {
-                    alert("Pogrešna lozinka!");
+                if ((korisnik.password || "").toString().trim() !== unesenaSifra) {
+                    alert(currentLang === 'en' ? "Incorrect password!" : "Falsches Passwort!");
                     resetBtn(btn);
                     return;
                 }
 
-                const trenutniStatus = (korisnikPoId.status || "").toString().toLowerCase().trim();
-                if (trenutniStatus !== "aktivan") {
-                    alert("Nalog nije aktivan.");
+                const status = (korisnik.status || "").toString().toLowerCase().trim();
+                if (status !== "aktivan" && status !== "active") {
+                    alert(currentLang === 'en' ? "Account is not active." : "Konto ist nicht aktiv.");
                     resetBtn(btn);
                     return;
                 }
 
-                loggedInUserId = uneseniId;
-                alert("Prijava uspješna! Prebacivanje na izvještaj...");
+                // Ako je sve u redu, šalji korisnika na izvještaj
                 window.location.href = "izvjestaj.html"; 
 
             } catch (error) {
                 console.error(error);
-                alert("Greška pri povezivanju sa serverom.");
+                alert(currentLang === 'en' ? "Connection error to the database." : "Verbindungsfehler zur Datenbank.");
                 resetBtn(btn);
             }
         }
@@ -285,66 +227,13 @@
             btn.innerText = translations[currentLang].loginBtn;
         }
 
-        async function sendToAI() {
-            const tekst = document.getElementById('userInput').value;
-            const statusMsg = document.getElementById('statusMsg');
-            const sendBtn = document.getElementById('sendBtn');
-
-            if(!tektext) return alert("Prvo unesite ili izdiktirajte tekst.");
-
-            const data = {
-                tip: "izvjestaj",
-                user_id: loggedInUserId,
-                tekst: tekst
-            };
-
-            statusMsg.innerText = "Slanje...";
-            sendBtn.disabled = true;
-
-            try {
-                await fetch(scriptURL, {
-                    method: 'POST',
-                    mode: 'no-cors', 
-                    cache: 'no-cache',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-
-                statusMsg.innerText = "✅ Uspješno spremljen!";
-                document.getElementById('userInput').value = ""; 
-                
-            } catch (error) {
-                console.error(error);
-                statusMsg.innerText = "❌ Greška pri slanju!";
-            } finally {
-                sendBtn.disabled = false;
-            }
-        }
-
-        async function saveNewCompany() {
-            const data = {
-                tip: "registracija",
-                user_id: document.getElementById('newFirmaID').value.trim(),
-                password: document.getElementById('newFirmaPass').value.trim(),
-                status: document.getElementById('newFirmaStatus').value
-            };
-
-            if(!data.user_id || !data.password) return alert("Popunite podatke!");
-
-            try {
-                await fetch(scriptURL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    cache: 'no-cache',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                alert("Korisnik spremljen u bazu!");
-                document.getElementById('newFirmaID').value = "";
-                document.getElementById('newFirmaPass').value = "";
-            } catch (error) {
-                console.error(error);
-                alert("Greška pri spremanju!");
+        // Funkcija za klik na dugme Registracija
+        function handleRegisterClick() {
+            const currentLang = document.querySelector('.lang-btn.active').innerText.toLowerCase();
+            if (currentLang === 'en') {
+                alert("Registration is managed via the Administrator Panel. Please contact support.");
+            } else {
+                alert("Die Registrierung wird über das Administrator-Panel verwaltet. Bitte wenden Sie sich an den Support.");
             }
         }
     </script>
