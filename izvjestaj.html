@@ -10,7 +10,6 @@
 
     <div class="max-w-4xl mx-auto">
         
-        <!-- TOP LOGO & MENU BAR -->
         <div class="flex flex-col md:flex-row justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-2xl mb-6 gap-4">
             <div class="text-center md:text-left">
                 <span class="text-[10px] uppercase text-zinc-500 font-bold block">Prijavljeni klijent:</span>
@@ -18,10 +17,9 @@
             </div>
             
             <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-center">
-                <!-- Padajući meni sa dodanim Glasovnim Asistentom -->
                 <select onchange="location = this.value;" class="bg-zinc-900 border border-zinc-800 text-white text-xs font-bold p-2.5 rounded-xl outline-none cursor-pointer focus:border-blue-500">
                     <option value="izvjestaj.html" selected>📋 Pregled Izvještaja</option>
-                    <option value="glasovni-asistent.html">🎙️ AI Voice Assistant</option>
+                    <option value="VOICE_ASISTENT.html">🎙️ AI Voice Assistant</option>
                     <option value="ugovori.html">🤖 AI Generator Ugovora</option>
                     <option value="fakture.html">💰 AI Generator Faktura</option>
                     <option value="cv-generator.html">📄 AI CV / Biografija Generator</option>
@@ -36,7 +34,6 @@
             </div>
         </div>
 
-        <!-- QUICK ACTIONS BUTTONS -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             <button onclick="generisiUgovorKlijentu()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-emerald-600/20 text-center text-sm">
                 📄 Preuzmi ugovor o saradnji
@@ -46,12 +43,11 @@
                 💰 Generiši Fakturu
             </button>
             
-            <button onclick="pokreniAlarm()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-amber-500/20 text-center text-sm md:col-span-2 sm:col-span-1">
+            <button onclick="pokreniAlarm()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-amber-500/20 text-center text-sm">
                 🚨 Aktiviraj hitan AI alarm
             </button>
         </div>
 
-        <!-- FORM SECTION -->
         <div class="bg-zinc-900 border border-red-600/30 p-6 rounded-2xl mb-12 shadow-2xl">
             <h2 class="text-red-600 font-black text-xl uppercase italic mb-4">Novi Upis u Tabelu</h2>
             <form id="alarm-forma" class="space-y-4">
@@ -73,7 +69,6 @@
 
         <hr class="border-zinc-800 mb-12">
 
-        <!-- DATABASE RECORDS -->
         <h1 class="text-red-600 font-black text-3xl italic mb-8 uppercase tracking-tighter">SVI ZAPISI IZ BAZE</h1>
         <div id="svi-izvjestaji" class="space-y-6">
             <p class="text-zinc-500 animate-pulse uppercase text-xs text-center">Učitavam podatke...</p>
@@ -85,7 +80,7 @@
         const firmaId = localStorage.getItem("prijavljenaFirma") || "Nepoznata Firma";
         document.getElementById("firma-naziv-prikaz").innerText = firmaId;
 
-        // 1. SLANJE PODATAKA U GOOGLE SHEET
+        // 1. SLANJE PODATAKA
         document.getElementById('alarm-forma').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-slanje');
@@ -104,17 +99,12 @@
                 if(res.ok) {
                     alert("Podaci uspješno upisani!");
                     document.getElementById('alarm-forma').reset();
-                    if (typeof ucitajSvePodatke === "function") { await ucitajSvePodatke(); }
+                    await ucitajSvePodatke(); 
                 }
-            } catch (err) { 
-                alert("Greška: " + err.message); 
-            } finally { 
-                btn.innerText = "POŠALJI U GOOGLE TABELU"; 
-                btn.disabled = false; 
-            }
+            } catch (err) { alert("Greška: " + err.message); } finally { btn.innerText = "POŠALJI U GOOGLE TABELU"; btn.disabled = false; }
         });
 
-        // 2. FUNKCIJA ZA GENERISANJE FAKTURE
+        // 2. FUNKCIJA ZA FAKTURU
         function generisiFakturu() {
             const naslov = document.getElementById('naslov').value;
             const detalji = document.getElementById('detalji').value;
@@ -125,13 +115,12 @@
             prozorFakture.document.write(`
                 <html>
                 <head>
-                    <title>Faktura - ${naslov}</title>
+                    <title>FAKTURA</title>
                     <style>
-                        body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
+                        body { font-family: Arial, sans-serif; padding: 40px; }
                         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
                         th, td { border: 1px solid #333; padding: 12px; text-align: left; }
                         th { background-color: #f4f4f4; }
-                        .print-btn { background: #000; color: #fff; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px; font-weight: bold; }
                     </style>
                 </head>
                 <body>
@@ -147,21 +136,19 @@
                             <tr><td>${naslov}</td><td>Obavljeno</td></tr>
                         </tbody>
                     </table>
-                    <button class="print-btn" onclick="window.print()">🖨️ Printaj fakturu</button>
+                    <br>
+                    <button onclick="window.print()">🖨️ Printaj fakturu</button>
                 </body>
                 </html>
             `);
             prozorFakture.document.close();
         }
 
-        // 3. POMOĆNE FUNKCIJE & PRIVREMENI FEEDBACK
+        // 3. POMOĆNE FUNKCIJE & UČITAVANJE
         function generisiUgovorKlijentu() { alert("Generisanje ugovora..."); }
         function pokreniAlarm() { alert("🚨 ALARM ZA: " + firmaId); }
         function odjaviSe() { localStorage.removeItem("prijavljenaFirma"); window.location.href = "index.html"; }
-        function zapamtiKlijenta(ime) { localStorage.setItem('zadnjiKlijent', ime); }
-        function provjeriCijenuNaNetu(predmet) { window.open(`https://www.google.com/search?q=cijena+za+${encodeURIComponent(predmet)}`, '_blank'); }
-
-        // Simulacija učitavanja pošto u skriptu fali puna funkcija za prikaz zapisa
+        
         async function ucitajSvePodatke() {
             try {
                 const res = await fetch(API_URL);
@@ -179,10 +166,10 @@
                         </div>
                     `).join('');
                 } else {
-                    document.getElementById("svi-izvjestaji").innerHTML = '<p class="text-zinc-600 text-xs text-center">NEMA ZAPISA U BAZI.</p>';
+                    kontejner.innerHTML = '<p class="text-zinc-600 text-xs text-center">NEMA ZAPISA U BAZI.</p>';
                 }
             } catch(e) {
-                document.getElementById("svi-izvjestaji").innerHTML = '<p class="text-red-500 text-xs text-center">GREŠKA PRI UČITAVANJU BAZA PODATAKA.</p>';
+                document.getElementById("svi-izvjestaji").innerHTML = '<p class="text-red-500 text-xs text-center">GREŠKA PRI UČITAVANJU PODATAKA.</p>';
             }
         }
 
