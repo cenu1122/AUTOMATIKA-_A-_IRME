@@ -10,6 +10,7 @@
 
     <div class="max-w-4xl mx-auto">
         
+        <!-- TOP LOGO & MENU BAR -->
         <div class="flex flex-col md:flex-row justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-2xl mb-6 gap-4">
             <div class="text-center md:text-left">
                 <span class="text-[10px] uppercase text-zinc-500 font-bold block">Prijavljeni klijent:</span>
@@ -17,8 +18,10 @@
             </div>
             
             <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-center">
+                <!-- Padajući meni sa dodanim Glasovnim Asistentom -->
                 <select onchange="location = this.value;" class="bg-zinc-900 border border-zinc-800 text-white text-xs font-bold p-2.5 rounded-xl outline-none cursor-pointer focus:border-blue-500">
                     <option value="izvjestaj.html" selected>📋 Pregled Izvještaja</option>
+                    <option value="glasovni-asistent.html">🎙️ AI Voice Assistant</option>
                     <option value="ugovori.html">🤖 AI Generator Ugovora</option>
                     <option value="fakture.html">💰 AI Generator Faktura</option>
                     <option value="cv-generator.html">📄 AI CV / Biografija Generator</option>
@@ -33,20 +36,22 @@
             </div>
         </div>
 
+        <!-- QUICK ACTIONS BUTTONS -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             <button onclick="generisiUgovorKlijentu()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-emerald-600/20 text-center text-sm">
                 📄 Preuzmi ugovor o saradnji
             </button>
 
             <button onclick="generisiFakturu()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-blue-600/20 text-center text-sm">
-    💰 Generiši Fakturu
-</button>
+                💰 Generiši Fakturu
+            </button>
             
-            <button onclick="pokreniAlarm()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-amber-500/20 text-center text-sm">
+            <button onclick="pokreniAlarm()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-amber-500/20 text-center text-sm md:col-span-2 sm:col-span-1">
                 🚨 Aktiviraj hitan AI alarm
             </button>
         </div>
 
+        <!-- FORM SECTION -->
         <div class="bg-zinc-900 border border-red-600/30 p-6 rounded-2xl mb-12 shadow-2xl">
             <h2 class="text-red-600 font-black text-xl uppercase italic mb-4">Novi Upis u Tabelu</h2>
             <form id="alarm-forma" class="space-y-4">
@@ -68,6 +73,7 @@
 
         <hr class="border-zinc-800 mb-12">
 
+        <!-- DATABASE RECORDS -->
         <h1 class="text-red-600 font-black text-3xl italic mb-8 uppercase tracking-tighter">SVI ZAPISI IZ BAZE</h1>
         <div id="svi-izvjestaji" class="space-y-6">
             <p class="text-zinc-500 animate-pulse uppercase text-xs text-center">Učitavam podatke...</p>
@@ -79,7 +85,7 @@
         const firmaId = localStorage.getItem("prijavljenaFirma") || "Nepoznata Firma";
         document.getElementById("firma-naziv-prikaz").innerText = firmaId;
 
-        // 1. SLANJE PODATAKA
+        // 1. SLANJE PODATAKA U GOOGLE SHEET
         document.getElementById('alarm-forma').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-slanje');
@@ -98,58 +104,87 @@
                 if(res.ok) {
                     alert("Podaci uspješno upisani!");
                     document.getElementById('alarm-forma').reset();
-                    await ucitajSvePodatke(); 
+                    if (typeof ucitajSvePodatke === "function") { await ucitajSvePodatke(); }
                 }
-            } catch (err) { alert("Greška: " + err.message); } finally { btn.innerText = "POŠALJI U GOOGLE TABELU"; btn.disabled = false; }
+            } catch (err) { 
+                alert("Greška: " + err.message); 
+            } finally { 
+                btn.innerText = "POŠALJI U GOOGLE TABELU"; 
+                btn.disabled = false; 
+            }
         });
 
-        // Kada generišeš fakturu, umjesto običnog teksta, kreiraj ovakvu strukturu:
-// --- OVAKO TREBA DA IZGLEDA FUNKCIJA ---
-function generisiFakturu() {
-    // 1. Uzimamo vrijednosti direktno iz polja u formi
-    const naslov = document.getElementById('naslov').value;
-    const detalji = document.getElementById('detalji').value;
+        // 2. FUNKCIJA ZA GENERISANJE FAKTURE
+        function generisiFakturu() {
+            const naslov = document.getElementById('naslov').value;
+            const detalji = document.getElementById('detalji').value;
 
-    // 2. Provjera: ako je forma prazna, daj upozorenje
-    if(!naslov) { alert("Molim te, prvo upiši naslov u formu!"); return; }
+            if(!naslov) { alert("Molim te, prvo upiši naslov u formu!"); return; }
 
-    const prozorFakture = window.open('', '_blank');
-    prozorFakture.document.write(`
-        <html>
-        <head>
-        <p>Datum izdavanja: ${new Date().toLocaleDateString('hr-BA')}</p>
-            <style>
-                body { font-family: Arial, sans-serif; padding: 40px; }
-                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                th, td { border: 1px solid #333; padding: 12px; text-align: left; }
-                th { background-color: #f4f4f4; }
-            </style>
-        </head>
-        <body>
-            <h1>FAKTURA</h1>
-            <p><strong>Usluga:</strong> ${naslov}</p>
-            <p><strong>Detalji:</strong> ${detalji}</p>
-            <table>
-                <thead>
-                    <tr><th>Opis</th><th>Status</th></tr>
-                </thead>
-                <tbody>
-                    <tr><td>${naslov}</td><td>Obavljeno</td></tr>
-                </tbody>
-            </table>
-            <button onclick="window.print()">🖨️ Printaj fakturu</button>
-        </body>
-        </html>
-    `);
-    prozorFakture.document.close();
-}
+            const prozorFakture = window.open('', '_blank');
+            prozorFakture.document.write(`
+                <html>
+                <head>
+                    <title>Faktura - ${naslov}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border: 1px solid #333; padding: 12px; text-align: left; }
+                        th { background-color: #f4f4f4; }
+                        .print-btn { background: #000; color: #fff; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <h1>FAKTURA</h1>
+                    <p>Datum izdavanja: ${new Date().toLocaleDateString('hr-BA')}</p>
+                    <p><strong>Usluga:</strong> ${naslov}</p>
+                    <p><strong>Detalji:</strong> ${detalji}</p>
+                    <table>
+                        <thead>
+                            <tr><th>Opis</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>${naslov}</td><td>Obavljeno</td></tr>
+                        </tbody>
+                    </table>
+                    <button class="print-btn" onclick="window.print()">🖨️ Printaj fakturu</button>
+                </body>
+                </html>
+            `);
+            prozorFakture.document.close();
+        }
 
-        // 3. POMOĆNE FUNKCIJE
-        function generisiUgovorKlijentu() { /* ... tvoj kod za ugovor ... */ alert("Generisanje ugovora..."); }
+        // 3. POMOĆNE FUNKCIJE & PRIVREMENI FEEDBACK
+        function generisiUgovorKlijentu() { alert("Generisanje ugovora..."); }
         function pokreniAlarm() { alert("🚨 ALARM ZA: " + firmaId); }
         function odjaviSe() { localStorage.removeItem("prijavljenaFirma"); window.location.href = "index.html"; }
         function zapamtiKlijenta(ime) { localStorage.setItem('zadnjiKlijent', ime); }
         function provjeriCijenuNaNetu(predmet) { window.open(`https://www.google.com/search?q=cijena+za+${encodeURIComponent(predmet)}`, '_blank'); }
+
+        // Simulacija učitavanja pošto u skriptu fali puna funkcija za prikaz zapisa
+        async function ucitajSvePodatke() {
+            try {
+                const res = await fetch(API_URL);
+                const podaci = await res.json();
+                const kontejner = document.getElementById("svi-izvjestaji");
+                if(podaci && podaci.length > 0) {
+                    kontejner.innerHTML = podaci.map(z => `
+                        <div class="bg-zinc-950 border border-zinc-800 p-4 rounded-xl">
+                            <div class="flex justify-between text-[10px] text-zinc-500 font-bold mb-1">
+                                <span>${z.Datum || ''}</span>
+                                <span class="text-blue-400">${z["Korisnik ID"] || ''}</span>
+                            </div>
+                            <h4 class="text-white font-bold text-sm mb-1">${z["Tekst izvještaja"] || ''}</h4>
+                            <p class="text-zinc-400 text-xs">${z["AI Analiza"] || ''}</p>
+                        </div>
+                    `).join('');
+                } else {
+                    document.getElementById("svi-izvjestaji").innerHTML = '<p class="text-zinc-600 text-xs text-center">NEMA ZAPISA U BAZI.</p>';
+                }
+            } catch(e) {
+                document.getElementById("svi-izvjestaji").innerHTML = '<p class="text-red-500 text-xs text-center">GREŠKA PRI UČITAVANJU BAZA PODATAKA.</p>';
+            }
+        }
 
         ucitajSvePodatke();
         setInterval(ucitajSvePodatke, 30000);
