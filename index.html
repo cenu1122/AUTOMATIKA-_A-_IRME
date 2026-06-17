@@ -97,7 +97,7 @@
 </head>
 <body>
 
-    <!-- Biranje jezika (Gore desno) -->
+    <!-- Biranje jezika -->
     <div class="lang-switcher">
         <button class="lang-btn active" onclick="setLanguage('en')">EN</button>
         <button class="lang-btn" onclick="setLanguage('de')">DE</button>
@@ -109,16 +109,15 @@
         <p id="main-desc">AI Automation and Voice Assistants Control Panel.</p>
 
         <div class="btn-group">
-            <!-- 1. Dugme za Registraciju -->
+            <!-- Dugme za Registraciju -->
             <a href="#register" id="btn-register" class="btn btn-primary">Create Account / Register</a>
             
-            <!-- 2. Dugme za direktan prolaz (Proba/Demo) -->
-            <a href="main.html" id="btn-demo" class="btn btn-secondary">Try Demo / Direct Access</a>
+            <!-- Ispravljeno dugme: vodi direktno na tvoj VOICE_ASISTENT.html -->
+            <a href="VOICE_ASISTENT.html" id="btn-demo" class="btn btn-secondary">Try Demo / Direct Access</a>
         </div>
     </div>
 
     <script>
-        // Prevodi (Jedan fajl za oba jezika)
         const translations = {
             en: {
                 title: "Welcome to AutoVoxa",
@@ -135,13 +134,11 @@
         };
 
         function setLanguage(lang) {
-            // Prevođenje teksta na klik
             document.getElementById('main-title').innerText = translations[lang].title;
             document.getElementById('main-desc').innerText = translations[lang].desc;
             document.getElementById('btn-register').innerText = translations[lang].register;
             document.getElementById('btn-demo').innerText = translations[lang].demo;
 
-            // Promjena aktivnog dugmeta
             const buttons = document.querySelectorAll('.lang-btn');
             buttons.forEach(btn => btn.classList.remove('active'));
             
