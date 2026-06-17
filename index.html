@@ -3,148 +3,350 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoVoxa</title>
+    <title>NH AI-Automation | Poslovni Portal</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            display: flex;
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background-color: #1a202c; 
+            color: #e2e8f0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 20px; 
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
         }
-
+        
+        /* Biranje jezika gornji desni ugao */
         .lang-switcher {
             position: absolute;
             top: 20px;
             right: 20px;
         }
-
         .lang-btn {
-            background: #252525;
+            background: #2d3748;
             color: white;
-            border: 1px solid #444;
+            border: 1px solid #4a5568;
             padding: 8px 12px;
             cursor: pointer;
             border-radius: 4px;
             font-weight: bold;
+            margin-left: 5px;
         }
-
         .lang-btn.active {
-            background: #007acc;
-            border-color: #005999;
+            background: #4299e1;
+            border-color: #3182ce;
         }
 
-        .container {
-            text-align: center;
-            background: #1e1e1e;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            max-width: 400px;
-            width: 100%;
+        .card { 
+            background: #2d3748; 
+            padding: 2rem; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
+            width: 100%; 
+            max-width: 400px; 
+            border: 1px solid #4a5568; 
+            box-sizing: border-box;
         }
-
-        h1 {
-            margin-bottom: 10px;
-            color: #007acc;
-        }
-
-        p {
-            color: #aaaaaa;
-            margin-bottom: 30px;
-        }
-
-        .btn-group {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .btn {
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-            text-decoration: none;
-            text-align: center;
-        }
-
-        .btn-primary {
-            background-color: #007acc;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #005999;
-        }
-
-        .btn-secondary {
-            background-color: #28a745;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background-color: #218838;
-        }
+        h1 { color: #63b3ed; text-align: center; cursor: pointer; margin-bottom: 30px; } 
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 1rem; border-radius: 6px; border: 1px solid #4a5568; background: #1a202c; color: white; box-sizing: border-box; }
+        
+        button { width: 100%; padding: 12px; background-color: #4299e1; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
+        button:hover { background-color: #3182ce; }
+        .btn-demo { background-color: #48bb78; }
+        .btn-demo:hover { background-color: #38a169; }
+        
+        #dashboard, #admin-panel { display: none; margin-top: 20px; }
+        .admin-header { color: #f6ad55; border-top: 1px solid #4a5568; padding-top: 20px; margin-top: 20px; font-size: 1.2rem; margin-bottom: 15px; }
+        #mic-btn { background-color: #e53e3e; }
+        #mic-btn:hover { background-color: #c53030; }
+        #statusMsg { font-size: 0.9rem; margin-top: 10px; min-height: 20px; }
+        button:disabled { background-color: #4a5568; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
+    <!-- Biranje jezika -->
     <div class="lang-switcher">
         <button class="lang-btn active" onclick="setLanguage('en')">EN</button>
         <button class="lang-btn" onclick="setLanguage('de')">DE</button>
     </div>
 
-    <div class="container">
-        <h1 id="main-title">Welcome to AutoVoxa</h1>
-        <p id="main-desc">AI Automation and Voice Assistants Control Panel.</p>
+    <div class="card">
+        <!-- Klikom 5 puta se i dalje otvara Admin Panel -->
+        <h1 onclick="openAdmin()">NH AI-Automation</h1>
 
-        <div class="btn-group">
-            <a href="#register" id="btn-register" class="btn btn-primary">Create Account / Register</a>
+        <!-- LOGIN SEKCIJA -->
+        <div id="login-section">
+            <p id="lbl-login-title" style="text-align: center; margin-bottom: 20px;">Client Login / Client Login</p>
+            <input type="text" id="companyId" placeholder="User ID">
+            <input type="password" id="password" placeholder="Password">
             
-            <a href="NH_AI_CRM_PANEL.html" id="btn-demo" class="btn btn-secondary">Try Demo / Direct Access</a>
+            <!-- Glavno dugme za prijavu (Tvoja stara logika) -->
+            <button id="loginBtn" onclick="handleLogin()">Login / Prijavi se</button>
+            
+            <!-- Novo dugme za direktan demo prolaz na izvjestaj.html -->
+            <button id="demoBtn" class="btn-demo" onclick="window.location.href='izvjestaj.html'">Try Demo / Direct Access</button>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div id="dashboard">
+            <h3><span id="lbl-welcome">Welcome</span>, <span id="displayFirma" style="color: #63b3ed;"></span></h3>
+            
+            <label id="lbl-voice-report">Voice Report:</label>
+            <button id="mic-btn" onclick="startDictation()">🎤 Click & Speak</button>
+
+            <textarea id="userInput" rows="4" placeholder="Your speech will appear here..."></textarea>
+            <button id="sendBtn" onclick="sendToAI()">Send to Analysis</button>
+            <p id="statusMsg" style="color: #68d391; text-align: center;"></p>
+        </div>
+
+        <!-- ADMIN PANEL -->
+        <div id="admin-panel">
+            <h2 class="admin-header">Admin Panel</h2>
+            <p id="lbl-add-user">Add new user:</p>
+            <input type="text" id="newFirmaID" placeholder="New user_id">
+            <input type="text" id="newFirmaPass" placeholder="New password">
+            <input type="text" id="newFirmaStatus" placeholder="Status (aktivan)" value="aktivan">
+            <button onclick="saveNewCompany()" style="background-color: #f6ad55;" id="btn-save-db">Save to Database</button>
         </div>
     </div>
 
     <script>
+        // Tvoj originalni URL Google skripte
+        const scriptURL = "https://script.google.com/macros/s/AKfycbweiMSOZNQI8UFdwTaB8Lf93WHAO5Ev7co_t-PmFkQ8chU9ngtuJxx-2KO-q_G65xQO/exec";
+
+        let loggedInUserId = ""; 
+        let clicks = 0;
+
+        // Prevodi za jezike
         const translations = {
             en: {
-                title: "Welcome to AutoVoxa",
-                desc: "AI Automation and Voice Assistants Control Panel.",
-                register: "Create Account / Register",
-                demo: "Try Demo / Direct Access"
+                loginTitle: "Client Login",
+                userId: "User ID",
+                password: "Password",
+                loginBtn: "Login",
+                demoBtn: "Try Demo / Direct Access",
+                welcome: "Welcome",
+                voiceReport: "Voice Report:",
+                micBtn: "🎤 Click & Speak",
+                micListening: "🔴 Listening...",
+                micError: "🎤 Error, try again",
+                placeholderSpeech: "Your speech will appear here...",
+                sendBtn: "Send to Analysis",
+                addUser: "Add new user:",
+                newStatus: "Status (active)",
+                saveDb: "Save to Database"
             },
             de: {
-                title: "Willkommen bei AutoVoxa",
-                desc: "KI-Automatisierung und Sprachassistenten-Kontrollfeld.",
-                register: "Konto erstellen / Registrieren",
-                demo: "Demo testen / Direkter Zugang"
+                loginTitle: "Client-Login",
+                userId: "Benutzer-ID",
+                password: "Passwort",
+                loginBtn: "Einloggen",
+                demoBtn: "Demo testen / Direkter Zugang",
+                welcome: "Willkommen",
+                voiceReport: "Sprachbericht:",
+                micBtn: "🎤 Klicken & Sprechen",
+                micListening: "🔴 Höre zu...",
+                micError: "🎤 Fehler, erneut versuchen",
+                placeholderSpeech: "Ihre Sprache wird hier angezeigt...",
+                sendBtn: "Zur Analyse senden",
+                addUser: "Neuen Benutzer hinzufügen:",
+                newStatus: "Status (aktiv)",
+                saveDb: "In Datenbank speichern"
             }
         };
 
+        // Funkcija za prebacivanje jezika
         function setLanguage(lang) {
-            document.getElementById('main-title').innerText = translations[lang].title;
-            document.getElementById('main-desc').innerText = translations[lang].desc;
-            document.getElementById('btn-register').innerText = translations[lang].register;
-            document.getElementById('btn-demo').innerText = translations[lang].demo;
+            document.getElementById('lbl-login-title').innerText = translations[lang].loginTitle;
+            document.getElementById('companyId').placeholder = translations[lang].userId;
+            document.getElementById('password').placeholder = translations[lang].password;
+            document.getElementById('loginBtn').innerText = translations[lang].loginBtn;
+            document.getElementById('demoBtn').innerText = translations[lang].demoBtn;
+            document.getElementById('lbl-welcome').innerText = translations[lang].welcome;
+            document.getElementById('lbl-voice-report').innerText = translations[lang].voiceReport;
+            document.getElementById('mic-btn').innerText = translations[lang].micBtn;
+            document.getElementById('userInput').placeholder = translations[lang].placeholderSpeech;
+            document.getElementById('sendBtn').innerText = translations[lang].sendBtn;
+            document.getElementById('lbl-add-user').innerText = translations[lang].addUser;
+            document.getElementById('newFirmaStatus').placeholder = translations[lang].newStatus;
+            document.getElementById('btn-save-db').innerText = translations[lang].saveDb;
 
             const buttons = document.querySelectorAll('.lang-btn');
             buttons.forEach(btn => btn.classList.remove('active'));
-            
-            if(lang === 'en') {
-                buttons[0].classList.add('active');
+            if(lang === 'en') buttons[0].classList.add('active');
+            else buttons[1].classList.add('active');
+        }
+
+        // Postavi engleski kao početni jezik pri učitavanju
+        window.onload = function() {
+            setLanguage('en');
+        };
+
+        function openAdmin() {
+            clicks++;
+            if (clicks >= 5) {
+                document.getElementById('admin-panel').style.display = 'block';
+                alert("Admin Panel otključan!");
+                clicks = 0;
+            }
+        }
+
+        function startDictation() {
+            if (window.hasOwnProperty('webkitSpeechRecognition') || window.hasOwnProperty('SpeechRecognition')) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                const recognition = new SpeechRecognition();
+                const micBtn = document.getElementById('mic-btn');
+                const currentLang = document.querySelector('.lang-btn.active').innerText.toLowerCase();
+
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = "hr-HR"; 
+                
+                recognition.start();
+                micBtn.innerText = currentLang === 'en' ? "🔴 Listening..." : "🔴 Höre zu...";
+
+                recognition.onresult = function(e) {
+                    document.getElementById('userInput').value = e.results[0][0].transcript;
+                    recognition.stop();
+                    micBtn.innerText = currentLang === 'en' ? "🎤 Click & Speak" : "🎤 Klicken & Sprechen";
+                };
+
+                recognition.onerror = function(e) {
+                    recognition.stop();
+                    micBtn.innerText = currentLang === 'en' ? "🎤 Error, try again" : "🎤 Fehler, erneut versuchen";
+                };
             } else {
-                buttons[1].classList.add('active');
+                alert("Vaš browser ne podržava glasovni unos. Koristite Chrome.");
+            }
+        }
+
+        async function handleLogin() {
+            const uneseniId = document.getElementById('companyId').value.trim();
+            const unesenaSifra = document.getElementById('password').value.trim();
+            const btn = document.getElementById('loginBtn');
+
+            if (!uneseniId || !unesenaSifra) {
+                alert("Molimo unesite ID i lozinku.");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Provjera...";
+
+            try {
+                const response = await fetch(scriptURL + "?t=" + new Date().getTime());
+                const rezultat = await response.json();
+
+                if (rezultat.error) {
+                    alert("GREŠKA U SKRIPTI: " + rezultat.error);
+                    resetBtn(btn);
+                    return;
+                }
+
+                const korisnici = Array.isArray(rezultat) ? rezultat : [];
+                const korisnikPoId = korisnici.find(k => (k.user_id || "").toString().trim() === uneseniId);
+
+                if (!korisnikPoId) {
+                    alert("Korisnički ID ne postoji!");
+                    resetBtn(btn);
+                    return;
+                }
+
+                if ((korisnikPoId.password || "").toString().trim() !== unesenaSifra) {
+                    alert("Pogrešna lozinka!");
+                    resetBtn(btn);
+                    return;
+                }
+
+                const trenutniStatus = (korisnikPoId.status || "").toString().toLowerCase().trim();
+                if (trenutniStatus !== "aktivan") {
+                    alert("Nalog nije aktivan.");
+                    resetBtn(btn);
+                    return;
+                }
+
+                loggedInUserId = uneseniId;
+                alert("Prijava uspješna! Prebacivanje na izvještaj...");
+                window.location.href = "izvjestaj.html"; 
+
+            } catch (error) {
+                console.error(error);
+                alert("Greška pri povezivanju sa serverom.");
+                resetBtn(btn);
+            }
+        }
+
+        function resetBtn(btn) {
+            btn.disabled = false;
+            const currentLang = document.querySelector('.lang-btn.active').innerText.toLowerCase();
+            btn.innerText = translations[currentLang].loginBtn;
+        }
+
+        async function sendToAI() {
+            const tekst = document.getElementById('userInput').value;
+            const statusMsg = document.getElementById('statusMsg');
+            const sendBtn = document.getElementById('sendBtn');
+
+            if(!tektext) return alert("Prvo unesite ili izdiktirajte tekst.");
+
+            const data = {
+                tip: "izvjestaj",
+                user_id: loggedInUserId,
+                tekst: tekst
+            };
+
+            statusMsg.innerText = "Slanje...";
+            sendBtn.disabled = true;
+
+            try {
+                await fetch(scriptURL, {
+                    method: 'POST',
+                    mode: 'no-cors', 
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                statusMsg.innerText = "✅ Uspješno spremljen!";
+                document.getElementById('userInput').value = ""; 
+                
+            } catch (error) {
+                console.error(error);
+                statusMsg.innerText = "❌ Greška pri slanju!";
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+
+        async function saveNewCompany() {
+            const data = {
+                tip: "registracija",
+                user_id: document.getElementById('newFirmaID').value.trim(),
+                password: document.getElementById('newFirmaPass').value.trim(),
+                status: document.getElementById('newFirmaStatus').value
+            };
+
+            if(!data.user_id || !data.password) return alert("Popunite podatke!");
+
+            try {
+                await fetch(scriptURL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                alert("Korisnik spremljen u bazu!");
+                document.getElementById('newFirmaID').value = "";
+                document.getElementById('newFirmaPass').value = "";
+            } catch (error) {
+                console.error(error);
+                alert("Greška pri spremanju!");
             }
         }
     </script>
-
 </body>
 </html>
