@@ -79,32 +79,28 @@
         });
 
         // UČITAVANJE PODATAKA
-        async function ucitajSvePodatke() {
-    try {
-        // Dodajemo limit=1000 kako bismo bili sigurni da SheetDB ne "reže" listu
-        const res = await fetch(API_URL + "&limit=1000"); 
-        const podaci = await res.json();
-        
-        console.log("Dohvaćeni podaci:", podaci); // Ovo će vam u konzoli (F12) pokazati što točno stiže
+     async function ucitajSvePodatke() {
+            try {
+                const res = await fetch(API_URL);
+                const podaci = await res.json();
+                
+                // OVDJE JE KLJUČ: Ako podaci nisu ispravni, postavi broj na 0 umjesto undefined
+                const brojZapisa = Array.isArray(podaci) ? podaci.length : 0;
+                document.getElementById("brojac-zapisa").innerText = brojZapisa;
 
-        // Provjera ako podaci nisu niz (array)
-        if (!Array.isArray(podaci)) {
-            console.error("Podaci nisu u ispravnom formatu:", podaci);
-            return;
+                if (Array.isArray(podaci)) {
+                    document.getElementById("svi-izvjestaji").innerHTML = podaci.map(z => `
+                        <div class="bg-zinc-950 border border-zinc-800 p-4 rounded-xl">
+                            <h4 class="text-white font-bold text-sm">${z["Tekst izvještaja"] || 'Nema naslova'}</h4>
+                            <p class="text-zinc-400 text-xs">${z["AI Analiza"] || 'Nema analize'}</p>
+                            <span class="text-[9px] text-zinc-600">Kontakt: ${z.Email || '---'} | ${z.Telefon || '---'}</span>
+                        </div>
+                    `).join('');
+                }
+            } catch(e) { 
+                console.error("Greška pri dohvatu:", e);
+                document.getElementById("brojac-zapisa").innerText = "0"; // Ako pukne veza, stavi 0
+            }
         }
-
-        document.getElementById("brojac-zapisa").innerText = podaci.length;
-        
-        // Prikaz svih redova
-        document.getElementById("svi-izvjestaji").innerHTML = podaci.map(z => `
-            <div class="bg-zinc-950 border border-zinc-800 p-4 rounded-xl">
-                <h4 class="text-white font-bold text-sm">${z["Tekst izvještaja"] || 'Bez naslova'}</h4>
-                <p class="text-zinc-400 text-xs">${z["AI Analiza"] || 'Nema detalja'}</p>
-                <span class="text-[9px] text-zinc-600">Kontakt: ${z.Email || 'Nema maila'} | ${z.Telefon || 'Nema telefona'}</span>
-            </div>
-        `).join('');
-    } catch(e) { 
-        console.error("Greška pri učitavanju:", e); 
-    }
 }</body>
 </html>
