@@ -9,18 +9,19 @@
 <body class="bg-black text-white p-6 font-sans">
 
     <div class="max-w-4xl mx-auto">
-        <div class="flex flex-col md:flex-row justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-2xl mb-6 gap-4 relative">
+        <div class="flex flex-col md:flex-row justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-2xl mb-6 gap-4">
             <div class="text-center md:text-left">
                 <span class="text-[10px] uppercase text-zinc-500 font-bold block">Prijavljeni klijent:</span>
                 <h2 id="firma-naziv-prikaz" class="text-blue-400 font-black text-xl uppercase italic">Učitavanje...</h2>
             </div>
             
-            <div class="text-[10px] text-zinc-500 font-bold uppercase">
-                Zapisa: <span id="brojac-zapisa" class="text-red-500">0</span>
+            <div class="bg-black border border-zinc-800 px-4 py-2 rounded-xl text-center">
+                <span class="text-[9px] text-zinc-500 uppercase font-bold block">Zapisa u bazi:</span>
+                <h2 id="brojac-zapisa" class="text-red-500 font-black text-lg">0</h2>
             </div>
 
-            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-center">
-                <select onchange="location = this.value;" class="bg-zinc-900 border border-zinc-800 text-white text-xs font-bold p-2.5 rounded-xl outline-none cursor-pointer focus:border-blue-500">
+            <div class="flex items-center gap-3">
+                <select onchange="location = this.value;" class="bg-zinc-900 border border-zinc-800 text-white text-xs font-bold p-2.5 rounded-xl outline-none cursor-pointer">
                     <option value="izvjestaj.html">📋 Pregled Izvještaja</option>
                     <option value="VOICE_ASISTENT.html" selected>🎙️ AI Voice Assistant</option>
                     <option value="ugovori.html">🤖 AI Generator Ugovora</option>
@@ -30,43 +31,26 @@
                     <option value="ponuda-generator.html">📊 AI Generator Ponuda / Predračuna</option>
                     <option value="zapisnik-generator.html">📝 AI Zapisnik sa Sastanka</option>
                 </select>
-
-                <button onclick="odjaviSe()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white font-bold py-2.5 px-4 rounded-xl text-xs uppercase transition">
-                    Odjavi se
-                </button>
+                <button onclick="odjaviSe()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 font-bold py-2.5 px-4 rounded-xl text-xs uppercase">Odjavi se</button>
             </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-            <button onclick="generisiUgovorKlijentu()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-emerald-600/20 text-center text-sm">
-                📄 Preuzmi ugovor o saradnji
-            </button>
-            <button onclick="generisiFakturu()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-blue-600/20 text-center text-sm">
-                💰 Generiši Fakturu
-            </button>
-            <button onclick="pokreniAlarm()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-amber-500/20 text-center text-sm">
-                🚨 Aktiviraj hitan AI alarm
-            </button>
+            <button onclick="generisiUgovorKlijentu()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300">📄 Preuzmi ugovor</button>
+            <button onclick="generisiFakturu()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300">💰 Generiši Fakturu</button>
+            <button onclick="pokreniAlarm()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-black py-4 rounded-xl uppercase italic transition duration-300">🚨 Aktiviraj hitan AI alarm</button>
         </div>
 
         <div class="bg-zinc-900 border border-red-600/30 p-6 rounded-2xl mb-12 shadow-2xl">
             <h2 class="text-red-600 font-black text-xl uppercase italic mb-4">Novi Upis u Tabelu</h2>
             <form id="alarm-forma" class="space-y-4">
-                <div>
-                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Naslov izvještaja:</label>
-                    <input type="text" id="naslov" required class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none transition text-white">
-                </div>
+                <input type="text" id="naslov" required placeholder="Naslov izvještaja" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none text-white">
                 <div class="grid grid-cols-2 gap-4">
-                    <input type="email" id="email" required placeholder="Email" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none transition text-white">
-                    <input type="text" id="telefon" required placeholder="Telefon" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none transition text-white">
+                    <input type="email" id="email" required placeholder="Email" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none text-white">
+                    <input type="text" id="telefon" required placeholder="Telefon" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none text-white">
                 </div>
-                <div>
-                    <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Detaljna Analiza:</label>
-                    <textarea id="detalji" rows="3" required class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none transition text-white"></textarea>
-                </div>
-                <button type="submit" id="btn-slanje" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300 shadow-lg shadow-red-600/20">
-                    POŠALJI U GOOGLE TABELU
-                </button>
+                <textarea id="detalji" rows="3" required placeholder="Detaljna analiza..." class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none text-white"></textarea>
+                <button type="submit" id="btn-slanje" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-4 rounded-xl uppercase italic">POŠALJI U GOOGLE TABELU</button>
             </form>
         </div>
 
@@ -90,30 +74,31 @@
                 "Telefon": document.getElementById('telefon').value,
                 "AI Analiza": document.getElementById('detalji').value
             };
-            btn.innerText = "SLANJE...";
-            btn.disabled = true;
+            btn.innerText = "SLANJE..."; btn.disabled = true;
             try {
                 const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: [data] }) });
                 if(res.ok) { alert("Uspješno!"); document.getElementById('alarm-forma').reset(); await ucitajSvePodatke(); }
-            } catch (err) { alert("Greška: " + err.message); } finally { btn.innerText = "POŠALJI U GOOGLE TABELU"; btn.disabled = false; }
+            } catch (err) { alert("Greška!"); } finally { btn.innerText = "POŠALJI U GOOGLE TABELU"; btn.disabled = false; }
         });
 
         async function ucitajSvePodatke() {
-            const res = await fetch(API_URL);
-            const podaci = await res.json();
-            document.getElementById("brojac-zapisa").innerText = podaci.length;
-            document.getElementById("svi-izvjestaji").innerHTML = podaci.map(z => `
-                <div class="bg-zinc-950 border border-zinc-800 p-4 rounded-xl">
-                    <h4 class="text-white font-bold text-sm">${z["Tekst izvještaja"] || ''}</h4>
-                    <p class="text-zinc-400 text-xs">${z["AI Analiza"] || ''}</p>
-                    <span class="text-[9px] text-zinc-600">Kontakt: ${z.Email || ''} | ${z.Telefon || ''}</span>
-                </div>
-            `).join('');
+            try {
+                const res = await fetch(API_URL);
+                const podaci = await res.json();
+                document.getElementById("brojac-zapisa").innerText = podaci.length;
+                document.getElementById("svi-izvjestaji").innerHTML = podaci.map(z => `
+                    <div class="bg-zinc-950 border border-zinc-800 p-4 rounded-xl">
+                        <h4 class="text-white font-bold text-sm">${z["Tekst izvještaja"] || ''}</h4>
+                        <p class="text-zinc-400 text-xs">${z["AI Analiza"] || ''}</p>
+                        <span class="text-[9px] text-zinc-600">Kontakt: ${z.Email || ''} | ${z.Telefon || ''}</span>
+                    </div>
+                `).join('');
+            } catch(e) {}
         }
 
         function odjaviSe() { localStorage.removeItem("prijavljenaFirma"); window.location.href = "index.html"; }
-        ucitajSvePodatke();
-        setInterval(ucitajSvePodatke, 30000);
+        function generisiFakturu() {} function generisiUgovorKlijentu() {} function pokreniAlarm() {}
+        ucitajSvePodatke(); setInterval(ucitajSvePodatke, 30000);
     </script>
 </body>
 </html>
