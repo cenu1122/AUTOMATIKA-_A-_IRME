@@ -9,7 +9,6 @@
 <body class="bg-black text-white p-6 font-sans">
 
     <div class="max-w-4xl mx-auto">
-        <!-- Header -->
         <div class="flex flex-col md:flex-row justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-2xl mb-6 gap-4">
             <div class="text-center md:text-left">
                 <span class="text-[10px] uppercase text-zinc-500 font-bold block">Prijavljeni klijent:</span>
@@ -22,7 +21,6 @@
             <button onclick="odjaviSe()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 font-bold py-2.5 px-4 rounded-xl text-xs uppercase">Odjavi se</button>
         </div>
 
-        <!-- Forma -->
         <div class="bg-zinc-900 border border-red-600/30 p-6 rounded-2xl mb-12 shadow-2xl">
             <h2 class="text-red-600 font-black text-xl uppercase italic mb-4">Novi Upis u "korisnici"</h2>
             <form id="alarm-forma" class="space-y-4">
@@ -43,8 +41,8 @@
     <script>
         // KONFIGURACIJA
         const CONFIG = {
-            SHEET_NAME: "korisnici", 
-            API_BASE: 'https://sheetdb.io/api/v1/rjhvmuxlef6zk'
+            SHEET_NAME: "korisnici", // OVO JE FALILO
+            API_BASE: 'https://sheetdb.io/api/v1/bbv9ttzzrwdt7'
         };
         const API_URL = `${CONFIG.API_BASE}?sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
         
@@ -79,12 +77,11 @@
         });
 
         // UČITAVANJE PODATAKA
-     async function ucitajSvePodatke() {
+        async function ucitajSvePodatke() {
             try {
                 const res = await fetch(API_URL);
                 const podaci = await res.json();
                 
-                // OVDJE JE KLJUČ: Ako podaci nisu ispravni, postavi broj na 0 umjesto undefined
                 const brojZapisa = Array.isArray(podaci) ? podaci.length : 0;
                 document.getElementById("brojac-zapisa").innerText = brojZapisa;
 
@@ -99,8 +96,14 @@
                 }
             } catch(e) { 
                 console.error("Greška pri dohvatu:", e);
-                document.getElementById("brojac-zapisa").innerText = "0"; // Ako pukne veza, stavi 0
+                document.getElementById("brojac-zapisa").innerText = "0"; 
             }
         }
-}</body>
+
+        function odjaviSe() { localStorage.removeItem("prijavljenaFirma"); window.location.href = "index.html"; }
+
+        ucitajSvePodatke(); 
+        setInterval(ucitajSvePodatke, 900000); // 15 minuta
+    </script>
+</body>
 </html>
