@@ -80,24 +80,31 @@
 
         // UČITAVANJE PODATAKA
         async function ucitajSvePodatke() {
-            try {
-                const res = await fetch(API_URL);
-                const podaci = await res.json();
-                document.getElementById("brojac-zapisa").innerText = podaci.length;
-                document.getElementById("svi-izvjestaji").innerHTML = podaci.map(z => `
-                    <div class="bg-zinc-950 border border-zinc-800 p-4 rounded-xl">
-                        <h4 class="text-white font-bold text-sm">${z["Tekst izvještaja"] || ''}</h4>
-                        <p class="text-zinc-400 text-xs">${z["AI Analiza"] || ''}</p>
-                        <span class="text-[9px] text-zinc-600">Kontakt: ${z.Email || ''} | ${z.Telefon || ''}</span>
-                    </div>
-                `).join('');
-            } catch(e) { console.error("Greška pri učitavanju:", e); }
+    try {
+        // Dodajemo limit=1000 kako bismo bili sigurni da SheetDB ne "reže" listu
+        const res = await fetch(API_URL + "&limit=1000"); 
+        const podaci = await res.json();
+        
+        console.log("Dohvaćeni podaci:", podaci); // Ovo će vam u konzoli (F12) pokazati što točno stiže
+
+        // Provjera ako podaci nisu niz (array)
+        if (!Array.isArray(podaci)) {
+            console.error("Podaci nisu u ispravnom formatu:", podaci);
+            return;
         }
 
-        function odjaviSe() { localStorage.removeItem("prijavljenaFirma"); window.location.href = "index.html"; }
+        document.getElementById("brojac-zapisa").innerText = podaci.length;
         
-        ucitajSvePodatke(); 
-        setInterval(ucitajSvePodatke, 30000);
-    </script>
-</body>
+        // Prikaz svih redova
+        document.getElementById("svi-izvjestaji").innerHTML = podaci.map(z => `
+            <div class="bg-zinc-950 border border-zinc-800 p-4 rounded-xl">
+                <h4 class="text-white font-bold text-sm">${z["Tekst izvještaja"] || 'Bez naslova'}</h4>
+                <p class="text-zinc-400 text-xs">${z["AI Analiza"] || 'Nema detalja'}</p>
+                <span class="text-[9px] text-zinc-600">Kontakt: ${z.Email || 'Nema maila'} | ${z.Telefon || 'Nema telefona'}</span>
+            </div>
+        `).join('');
+    } catch(e) { 
+        console.error("Greška pri učitavanju:", e); 
+    }
+}</body>
 </html>
