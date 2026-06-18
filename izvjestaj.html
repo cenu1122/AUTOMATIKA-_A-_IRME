@@ -9,40 +9,22 @@
 <body class="bg-black text-white p-6 font-sans">
 
     <div class="max-w-4xl mx-auto">
+        <!-- Header -->
         <div class="flex flex-col md:flex-row justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-2xl mb-6 gap-4">
             <div class="text-center md:text-left">
                 <span class="text-[10px] uppercase text-zinc-500 font-bold block">Prijavljeni klijent:</span>
                 <h2 id="firma-naziv-prikaz" class="text-blue-400 font-black text-xl uppercase italic">Učitavanje...</h2>
             </div>
-            
             <div class="bg-black border border-zinc-800 px-4 py-2 rounded-xl text-center">
                 <span class="text-[9px] text-zinc-500 uppercase font-bold block">Zapisa u bazi:</span>
                 <h2 id="brojac-zapisa" class="text-red-500 font-black text-lg">0</h2>
             </div>
-
-            <div class="flex items-center gap-3">
-                <select onchange="location = this.value;" class="bg-zinc-900 border border-zinc-800 text-white text-xs font-bold p-2.5 rounded-xl outline-none cursor-pointer">
-                    <option value="izvjestaj.html">📋 Pregled Izvještaja</option>
-                    <option value="VOICE_ASISTENT.html" selected>🎙️ AI Voice Assistant</option>
-                    <option value="ugovori.html">🤖 AI Generator Ugovora</option>
-                    <option value="fakture.html">💰 AI Generator Faktura</option>
-                    <option value="cv-generator.html">📄 AI CV / Biografija Generator</option>
-                    <option value="email-generator.html">✉️ AI Email / Pismo Generator</option>
-                    <option value="ponuda-generator.html">📊 AI Generator Ponuda / Predračuna</option>
-                    <option value="zapisnik-generator.html">📝 AI Zapisnik sa Sastanka</option>
-                </select>
-                <button onclick="odjaviSe()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 font-bold py-2.5 px-4 rounded-xl text-xs uppercase">Odjavi se</button>
-            </div>
+            <button onclick="odjaviSe()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 font-bold py-2.5 px-4 rounded-xl text-xs uppercase">Odjavi se</button>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-            <button onclick="generisiUgovorKlijentu()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300">📄 Preuzmi ugovor</button>
-            <button onclick="generisiFakturu()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl uppercase italic transition duration-300">💰 Generiši Fakturu</button>
-            <button onclick="pokreniAlarm()" class="w-full bg-amber-500 hover:bg-amber-600 text-black font-black py-4 rounded-xl uppercase italic transition duration-300">🚨 Aktiviraj hitan AI alarm</button>
-        </div>
-
+        <!-- Forma -->
         <div class="bg-zinc-900 border border-red-600/30 p-6 rounded-2xl mb-12 shadow-2xl">
-            <h2 class="text-red-600 font-black text-xl uppercase italic mb-4">Novi Upis u Tabelu</h2>
+            <h2 class="text-red-600 font-black text-xl uppercase italic mb-4">Novi Upis u "korisnici"</h2>
             <form id="alarm-forma" class="space-y-4">
                 <input type="text" id="naslov" required placeholder="Naslov izvještaja" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none text-white">
                 <div class="grid grid-cols-2 gap-4">
@@ -59,10 +41,17 @@
     </div>
 
     <script>
-        const API_URL = 'https://sheetdb.io/api/v1/rjhvmuxlef6zk';
+        // KONFIGURACIJA
+        const CONFIG = {
+            SHEET_NAME: "korisnici", 
+            API_BASE: 'https://sheetdb.io/api/v1/rjhvmuxlef6zk'
+        };
+        const API_URL = `${CONFIG.API_BASE}?sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
+        
         const firmaId = localStorage.getItem("prijavljenaFirma") || "Nepoznata Firma";
         document.getElementById("firma-naziv-prikaz").innerText = firmaId;
 
+        // SLANJE PODATAKA
         document.getElementById('alarm-forma').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-slanje');
@@ -76,11 +65,20 @@
             };
             btn.innerText = "SLANJE..."; btn.disabled = true;
             try {
-                const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ data: [data] }) });
-                if(res.ok) { alert("Uspješno!"); document.getElementById('alarm-forma').reset(); await ucitajSvePodatke(); }
-            } catch (err) { alert("Greška!"); } finally { btn.innerText = "POŠALJI U GOOGLE TABELU"; btn.disabled = false; }
+                const res = await fetch(API_URL, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ data: [data] }) 
+                });
+                if(res.ok) { 
+                    alert("Uspješno poslano!"); 
+                    document.getElementById('alarm-forma').reset(); 
+                    await ucitajSvePodatke(); 
+                }
+            } catch (err) { alert("Greška pri slanju!"); } finally { btn.innerText = "POŠALJI U GOOGLE TABELU"; btn.disabled = false; }
         });
 
+        // UČITAVANJE PODATAKA
         async function ucitajSvePodatke() {
             try {
                 const res = await fetch(API_URL);
@@ -93,12 +91,13 @@
                         <span class="text-[9px] text-zinc-600">Kontakt: ${z.Email || ''} | ${z.Telefon || ''}</span>
                     </div>
                 `).join('');
-            } catch(e) {}
+            } catch(e) { console.error("Greška pri učitavanju:", e); }
         }
 
         function odjaviSe() { localStorage.removeItem("prijavljenaFirma"); window.location.href = "index.html"; }
-        function generisiFakturu() {} function generisiUgovorKlijentu() {} function pokreniAlarm() {}
-        ucitajSvePodatke(); setInterval(ucitajSvePodatke, 30000);
+        
+        ucitajSvePodatke(); 
+        setInterval(ucitajSvePodatke, 30000);
     </script>
 </body>
 </html>
