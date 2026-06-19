@@ -1,102 +1,173 @@
 <!DOCTYPE html>
 <html lang="hr">
 <head>
-    <meta charset="UTF-8">
-    <title>NH AI - Upis i Pregled</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<title>AI Sistem</title>
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-black text-white p-6 font-sans">
-    <div class="max-w-4xl mx-auto">
-        <div class="flex flex-col md:flex-row justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-2xl mb-6 gap-4">
-            <div>
-                <span class="text-[10px] uppercase text-zinc-500 font-bold">Prijavljeni klijent:</span>
-                <h2 id="firma-naziv-prikaz" class="text-blue-400 font-black text-xl italic">Učitavanje...</h2>
-            </div>
-            <div class="bg-black border border-zinc-800 px-4 py-2 rounded-xl text-center">
-                <span class="text-[9px] text-zinc-500 uppercase font-bold">Zapisa u bazi:</span>
-                <h2 id="brojac-zapisa" class="text-red-500 font-black text-lg">0</h2>
-            </div>
-            <button onclick="odjaviSe()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 font-bold py-2.5 px-4 rounded-xl text-xs uppercase">Odjavi se</button>
-        </div>
 
-        <div class="bg-zinc-900 border border-red-600/30 p-6 rounded-2xl mb-12 shadow-2xl">
-            <h2 class="text-red-600 font-black text-xl uppercase italic mb-4">Novi Upis (AI Automatik)</h2>
-            <form id="alarm-forma" class="space-y-4">
-                <input type="text" id="naslov" required placeholder="Naslov izvještaja" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none">
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="email" id="email" required placeholder="Email" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none">
-                    <input type="text" id="telefon" placeholder="Telefon" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none">
-                </div>
-                <select id="kategorija" class="w-full bg-black border border-zinc-800 p-3 rounded-xl text-white outline-none">
-                    <option value="Hitno">Hitno</option>
-                    <option value="Normalno">Normalno</option>
-                </select>
-                <button type="submit" id="btn-slanje" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-4 rounded-xl uppercase italic">POŠALJI I DOBIJ AI ODGOVOR</button>
-            </form>
-        </div>
+<div class="max-w-4xl mx-auto">
 
-        <h1 class="text-red-600 font-black text-3xl italic mb-8 uppercase tracking-tighter">SVI ZAPISI</h1>
-        <div id="svi-izvjestaji" class="space-y-6"></div>
+<!-- HEADER -->
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-blue-400 font-black text-xl">AI PANEL</h1>
+
+    <div class="text-red-500 font-bold">
+        Zapisa: <span id="brojac-zapisa">0</span>
     </div>
+</div>
 
-    <script>
-        const SHEETDB_API = 'https://sheetdb.io/api/v1/4u3goec782bvg'; 
-        const GROQ_API_KEY = 'TVOJ_GROQ_API_KLJUC'; 
-        const firmaId = localStorage.getItem("prijavljenaFirma") || "Nepoznata Firma";
-        document.getElementById("firma-naziv-prikaz").innerText = firmaId;
+<!-- FORM -->
+<div class="bg-zinc-900 border border-zinc-700 p-5 rounded-xl mb-10">
 
-        document.getElementById('alarm-forma').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btn-slanje');
-            const naslov = document.getElementById('naslov').value;
-            const kategorija = document.getElementById('kategorija').value;
-            
-            btn.innerText = "AI OBRAĐUJE..."; btn.disabled = true;
+<form id="forma" class="space-y-4">
 
-            try {
-                // Poziv AI-u
-                const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ model: "llama3-8b-8192", messages: [{ role: "user", content: naslov + " (Kategorija: " + kategorija + ")" }] })
-                });
-                const groqData = await groqRes.json();
-                const odgovorAI = groqData.choices[0].message.content;
+<input id="naslov"
+class="w-full p-3 bg-black border border-zinc-700 rounded"
+placeholder="Naslov">
 
-                // Slanje u tablicu (NAZIVI MORAJU ODGOVARATI TABLICI)
-                await fetch(SHEETDB_API, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ data: [{ 
-                        "Datum": new Date().toLocaleString(), 
-                        "Korisnik": firmaId, 
-                        "IDTekst": naslov + " (" + kategorija + ")", 
-                        "izvještajaEmail": document.getElementById('email').value, 
-                        "Odgovor": odgovorAI 
-                    }]}) 
-                });
+<textarea id="pitanje"
+class="w-full p-3 bg-black border border-zinc-700 rounded"
+placeholder="Unesi pitanje"></textarea>
 
-                document.getElementById('alarm-forma').reset();
-                ucitajSvePodatke();
-            } catch(e) { alert("Greška pri slanju!"); } finally { btn.innerText = "POŠALJI I DOBIJ AI ODGOVOR"; btn.disabled = false; }
-        });
+<input id="email"
+class="w-full p-3 bg-black border border-zinc-700 rounded"
+placeholder="Email">
 
-        async function ucitajSvePodatke() {
-            try {
-                const res = await fetch(SHEETDB_API);
-                const podaci = await res.json();
-                document.getElementById("brojac-zapisa").innerText = Array.isArray(podaci) ? podaci.length : 0;
-                document.getElementById("svi-izvjestaji").innerHTML = (Array.isArray(podaci) ? podaci.reverse() : []).map(z => `
-                    <div class="bg-zinc-950 border border-zinc-800 p-4 rounded-xl">
-                        <h4 class="text-white font-bold">${z["IDTekst"] || '---'}</h4>
-                        <p class="text-zinc-400 text-sm italic mt-2">${z["Odgovor"] || ''}</p>
-                    </div>
-                `).join('');
-            } catch(e) { console.error(e); }
-        }
+<button id="btn"
+class="w-full bg-red-600 p-3 font-bold rounded">
+POŠALJI
+</button>
 
-        function odjaviSe() { localStorage.removeItem("prijavljenaFirma"); window.location.href = "index.html"; }
-        ucitajSvePodatke();
-    </script>
+</form>
+
+</div>
+
+<!-- LISTA -->
+<div id="lista" class="space-y-4"></div>
+
+</div>
+
+<script>
+
+// ===== CONFIG =====
+const SUPABASE_URL =
+"https://mpgbpgmsorunfbdskbwn.supabase.co/functions/v1/groq-chat";
+
+const SHEETDB_API =
+"https://sheetdb.io/api/v1/4u3goec782bvg";
+
+const firmaId = "KLIJENT-1";
+
+// ===== SUBMIT =====
+document.getElementById("forma").addEventListener("submit", async (e) => {
+e.preventDefault();
+
+const btn = document.getElementById("btn");
+btn.innerText = "AI obrađuje...";
+btn.disabled = true;
+
+const naslov = document.getElementById("naslov").value;
+const pitanje = document.getElementById("pitanje").value;
+const email = document.getElementById("email").value;
+
+try {
+
+// 1. SUPABASE AI CALL
+const aiRes = await fetch(SUPABASE_URL, {
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify({
+poruka: naslov + " - " + pitanje
+})
+});
+
+const aiData = await aiRes.json();
+const odgovorAI = aiData.odgovor || "Nema odgovora";
+
+// 2. SPREMANJE U SHEETDB
+await fetch(SHEETDB_API, {
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify({
+data: [{
+Datum: new Date().toLocaleString(),
+Korisnik: firmaId,
+Naslov: naslov,
+Pitanje: pitanje,
+Email: email,
+Odgovor: odgovorAI,
+AdminOdgovor: ""
+}]
+})
+});
+
+document.getElementById("forma").reset();
+await load();
+
+} catch (err) {
+alert("Greška: " + err.message);
+}
+
+btn.innerText = "POŠALJI";
+btn.disabled = false;
+});
+
+// ===== LOAD DATA =====
+async function load() {
+
+try {
+
+const res = await fetch(SHEETDB_API);
+const data = await res.json();
+
+if (!Array.isArray(data)) return;
+
+document.getElementById("brojac-zapisa").innerText = data.length;
+
+document.getElementById("lista").innerHTML =
+data.reverse().map(x => `
+<div class="bg-zinc-900 border border-zinc-700 p-4 rounded-xl">
+
+<div class="text-blue-400 font-bold text-lg">
+${x.Naslov || ""}
+</div>
+
+<div class="text-white mt-2">
+${x.Pitanje || ""}
+</div>
+
+<div class="text-green-400 mt-3">
+🤖 AI: ${x.Odgovor || ""}
+</div>
+
+<div class="text-yellow-400 mt-2">
+👨‍💼 Admin: ${x.AdminOdgovor || "Čeka odgovor"}
+</div>
+
+<div class="text-xs text-gray-500 mt-2">
+${x.Datum || ""}
+</div>
+
+</div>
+`).join("");
+
+} catch (e) {
+console.error(e);
+}
+
+}
+
+load();
+setInterval(load, 60000);
+
+</script>
+
 </body>
 </html>
