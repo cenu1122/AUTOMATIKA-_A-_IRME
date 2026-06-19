@@ -2,44 +2,39 @@
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
-<title>NH AI SYSTEM PRO</title>
+<title>CRM AI SYSTEM PRO</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-black text-white p-6 font-sans">
 
-<div class="max-w-4xl mx-auto">
+<div class="max-w-5xl mx-auto">
 
 <!-- HEADER -->
 <div class="flex justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-2xl mb-6">
 
-<h2 id="firma-naziv-prikaz" class="text-blue-400 font-black text-xl">Loading...</h2>
+<h2 id="firma" class="text-blue-400 font-bold text-xl">Loading...</h2>
 
 <div>
-Zapisa:
-<span id="brojac-zapisa" class="text-red-500 font-bold">0</span>
+📊 <span id="brojac" class="text-red-500 font-bold">0</span>
 </div>
 
 </div>
 
 <!-- FORM -->
-<div class="bg-zinc-900 p-6 rounded-xl border border-red-600/30 mb-8">
+<div class="bg-zinc-900 p-5 rounded-xl border border-red-600/30 mb-8">
 
-<form id="forma" class="space-y-3">
+<form id="form" class="space-y-3">
 
-<input id="naslov" class="w-full p-3 bg-black border rounded" placeholder="Naslov">
+<input id="naslov" class="w-full p-3 bg-black border rounded" placeholder="NASLOV">
 
-<textarea id="pitanje" class="w-full p-3 bg-black border rounded" placeholder="Pitanje"></textarea>
+<textarea id="pitanje" class="w-full p-3 bg-black border rounded" placeholder="PITANJE"></textarea>
 
-<input id="email" class="w-full p-3 bg-black border rounded" placeholder="Email">
+<input id="email" class="w-full p-3 bg-black border rounded" placeholder="EMAIL">
 
-<select id="kategorija" class="w-full p-3 bg-black border rounded">
-<option>Hitno</option>
-<option>Normalno</option>
-<option>Info</option>
-</select>
+<input id="telefon" class="w-full p-3 bg-black border rounded" placeholder="TELEFON">
 
-<button id="btn" class="w-full bg-red-600 p-3 font-bold rounded">
+<button class="w-full bg-red-600 p-3 font-bold rounded">
 POŠALJI
 </button>
 
@@ -58,87 +53,68 @@ const API = "https://mpgbpgmsorunfbdskbwn.supabase.co/functions/v1/groq-chat";
 const SHEETDB = "https://sheetdb.io/api/v1/4u3goec782bvg";
 
 const firmaId = localStorage.getItem("prijavljenaFirma") || "Nepoznata";
-document.getElementById("firma-naziv-prikaz").innerText = firmaId;
 
-// ===== TYPING EFFECT =====
-function typeText(el, text, speed = 15) {
-el.innerHTML = "";
-let i = 0;
-const interval = setInterval(() => {
-el.innerHTML += text[i];
-i++;
-if (i >= text.length) clearInterval(interval);
-}, speed);
+document.getElementById("firma").innerText = firmaId;
+
+// 🧠 AI
+async function callAI(text){
+const res = await fetch(API,{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body: JSON.stringify({ poruka:text })
+});
+const data = await res.json();
+return data.odgovor || "";
 }
 
-// ===== SUBMIT =====
-document.getElementById("forma").addEventListener("submit", async (e) => {
+// 🚀 SUBMIT
+document.getElementById("form").addEventListener("submit", async (e)=>{
 e.preventDefault();
-
-const btn = document.getElementById("btn");
-btn.innerText = "AI radi...";
-btn.disabled = true;
 
 const naslov = naslov.value;
 const pitanje = pitanje.value;
 const email = email.value;
-const kategorija = kategorija.value;
+const telefon = telefon.value;
 
-try {
+const ai = await callAI(naslov + " | " + pitanje);
 
-// AI
-const ai = await fetch(API, {
-method: "POST",
-headers: {"Content-Type":"application/json"},
-body: JSON.stringify({
-poruka: `${naslov} | ${kategorija} | ${pitanje}`
-})
-});
-
-const data = await ai.json();
-const odgovor = data.odgovor || "Nema odgovora";
-
-// SAVE
-await fetch(SHEETDB, {
+await fetch(SHEETDB,{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body: JSON.stringify({
 data:[{
-Datum: new Date().toLocaleString(),
-Korisnik: firmaId,
-Naslov: naslov,
-Pitanje: pitanje,
-Kategorija: kategorija,
-Email: email,
-Odgovor: odgovor,
-AdminOdgovor: ""
+"Datum": new Date().toLocaleString(),
+"Korisnik ID": firmaId,
+"NASLOV": naslov,
+"PITANJE": pitanje,
+"Email": email,
+"Telefon": telefon,
+"AI Analiza": ai,
+"ODGOVOR GAZDE": "",
+"ODGOVOR DIREKTORA": "",
+"STATUS": "NOVO"
 }]
 })
 });
 
-// reload UI
-document.getElementById("forma").reset();
-await load();
-
-} catch(err){
-alert(err.message);
-}
-
-btn.innerText="POŠALJI";
-btn.disabled=false;
+e.target.reset();
+load();
 });
 
-// ===== ADMIN SAVE =====
-async function saveAdmin(id, value) {
+// 💾 SAVE ADMIN
+async function save(i){
 
 const res = await fetch(SHEETDB);
-const data = await res.json();
+const json = await res.json();
+const data = json.data || json;
 
-const row = data[id];
+const row = data[i];
 
-row.AdminOdgovor = value;
+row["ODGOVOR GAZDE"] = document.getElementById(`g-${i}`).value;
+row["ODGOVOR DIREKTORA"] = document.getElementById(`d-${i}`).value;
+row["STATUS"] = document.getElementById(`s-${i}`).value;
 
-await fetch(SHEETDB + "/" + row.id, {
+await fetch(SHEETDB + "/" + row.id,{
 method:"PATCH",
 headers:{"Content-Type":"application/json"},
 body: JSON.stringify(row)
@@ -147,59 +123,54 @@ body: JSON.stringify(row)
 load();
 }
 
-// ===== LOAD =====
+// 📊 LOAD
 async function load(){
 
 const res = await fetch(SHEETDB);
-const data = await res.json();
+const json = await res.json();
 
-document.getElementById("brojac-zapisa").innerText = data.length;
+const data = json.data || json;
+
+document.getElementById("brojac").innerText = data.length;
 
 document.getElementById("lista").innerHTML =
 data.reverse().map((x,i)=>`
 
 <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-700">
 
-<div class="text-blue-400 font-bold">${x.Naslov}</div>
+<div class="text-blue-400 font-bold text-lg">${x.NASLOV}</div>
 
-<div class="text-white mt-2">${x.Pitanje}</div>
+<div class="text-white mt-2">${x.PITANJE}</div>
 
-<div class="text-green-400 mt-3" id="ai-${i}">
-🤖 ${x.Odgovor}
-</div>
+<div class="text-green-400 mt-2">🤖 ${x["AI Analiza"]}</div>
 
-<div class="text-yellow-400 mt-2">
-👨‍💼 Admin: ${x.AdminOdgovor || "Čeka odgovor"}
-</div>
+<div class="text-yellow-400 mt-2">👨‍💼 Gazda: ${x["ODGOVOR GAZDE"] || "Čeka"}</div>
 
-<textarea id="admin-${i}" class="w-full mt-2 p-2 bg-black border rounded text-white"></textarea>
+<div class="text-red-400 mt-2">🏢 Direktor: ${x["ODGOVOR DIREKTORA"] || "Čeka"}</div>
 
-<button onclick="adminSend(${i})"
-class="mt-2 bg-yellow-600 px-3 py-1 rounded">
-Pošalji admin odgovor
+<div class="text-gray-400 mt-2 text-sm">Status: ${x.STATUS}</div>
+
+<select id="s-${i}" class="w-full mt-2 p-2 bg-black border rounded">
+<option>NOVO</option>
+<option>U OBRADI</option>
+<option>ZAVRŠENO</option>
+</select>
+
+<textarea id="g-${i}" class="w-full mt-2 p-2 bg-black border rounded text-yellow-300" placeholder="Gazda odgovor"></textarea>
+
+<textarea id="d-${i}" class="w-full mt-2 p-2 bg-black border rounded text-red-300" placeholder="Direktor odgovor"></textarea>
+
+<button onclick="save(${i})" class="mt-2 bg-green-600 px-3 py-1 rounded">
+SPREMI
 </button>
 
 </div>
 
 `).join("");
 
-// typing effect na AI tekst
-data.forEach((x,i)=>{
-setTimeout(()=>{
-const el = document.getElementById("ai-"+i);
-if(el) typeText(el, "🤖 " + x.Odgovor);
-}, i*100);
-});
-
-}
-
-async function adminSend(i){
-const text = document.getElementById("admin-"+i).value;
-await saveAdmin(i, text);
 }
 
 load();
-setInterval(load, 60000);
 
 </script>
 
