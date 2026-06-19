@@ -2,35 +2,29 @@
 <html lang="hr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NH AI - Upis i Pregled</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-black text-white p-6 font-sans">
-
     <div class="max-w-4xl mx-auto">
         <div class="flex flex-col md:flex-row justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-2xl mb-6 gap-4">
-            <div class="text-center md:text-left">
-                <span class="text-[10px] uppercase text-zinc-500 font-bold block">Prijavljeni klijent:</span>
-                <h2 id="firma-naziv-prikaz" class="text-blue-400 font-black text-xl uppercase italic">Učitavanje...</h2>
+            <div>
+                <span class="text-[10px] uppercase text-zinc-500 font-bold">Prijavljeni klijent:</span>
+                <h2 id="firma-naziv-prikaz" class="text-blue-400 font-black text-xl italic">Učitavanje...</h2>
             </div>
             <div class="bg-black border border-zinc-800 px-4 py-2 rounded-xl text-center">
-                <span class="text-[9px] text-zinc-500 uppercase font-bold block">Zapisa u bazi:</span>
+                <span class="text-[9px] text-zinc-500 uppercase font-bold">Zapisa u bazi:</span>
                 <h2 id="brojac-zapisa" class="text-red-500 font-black text-lg">0</h2>
             </div>
             <button onclick="odjaviSe()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 font-bold py-2.5 px-4 rounded-xl text-xs uppercase">Odjavi se</button>
         </div>
 
         <div class="bg-zinc-900 border border-red-600/30 p-6 rounded-2xl mb-12 shadow-2xl">
-            <h2 class="text-red-600 font-black text-xl uppercase italic mb-4">Novi Upis u "korisnici"</h2>
+            <h2 class="text-red-600 font-black text-xl uppercase italic mb-4">Novi Upis (AI Automatik)</h2>
             <form id="alarm-forma" class="space-y-4">
-                <input type="text" id="naslov" required placeholder="Naslov izvještaja" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none text-white">
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="email" id="email" required placeholder="Email" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none text-white">
-                    <input type="text" id="telefon" required placeholder="Telefon" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none text-white">
-                </div>
-                <textarea id="detalji" rows="3" required placeholder="Detaljna analiza..." class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none text-white"></textarea>
-                <button type="submit" id="btn-slanje" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-4 rounded-xl uppercase italic">POŠALJI U GOOGLE TABELU</button>
+                <input type="text" id="naslov" required placeholder="Naslov/Pitanje" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none">
+                <input type="email" id="email" required placeholder="Email" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none">
+                <button type="submit" id="btn-slanje" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-4 rounded-xl uppercase italic">POŠALJI I DOBIJ AI ODGOVOR</button>
             </form>
         </div>
 
@@ -40,70 +34,63 @@
 
     <script>
         // KONFIGURACIJA
-        const CONFIG = {
-            SHEET_NAME: "korisnici", // OVO JE FALILO
-            API_BASE: 'https://sheetdb.io/api/v1/bbv9ttzzrwdt7'
-        };
-        const API_URL = `${CONFIG.API_BASE}?sheet=${encodeURIComponent(CONFIG.SHEET_NAME)}`;
-        
+        const SHEETDB_API = 'https://sheetdb.io/api/v1/4u3goec782bvg'; 
+        const GROQ_API_KEY = window.GROQ_API_KEY || 'TVOJ_API_KLJUČ'; 
         const firmaId = localStorage.getItem("prijavljenaFirma") || "Nepoznata Firma";
         document.getElementById("firma-naziv-prikaz").innerText = firmaId;
 
-        // SLANJE PODATAKA
+        // LOGIKA SLANJA (Groq + Tablica)
         document.getElementById('alarm-forma').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-slanje');
-            const data = {
-                "Datum": new Date().toLocaleString('hr-BA'),
-                "Korisnik ID": firmaId,
-                "Tekst izvještaja": document.getElementById('naslov').value,
-                "Email": document.getElementById('email').value,
-                "Telefon": document.getElementById('telefon').value,
-                "AI Analiza": document.getElementById('detalji').value
-            };
-            btn.innerText = "SLANJE..."; btn.disabled = true;
+            const poruka = document.getElementById('naslov').value;
+            const email = document.getElementById('email').value;
+            
+            btn.innerText = "AI ANALIZIRA..."; btn.disabled = true;
+
             try {
-                const res = await fetch(API_URL, { 
+                const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model: "llama3-8b-8192", messages: [{ role: "user", content: poruka }] })
+                });
+                const groqData = await groqRes.json();
+                const odgovorAI = groqData.choices[0].message.content;
+
+                await fetch(SHEETDB_API, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ data: [data] }) 
+                    body: JSON.stringify({ data: [{ 
+                        "Datum": new Date().toLocaleString('hr-BA'), 
+                        "Korisnik": firmaId, 
+                        "IDTekst": poruka, 
+                        "izvještajaEmail": email, 
+                        "Odgovor": odgovorAI 
+                    }]}) 
                 });
-                if(res.ok) { 
-                    alert("Uspješno poslano!"); 
-                    document.getElementById('alarm-forma').reset(); 
-                    await ucitajSvePodatke(); 
-                }
-            } catch (err) { alert("Greška pri slanju!"); } finally { btn.innerText = "POŠALJI U GOOGLE TABELU"; btn.disabled = false; }
+
+                document.getElementById('alarm-forma').reset();
+                await ucitajSvePodatke();
+            } catch (err) { alert("Greška!"); } finally { btn.innerText = "POŠALJI I DOBIJ AI ODGOVOR"; btn.disabled = false; }
         });
 
         // UČITAVANJE PODATAKA
         async function ucitajSvePodatke() {
             try {
-                const res = await fetch(API_URL);
+                const res = await fetch(SHEETDB_API);
                 const podaci = await res.json();
-                
-                const brojZapisa = Array.isArray(podaci) ? podaci.length : 0;
-                document.getElementById("brojac-zapisa").innerText = brojZapisa;
-
-                if (Array.isArray(podaci)) {
-                    document.getElementById("svi-izvjestaji").innerHTML = podaci.map(z => `
-                        <div class="bg-zinc-950 border border-zinc-800 p-4 rounded-xl">
-                            <h4 class="text-white font-bold text-sm">${z["Tekst izvještaja"] || 'Nema naslova'}</h4>
-                            <p class="text-zinc-400 text-xs">${z["AI Analiza"] || 'Nema analize'}</p>
-                            <span class="text-[9px] text-zinc-600">Kontakt: ${z.Email || '---'} | ${z.Telefon || '---'}</span>
-                        </div>
-                    `).join('');
-                }
-            } catch(e) { 
-                console.error("Greška pri dohvatu:", e);
-                document.getElementById("brojac-zapisa").innerText = "0"; 
-            }
+                document.getElementById("brojac-zapisa").innerText = Array.isArray(podaci) ? podaci.length : 0;
+                document.getElementById("svi-izvjestaji").innerHTML = (Array.isArray(podaci) ? podaci.reverse() : []).map(z => `
+                    <div class="bg-zinc-950 border border-zinc-800 p-4 rounded-xl">
+                        <h4 class="text-white font-bold text-sm">${z["IDTekst"] || '---'}</h4>
+                        <p class="text-zinc-400 text-xs mt-2 italic">${z["Odgovor"] || 'Bez odgovora'}</p>
+                    </div>
+                `).join('');
+            } catch(e) { console.error(e); }
         }
 
         function odjaviSe() { localStorage.removeItem("prijavljenaFirma"); window.location.href = "index.html"; }
-
-        ucitajSvePodatke(); 
-        setInterval(ucitajSvePodatke, 900000); // 15 minuta
+        ucitajSvePodatke();
     </script>
 </body>
-</html>
+</html
