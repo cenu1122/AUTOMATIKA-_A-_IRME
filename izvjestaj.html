@@ -7,6 +7,7 @@
 </head>
 <body class="bg-black text-white p-6 font-sans">
     <div class="max-w-4xl mx-auto">
+        
         <div class="flex flex-col md:flex-row justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-2xl mb-6 gap-4">
             <div>
                 <span class="text-[10px] uppercase text-zinc-500 font-bold">Prijavljeni klijent:</span>
@@ -20,18 +21,11 @@
         </div>
 
         <div class="bg-zinc-900 border border-red-600/30 p-6 rounded-2xl mb-12 shadow-2xl">
-            <h2 class="text-red-600 font-black text-xl uppercase italic mb-4">Novi Upis (VAPI_PORUKE)</h2>
+            <h2 class="text-red-600 font-black text-xl uppercase italic mb-4">Novi Upis</h2>
             <form id="alarm-forma" class="space-y-4">
-                <input type="text" id="naslov" required placeholder="Naslov izvještaja" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none">
-                <div class="grid grid-cols-2 gap-4">
-                    <input type="email" id="email" required placeholder="Email" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none">
-                    <input type="text" id="telefon" placeholder="Telefon" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none">
-                </div>
-                <select id="kategorija" class="w-full bg-black border border-zinc-800 p-3 rounded-xl text-white">
-                    <option value="Hitno">Hitno</option>
-                    <option value="Normalno">Normalno</option>
-                </select>
-                <textarea id="detalji" rows="3" placeholder="Detalji..." class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none"></textarea>
+                <input type="text" id="naslov" required placeholder="Naslov/Pitanje" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none">
+                <input type="email" id="email" required placeholder="Email" class="w-full bg-black border border-zinc-800 p-3 rounded-xl focus:border-red-600 outline-none">
+                
                 <button type="submit" id="btn-slanje" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-4 rounded-xl uppercase italic">POŠALJI I DOBIJ AI ODGOVOR</button>
             </form>
         </div>
@@ -42,52 +36,60 @@
 
     <script>
         const SHEETDB_API = 'https://sheetdb.io/api/v1/4u3goec782bvg'; 
-        const GROQ_API_KEY = 'TVOJ_GROQ_KLJUC'; 
+        const GROQ_API_KEY = 'TVOJ_GROQ_API_KLJUC'; 
         const firmaId = localStorage.getItem("prijavljenaFirma") || "Nepoznata Firma";
         document.getElementById("firma-naziv-prikaz").innerText = firmaId;
 
+        // LOGIKA SLANJA
         document.getElementById('alarm-forma').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-slanje');
-            const naslov = document.getElementById('naslov').value;
-            
+            const poruka = document.getElementById('naslov').value;
             btn.innerText = "AI OBRAĐUJE..."; btn.disabled = true;
 
             try {
-                // AI poziv
+                // 1. Groq AI poziv
                 const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ model: "llama3-8b-8192", messages: [{ role: "user", content: naslov }] })
+                    body: JSON.stringify({ model: "llama3-8b-8192", messages: [{ role: "user", content: poruka }] })
                 });
                 const groqData = await groqRes.json();
                 const odgovorAI = groqData.choices[0].message.content;
 
-                // Slanje u tablicu (po kolonama iz tvoje slike)
+                // 2. Slanje u tvoju novu tablicu VAPI_PORUKE
                 await fetch(SHEETDB_API, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify({ data: [{ 
                         "Datum": new Date().toLocaleString(), 
                         "Korisnik": firmaId, 
-                        "IDTekst": naslov, 
+                        "IDTekst": poruka, 
                         "izvještajaEmail": document.getElementById('email').value, 
                         "Odgovor": odgovorAI 
                     }]}) 
                 });
-                alert("Poslano!");
+
+                document.getElementById('alarm-forma').reset();
                 ucitajSvePodatke();
-            } catch(e) { alert("Greška!"); } finally { btn.innerText = "POŠALJI I DOBIJ AI ODGOVOR"; btn.disabled = false; }
+            } catch(e) { alert("Greška pri slanju!"); } finally { btn.innerText = "POŠALJI I DOBIJ AI ODGOVOR"; btn.disabled = false; }
         });
 
+        // TVOJA STARA FUNKCIJA ZA UČITAVANJE (POVRATAK BROJAČA)
         async function ucitajSvePodatke() {
             const res = await fetch(SHEETDB_API);
             const podaci = await res.json();
-            document.getElementById("brojac-zapisa").innerText = podaci.length;
-            // ... ostatak logike za prikaz ...
+            document.getElementById("brojac-zapisa").innerText = Array.isArray(podaci) ? podaci.length : 0;
+            document.getElementById("svi-izvjestaji").innerHTML = (Array.isArray(podaci) ? podaci.reverse() : []).map(z => `
+                <div class="bg-zinc-950 border border-zinc-800 p-4 rounded-xl">
+                    <h4 class="text-white font-bold">${z["IDTekst"] || '---'}</h4>
+                    <p class="text-zinc-400 text-sm italic mt-2">${z["Odgovor"] || ''}</p>
+                </div>
+            `).join('');
         }
+
         function odjaviSe() { localStorage.removeItem("prijavljenaFirma"); window.location.href = "index.html"; }
         ucitajSvePodatke();
     </script>
 </body>
-</html>
+</html
