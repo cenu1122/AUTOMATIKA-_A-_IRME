@@ -2,7 +2,7 @@
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
-<title>CRM AI SYSTEM PRO</title>
+<title>CRM AI SYSTEM</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -34,7 +34,7 @@
 
 <input id="telefon" class="w-full p-3 bg-black border rounded" placeholder="TELEFON">
 
-<button class="w-full bg-red-600 p-3 font-bold rounded">
+<button type="submit" class="w-full bg-red-600 p-3 font-bold rounded">
 POŠALJI
 </button>
 
@@ -49,38 +49,48 @@ POŠALJI
 
 <script>
 
+// ================= CONFIG =================
 const API = "https://mpgbpgmsorunfbdskbwn.supabase.co/functions/v1/groq-chat";
 const SHEETDB = "https://sheetdb.io/api/v1/4u3goec782bvg";
 
-const firmaId = localStorage.getItem("prijavljenaFirma") || "Nepoznata";
-
+const firmaId = localStorage.getItem("prijavljenaFirma") || "Nepoznata Firma";
 document.getElementById("firma").innerText = firmaId;
 
-// 🧠 AI
+// ================= AI =================
 async function callAI(text){
-const res = await fetch(API,{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body: JSON.stringify({ poruka:text })
+try {
+const res = await fetch(API, {
+method: "POST",
+headers: {"Content-Type":"application/json"},
+body: JSON.stringify({ poruka: text })
 });
+
 const data = await res.json();
-return data.odgovor || "";
+return data.odgovor || "Nema AI odgovora";
+
+} catch {
+return "AI greška";
+}
 }
 
-// 🚀 SUBMIT
-document.getElementById("form").addEventListener("submit", async (e)=>{
+// ================= SUBMIT =================
+document.getElementById("form").addEventListener("submit", async (e) => {
 e.preventDefault();
 
-const naslov = naslov.value;
-const pitanje = pitanje.value;
-const email = email.value;
-const telefon = telefon.value;
+try {
 
+const naslov = document.getElementById("naslov").value;
+const pitanje = document.getElementById("pitanje").value;
+const email = document.getElementById("email").value;
+const telefon = document.getElementById("telefon").value;
+
+// AI
 const ai = await callAI(naslov + " | " + pitanje);
 
-await fetch(SHEETDB,{
-method:"POST",
-headers:{"Content-Type":"application/json"},
+// SAVE
+await fetch(SHEETDB, {
+method: "POST",
+headers: {"Content-Type":"application/json"},
 body: JSON.stringify({
 data:[{
 "Datum": new Date().toLocaleString(),
@@ -97,80 +107,83 @@ data:[{
 })
 });
 
-e.target.reset();
+document.getElementById("form").reset();
 load();
-});
 
-// 💾 SAVE ADMIN
-async function save(i){
-
-const res = await fetch(SHEETDB);
-const json = await res.json();
-const data = json.data || json;
-
-const row = data[i];
-
-row["ODGOVOR GAZDE"] = document.getElementById(`g-${i}`).value;
-row["ODGOVOR DIREKTORA"] = document.getElementById(`d-${i}`).value;
-row["STATUS"] = document.getElementById(`s-${i}`).value;
-
-await fetch(SHEETDB + "/" + row.id,{
-method:"PATCH",
-headers:{"Content-Type":"application/json"},
-body: JSON.stringify(row)
-});
-
-load();
+} catch(err){
+alert("Greška: " + err.message);
 }
 
-// 📊 LOAD
+});
+
+// ================= LOAD =================
 async function load(){
+
+try {
 
 const res = await fetch(SHEETDB);
 const json = await res.json();
 
 const data = json.data || json;
 
-document.getElementById("brojac").innerText = data.length;
+// FILTER (samo tvoje firme)
+const moji = data.filter(x => x["Korisnik ID"] === firmaId);
 
+// BROJAČ
+document.getElementById("brojac").innerText = moji.length;
+
+// LISTA
 document.getElementById("lista").innerHTML =
-data.reverse().map((x,i)=>`
+moji.reverse().map(x => `
 
 <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-700">
 
-<div class="text-blue-400 font-bold text-lg">${x.NASLOV}</div>
+<div class="text-blue-400 font-bold text-lg">
+${x.NASLOV || "Bez naslova"}
+</div>
 
-<div class="text-white mt-2">${x.PITANJE}</div>
+<div class="text-white mt-2">
+❓ ${x.PITANJE || "Nema pitanja"}
+</div>
 
-<div class="text-green-400 mt-2">🤖 ${x["AI Analiza"]}</div>
+<div class="text-green-400 mt-2">
+🤖 AI: ${x["AI Analiza"] || "Nema AI"}
+</div>
 
-<div class="text-yellow-400 mt-2">👨‍💼 Gazda: ${x["ODGOVOR GAZDE"] || "Čeka"}</div>
+<div class="text-yellow-400 mt-2">
+👨‍💼 Gazda: ${x["ODGOVOR GAZDE"] || "Čeka"}
+</div>
 
-<div class="text-red-400 mt-2">🏢 Direktor: ${x["ODGOVOR DIREKTORA"] || "Čeka"}</div>
+<div class="text-red-400 mt-2">
+🏢 Direktor: ${x["ODGOVOR DIREKTORA"] || "Čeka"}
+</div>
 
-<div class="text-gray-400 mt-2 text-sm">Status: ${x.STATUS}</div>
+<div class="text-gray-400 mt-2 text-sm">
+📊 ${x.STATUS || "NOVO"}
+</div>
 
-<select id="s-${i}" class="w-full mt-2 p-2 bg-black border rounded">
-<option>NOVO</option>
-<option>U OBRADI</option>
-<option>ZAVRŠENO</option>
-</select>
-
-<textarea id="g-${i}" class="w-full mt-2 p-2 bg-black border rounded text-yellow-300" placeholder="Gazda odgovor"></textarea>
-
-<textarea id="d-${i}" class="w-full mt-2 p-2 bg-black border rounded text-red-300" placeholder="Direktor odgovor"></textarea>
-
-<button onclick="save(${i})" class="mt-2 bg-green-600 px-3 py-1 rounded">
-SPREMI
-</button>
+<div class="text-gray-500 text-xs mt-2">
+${x.Datum || ""}
+</div>
 
 </div>
 
 `).join("");
 
+} catch(err){
+console.log(err);
+}
+
 }
 
 load();
+setInterval(load, 5000);
+
+// ================= LOGOUT =================
+function odjaviSe(){
+localStorage.removeItem("prijavljenaFirma");
+location.reload();
+}
 
 </script>
 
