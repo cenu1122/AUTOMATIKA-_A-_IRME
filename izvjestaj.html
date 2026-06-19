@@ -33,13 +33,12 @@
     </div>
 
     <script>
-        // KONFIGURACIJA
         const SHEETDB_API = 'https://sheetdb.io/api/v1/4u3goec782bvg'; 
-        const GROQ_API_KEY = window.GROQ_API_KEY || 'TVOJ_API_KLJUČ'; 
+        // Zamijeni ovaj tekst sa svojim stvarnim ključem!
+        const GROQ_API_KEY = 'TVOJ_GROQ_API_KLJUC'; 
         const firmaId = localStorage.getItem("prijavljenaFirma") || "Nepoznata Firma";
         document.getElementById("firma-naziv-prikaz").innerText = firmaId;
 
-        // LOGIKA SLANJA (Groq + Tablica)
         document.getElementById('alarm-forma').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-slanje');
@@ -54,27 +53,38 @@
                     headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ model: "llama3-8b-8192", messages: [{ role: "user", content: poruka }] })
                 });
+                
+                if (!groqRes.ok) throw new Error('Greška Groq API');
+                
                 const groqData = await groqRes.json();
                 const odgovorAI = groqData.choices[0].message.content;
+
+                // OVO MORA ODGOVARATI ZAGLAVLJIMA U TABLICI
+                const data = {
+                    "Datum": new Date().toLocaleString('hr-BA'),
+                    "Korisnik": firmaId,
+                    "IDTekst": poruka,
+                    "izvještajaEmail": email,
+                    "Odgovor": odgovorAI
+                };
 
                 await fetch(SHEETDB_API, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ data: [{ 
-                        "Datum": new Date().toLocaleString('hr-BA'), 
-                        "Korisnik": firmaId, 
-                        "IDTekst": poruka, 
-                        "izvještajaEmail": email, 
-                        "Odgovor": odgovorAI 
-                    }]}) 
+                    body: JSON.stringify({ data: [data] }) 
                 });
 
                 document.getElementById('alarm-forma').reset();
                 await ucitajSvePodatke();
-            } catch (err) { alert("Greška!"); } finally { btn.innerText = "POŠALJI I DOBIJ AI ODGOVOR"; btn.disabled = false; }
+            } catch (err) { 
+                console.error(err);
+                alert("Greška! Provjeri konzolu (F12)."); 
+            } finally { 
+                btn.innerText = "POŠALJI I DOBIJ AI ODGOVOR"; 
+                btn.disabled = false; 
+            }
         });
 
-        // UČITAVANJE PODATAKA
         async function ucitajSvePodatke() {
             try {
                 const res = await fetch(SHEETDB_API);
@@ -93,4 +103,4 @@
         ucitajSvePodatke();
     </script>
 </body>
-</html
+</html>
