@@ -2,7 +2,7 @@
 <html lang="hr">
 <head>
 <meta charset="UTF-8">
-<title>AI Sistem</title>
+<title>NH AI SYSTEM</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -10,17 +10,27 @@
 
 <div class="max-w-4xl mx-auto">
 
-<!-- HEADER -->
-<div class="flex justify-between items-center mb-6">
-    <h1 class="text-blue-400 font-black text-xl">AI PANEL</h1>
+<!-- HEADER (OSTAVLJENO KAO TVOJE) -->
+<div class="flex flex-col md:flex-row justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-2xl mb-6 gap-4">
 
-    <div class="text-red-500 font-bold">
-        Zapisa: <span id="brojac-zapisa">0</span>
-    </div>
+<div>
+<span class="text-[10px] uppercase text-zinc-500 font-bold">Prijavljeni klijent:</span>
+<h2 id="firma-naziv-prikaz" class="text-blue-400 font-black text-xl italic">Učitavanje...</h2>
+</div>
+
+<div class="bg-black border border-zinc-800 px-4 py-2 rounded-xl text-center">
+<span class="text-[9px] text-zinc-500 uppercase font-bold">Zapisa u bazi:</span>
+<h2 id="brojac-zapisa" class="text-red-500 font-black text-lg">0</h2>
+</div>
+
+<button onclick="odjaviSe()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-400 font-bold py-2 px-4 rounded-xl text-xs uppercase">
+Odjavi se
+</button>
+
 </div>
 
 <!-- FORM -->
-<div class="bg-zinc-900 border border-zinc-700 p-5 rounded-xl mb-10">
+<div class="bg-zinc-900 border border-red-600/30 p-6 rounded-2xl mb-10">
 
 <form id="forma" class="space-y-4">
 
@@ -30,11 +40,21 @@ placeholder="Naslov">
 
 <textarea id="pitanje"
 class="w-full p-3 bg-black border border-zinc-700 rounded"
-placeholder="Unesi pitanje"></textarea>
+placeholder="Pitanje"></textarea>
 
 <input id="email"
 class="w-full p-3 bg-black border border-zinc-700 rounded"
 placeholder="Email">
+
+<!-- DROPDOWN (VRAĆEN) -->
+<select id="kategorija"
+class="w-full p-3 bg-black border border-zinc-700 rounded">
+
+<option value="Hitno">Hitno</option>
+<option value="Normalno">Normalno</option>
+<option value="Info">Info</option>
+
+</select>
 
 <button id="btn"
 class="w-full bg-red-600 p-3 font-bold rounded">
@@ -59,7 +79,10 @@ const SUPABASE_URL =
 const SHEETDB_API =
 "https://sheetdb.io/api/v1/4u3goec782bvg";
 
-const firmaId = "KLIJENT-1";
+const firmaId =
+localStorage.getItem("prijavljenaFirma") || "Nepoznata Firma";
+
+document.getElementById("firma-naziv-prikaz").innerText = firmaId;
 
 // ===== SUBMIT =====
 document.getElementById("forma").addEventListener("submit", async (e) => {
@@ -72,35 +95,33 @@ btn.disabled = true;
 const naslov = document.getElementById("naslov").value;
 const pitanje = document.getElementById("pitanje").value;
 const email = document.getElementById("email").value;
+const kategorija = document.getElementById("kategorija").value;
 
 try {
 
-// 1. SUPABASE AI CALL
+// ===== AI (SUPABASE) =====
 const aiRes = await fetch(SUPABASE_URL, {
 method: "POST",
-headers: {
-"Content-Type": "application/json"
-},
+headers: { "Content-Type": "application/json" },
 body: JSON.stringify({
-poruka: naslov + " - " + pitanje
+poruka: `${naslov} | ${kategorija} | ${pitanje}`
 })
 });
 
 const aiData = await aiRes.json();
 const odgovorAI = aiData.odgovor || "Nema odgovora";
 
-// 2. SPREMANJE U SHEETDB
+// ===== SAVE =====
 await fetch(SHEETDB_API, {
 method: "POST",
-headers: {
-"Content-Type": "application/json"
-},
+headers: { "Content-Type": "application/json" },
 body: JSON.stringify({
 data: [{
 Datum: new Date().toLocaleString(),
 Korisnik: firmaId,
 Naslov: naslov,
 Pitanje: pitanje,
+Kategorija: kategorija,
 Email: email,
 Odgovor: odgovorAI,
 AdminOdgovor: ""
@@ -119,32 +140,38 @@ btn.innerText = "POŠALJI";
 btn.disabled = false;
 });
 
-// ===== LOAD DATA =====
+// ===== LOAD + BROJAC =====
 async function load() {
-
-try {
 
 const res = await fetch(SHEETDB_API);
 const data = await res.json();
 
 if (!Array.isArray(data)) return;
 
-document.getElementById("brojac-zapisa").innerText = data.length;
+// 🔥 BROJAČ (POPRAVLJEN)
+const moji = data.filter(x => x.Korisnik === firmaId);
 
+document.getElementById("brojac-zapisa").innerText = moji.length;
+
+// LISTA
 document.getElementById("lista").innerHTML =
-data.reverse().map(x => `
+moji.reverse().map(x => `
 <div class="bg-zinc-900 border border-zinc-700 p-4 rounded-xl">
 
 <div class="text-blue-400 font-bold text-lg">
-${x.Naslov || ""}
+${x.Naslov}
+</div>
+
+<div class="text-xs text-zinc-500">
+Kategorija: ${x.Kategorija}
 </div>
 
 <div class="text-white mt-2">
-${x.Pitanje || ""}
+${x.Pitanje}
 </div>
 
 <div class="text-green-400 mt-3">
-🤖 AI: ${x.Odgovor || ""}
+🤖 AI: ${x.Odgovor}
 </div>
 
 <div class="text-yellow-400 mt-2">
@@ -152,20 +179,22 @@ ${x.Pitanje || ""}
 </div>
 
 <div class="text-xs text-gray-500 mt-2">
-${x.Datum || ""}
+${x.Datum}
 </div>
 
 </div>
 `).join("");
 
-} catch (e) {
-console.error(e);
-}
-
 }
 
 load();
 setInterval(load, 60000);
+
+// ===== LOGOUT =====
+function odjaviSe() {
+localStorage.removeItem("prijavljenaFirma");
+window.location.href = "index.html";
+}
 
 </script>
 
