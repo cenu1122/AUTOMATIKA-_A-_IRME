@@ -5,7 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NH AI-Automation | Control Panel</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #1a202c; color: #e2e8f0; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; flex-direction: column; }
+        body 
+       </head>
+<body>
+
+<script>
+if (!localStorage.getItem("selectedLanguage")) {
+    localStorage.setItem("selectedLanguage", "en");
+}
+</script>
         
         /* Meni za jezike */
         .lang-container { position: absolute; top: 20px; right: 20px; display: flex; gap: 5px; }
@@ -28,10 +36,21 @@
 
     <!-- Jezički meni -->
     <div class="lang-container">
-        <a href="izvjestajBS.html" id="lang-bs" class="lang-btn" onclick="setLanguage('bs')">BS</a>
-        <a href="izvjestaj.html" id="lang-en" class="lang-btn active" onclick="setLanguage('en')">EN</a>
-        <a href="izvjestajDE.html" id="lang-de" class="lang-btn" onclick="setLanguage('de')">DE</a>
-    </div>
+    <a href="#" id="lang-bs" class="lang-btn"
+       onclick="localStorage.setItem('selectedLanguage','bs'); setLanguage('bs'); return false;">
+       BS
+    </a>
+
+    <a href="#" id="lang-en" class="lang-btn active"
+       onclick="localStorage.setItem('selectedLanguage','en'); setLanguage('en'); return false;">
+       EN
+    </a>
+
+    <a href="#" id="lang-de" class="lang-btn"
+       onclick="localStorage.setItem('selectedLanguage','de'); setLanguage('de'); return false;">
+       DE
+    </a>
+</div>
 
     <div class="card">
         <h1>NH AI-Automation</h1>
@@ -89,9 +108,20 @@
                 const korisnik = korisnici.find(k => k.user_id.toString() === uneseniId);
                 
                 if (korisnik && korisnik.password.toString() === unesenaSifra) {
-                    localStorage.setItem("prijavljenaFirma", uneseniId);
-                    window.location.href = "izvjestaj.html";
-                } else {
+
+    localStorage.setItem("prijavljenaFirma", uneseniId);
+
+    const lang = localStorage.getItem("selectedLanguage") || "en";
+
+    if (lang === "bs") {
+        window.location.href = "izvjestajBS.html";
+    } else if (lang === "de") {
+        window.location.href = "izvjestajDE.html";
+    } else {
+        window.location.href = "izvjestaj.html";
+    }
+
+}
                     alert("Invalid ID or Password.");
                     btn.disabled = false;
                     btn.innerText = "Login";
