@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>CRM AI SYSTEM - Bericht</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-black text-white p-6 font-sans">
+
+<div class="max-w-5xl mx-auto">
+
+<div class="flex justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-2xl mb-4">
+  <h2 id="firma" class="text-blue-400 font-bold text-xl">Wird geladen...</h2>
+  <div>
+    📊 <span id="brojac" class="text-red-500 font-bold">0</span>
+  </div>
+</div>
+
+<div class="flex flex-wrap gap-2 mb-8">
+  <a href="VOICE_ASISTENT.html" class="bg-zinc-800 hover:bg-zinc-700 text-sm px-3 py-1.5 rounded border border-zinc-700 transition">🎙️ Sprachassistent</a>
+  <a href="cv-generator.html" class="bg-zinc-800 hover:bg-zinc-700 text-sm px-3 py-1.5 rounded border border-zinc-700 transition">📄 Lebenslauf-Generator</a>
+  <a href="email-generator.html" class="bg-zinc-800 hover:bg-zinc-700 text-sm px-3 py-1.5 rounded border border-zinc-700 transition">✉️ E-Mail-Generator</a>
+  <a href="fakture.html" class="bg-zinc-800 hover:bg-zinc-700 text-sm px-3 py-1.5 rounded border border-zinc-700 transition">💰 Rechnungen</a>
+  <a href="izvjestaj.html" class="bg-red-900/40 text-red-400 border-red-500/50 text-sm px-3 py-1.5 rounded border transition">📊 Bericht</a>
+  <a href="ponuda-generator.html" class="bg-zinc-800 hover:bg-zinc-700 text-sm px-3 py-1.5 rounded border border-zinc-700 transition">🤝 Angebotsgenerator</a>
+  <a href="ugovori.html" class="bg-zinc-800 hover:bg-zinc-700 text-sm px-3 py-1.5 rounded border border-zinc-700 transition">📝 Verträge</a>
+  <a href="zapisnik-generator.html" class="bg-zinc-800 hover:bg-zinc-700 text-sm px-3 py-1.5 rounded border border-zinc-700 transition">📋 Protokolle</a>
+</div>
+
+<div class="bg-zinc-900 p-5 rounded-xl border border-red-600/30 mb-8">
+  <form id="form" class="space-y-3">
+    
+    <input id="naslov" class="w-full p-3 bg-black border border-zinc-700 rounded focus:border-red-500 outline-none" placeholder="TITEL" required>
+    
+    <select id="usluga" class="w-full p-3 bg-black border border-zinc-700 rounded focus:border-red-500 outline-none text-gray-300" required>
+      <option value="" disabled selected>--- DIENSTLEISTUNG WÄHLEN ---</option>
+      <option value="Sprachassistent">🎙️ Sprachassistent</option>
+      <option value="Lebenslauf-Generator">📄 Lebenslauf-Generator</option>
+      <option value="E-Mail-Generator">✉️ E-Mail-Generator</option>
+      <option value="Rechnungen">💰 Rechnungen</option>
+      <option value="Bericht">📊 Bericht</option>
+      <option value="Angebotsgenerator">🤝 Angebotsgenerator</option>
+      <option value="Verträge">📝 Verträge</option>
+      <option value="Protokolle">📋 Protokolle</option>
+    </select>
+
+    <textarea id="pitanje" class="w-full p-3 bg-black border border-zinc-700 rounded focus:border-red-500 outline-none" placeholder="FRAGE" required></textarea>
+    
+    <input id="email" class="w-full p-3 bg-black border border-zinc-700 rounded focus:border-red-500 outline-none" placeholder="E-MAIL">
+    
+    <input id="telefon" class="w-full p-3 bg-black border border-zinc-700 rounded focus:border-red-500 outline-none" placeholder="TELEFON">
+    
+    <button type="submit" class="w-full bg-red-600 hover:bg-red-700 transition p-3 font-bold rounded">
+      SENDEN
+    </button>
+  </form>
+</div>
+
+<div id="lista" class="space-y-4"></div>
+
+</div>
+
+<script>
+// ================= CONFIG =================
+const API = "https://mpgbpgmsorunfbdskbwn.supabase.co/functions/v1/groq-chat";
+const SHEETDB = "https://sheetdb.io/api/v1/4u3goec782bvg";
+
+const firmaId = localStorage.getItem("prijavljenaFirma") || "Unbekannte Firma";
+document.getElementById("firma").innerText = firmaId;
+
+// ================= AI =================
+async function callAI(text){
+  try {
+    const res = await fetch(API, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ poruka: text })
+    });
+    const data = await res.json();
+    return data.odgovor || "Keine KI-Antwort";
+  } catch {
+    return "KI-Fehler";
+  }
+}
+
+// ================= SUBMIT =================
+document.getElementById("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  try {
+    const naslov = document.getElementById("naslov").value;
+    const usluga = document.getElementById("usluga").value; 
+    const pitanje = document.getElementById("pitanje").value;
+    const email = document.getElementById("email").value;
+    const telefon = document.getElementById("telefon").value;
+
+    // AI Analysis
+    const ai = await callAI(`[Dienstleistungsanfrage: ${usluga}] ${naslov} | ${pitanje}`);
+
+    // SAVE (Database keys kept in local language to prevent breaking your Sheet)
+    await fetch(SHEETDB, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        data:[{
+          "Datum": new Date().toLocaleString("de-DE"),
+          "Korisnik ID": firmaId,
+          "USLUGA": usluga,
+          "NASLOV": naslov,
+          "PITANJE": pitanje,
+          "Email": email,
+          "Telefon": telefon,
+          "AI Analiza": ai,
+          "ODGOVOR GAZDE": "",
+          "ODGOVOR DIREKTORA": "",
+          "STATUS": "NEU"
+        }]
+      })
+    });
+
+    document.getElementById("form").reset();
+    load();
+
+  } catch(err){
+    alert("Fehler: " + err.message);
+  }
+});
+
+// ================= LOAD =================
+async function load(){
+  try {
+    const res = await fetch(SHEETDB);
+    const json = await res.json();
+    const data = json.data || json;
+
+    const moji = data.filter(x => x["Korisnik ID"] === firmaId);
+
+    document.getElementById("brojac").innerText = moji.length;
+
+    document.getElementById("lista").innerHTML = moji.reverse().map(x => `
+      <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-700">
+        <div class="flex justify-between items-start">
+          <div class="text-blue-400 font-bold text-lg">${x.NASLOV || "Kein Titel"}</div>
+          <span class="bg-zinc-800 text-xs px-2 py-1 rounded text-red-400 border border-zinc-600">${x.USLUGA || "Nicht ausgewählt"}</span>
+        </div>
+        
+        <div class="text-white mt-2">
+          ❓ ${x.PITANJE || "Keine Frage"}
+        </div>
+        
+        <div class="text-green-400 mt-2">
+          🤖 KI: ${x["AI Analiza"] || "Keine KI-Antwort"}
+        </div>
+        
+        <div class="text-yellow-400 mt-2">
+          👨‍💼 Chef: ${x["ODGOVOR GAZDE"] || "Ausstehend"}
+        </div>
+        
+        <div class="text-red-400 mt-2">
+          🏢 Direktor: ${x["ODGOVOR DIREKTORA"] || "Ausstehend"}
+        </div>
+        
+        <div class="flex justify-between items-center mt-3 pt-3 border-t border-zinc-800">
+          <div class="text-gray-400 text-sm">📊 Status: ${x.STATUS || "NEU"}</div>
+          <div class="text-gray-500 text-xs">${x.Datum || ""}</div>
+        </div>
+      </div>
+    `).join("");
+
+  } catch(err){
+    console.log(err);
+  }
+}
+
+load();
+setInterval(load, 5000);
+
+// ================= LOGOUT =================
+function odjaviSe(){
+  localStorage.removeItem("prijavljenaFirma");
+  location.reload();
+}
+</script>
+
+</body>
+</html>
