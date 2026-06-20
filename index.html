@@ -4,16 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NH AI-Automation | Control Panel</title>
-    <style>
-        body 
-       </head>
-<body>
-
-<script>
-if (!localStorage.getItem("selectedLanguage")) {
-    localStorage.setItem("selectedLanguage", "en");
+ <style>
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #1a202c;
+    color: #e2e8f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    flex-direction: column;
 }
-</script>
         
         /* Meni za jezike */
         .lang-container { position: absolute; top: 20px; right: 20px; display: flex; gap: 5px; }
@@ -107,7 +110,7 @@ if (!localStorage.getItem("selectedLanguage")) {
                 const korisnici = await response.json();
                 const korisnik = korisnici.find(k => k.user_id.toString() === uneseniId);
                 
-                if (korisnik && korisnik.password.toString() === unesenaSifra) {
+              if (korisnik && korisnik.password.toString() === unesenaSifra) {
 
     localStorage.setItem("prijavljenaFirma", uneseniId);
 
@@ -121,11 +124,11 @@ if (!localStorage.getItem("selectedLanguage")) {
         window.location.href = "izvjestaj.html";
     }
 
-}
-                    alert("Invalid ID or Password.");
-                    btn.disabled = false;
-                    btn.innerText = "Login";
-                }
+} else {
+    alert("Invalid ID or Password.");
+    btn.disabled = false;
+    btn.innerText = "Login";
+}               
             } catch (e) { alert("Error connecting to database."); btn.disabled = false; btn.innerText = "Login"; }
         }
 
