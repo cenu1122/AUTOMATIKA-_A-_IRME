@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="hr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>CRM AI SYSTEM - Izvještaj</title>
+<title>CRM AI SYSTEM - Report</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -10,7 +10,6 @@
 
 <div class="max-w-5xl mx-auto">
 
-<!-- HEADER -->
 <div class="flex justify-between items-center bg-zinc-950 border border-zinc-800 p-4 rounded-2xl mb-4">
   <h2 id="firma" class="text-blue-400 font-bold text-xl">Loading...</h2>
   <div>
@@ -18,50 +17,46 @@
   </div>
 </div>
 
-<!-- NAVIGACIJA (Linkovi prema tvojim uslugama sa slike) -->
 <div class="flex flex-wrap gap-2 mb-8">
-  <a href="VOICE_ASISTENT.html" class="bg-zinc-800 hover:bg-zinc-700 text-sm px-3 py-1.5 rounded border border-zinc-700 transition">🎙️ Voice Asistent</a>
+  <a href="VOICE_ASISTENT.html" class="bg-zinc-800 hover:bg-zinc-700 text-sm px-3 py-1.5 rounded border border-zinc-700 transition">🎙️ Voice Assistant</a>
   <a href="cv-generator.html" class="bg-zinc-800 hover:bg-zinc-700 text-sm px-3 py-1.5 rounded border border-zinc-700 transition">📄 CV Generator</a>
   <a href="email-generator.html" class="bg-zinc-800 hover:bg-zinc-700 text-sm px-3 py-1.5 rounded border border-zinc-700 transition">✉️ Email Generator</a>
-  <a href="fakture.html" class="bg-zinc-800 hover:bg-zinc-700 text-sm px-3 py-1.5 rounded border border-zinc-700 transition">💰 Fakture</a>
-  <a href="izvjestaj.html" class="bg-red-900/40 text-red-400 border-red-500/50 text-sm px-3 py-1.5 rounded border transition">📊 Izvještaj</a>
-  <a href="ponuda-generator.html" class="bg-zinc-800 hover:bg-zinc-700 text-sm px-3 py-1.5 rounded border border-zinc-700 transition">🤝 Ponuda Generator</a>
-  <a href="ugovori.html" class="bg-zinc-800 hover:bg-zinc-700 text-sm px-3 py-1.5 rounded border border-zinc-700 transition">📝 Ugovori</a>
-  <a href="zapisnik-generator.html" class="bg-zinc-800 hover:bg-zinc-700 text-sm px-3 py-1.5 rounded border border-zinc-700 transition">📋 Zapisnik Generator</a>
+  <a href="fakture.html" class="bg-zinc-800 hover:bg-zinc-700 text-sm px-3 py-1.5 rounded border border-zinc-700 transition">💰 Invoices</a>
+  <a href="izvjestaj.html" class="bg-red-900/40 text-red-400 border-red-500/50 text-sm px-3 py-1.5 rounded border transition">📊 Report</a>
+  <a href="ponuda-generator.html" class="bg-zinc-800 hover:bg-zinc-700 text-sm px-3 py-1.5 rounded border border-zinc-700 transition">🤝 Proposal Generator</a>
+  <a href="ugovori.html" class="bg-zinc-800 hover:bg-zinc-700 text-sm px-3 py-1.5 rounded border border-zinc-700 transition">📝 Contracts</a>
+  <a href="zapisnik-generator.html" class="bg-zinc-800 hover:bg-zinc-700 text-sm px-3 py-1.5 rounded border border-zinc-700 transition">📋 Meeting Minutes</a>
 </div>
 
-<!-- FORM -->
 <div class="bg-zinc-900 p-5 rounded-xl border border-red-600/30 mb-8">
   <form id="form" class="space-y-3">
     
-    <input id="naslov" class="w-full p-3 bg-black border border-zinc-700 rounded focus:border-red-500 outline-none" placeholder="NASLOV" required>
+    <input id="naslov" class="w-full p-3 bg-black border border-zinc-700 rounded focus:border-red-500 outline-none" placeholder="TITLE" required>
     
-    <!-- PADAJUĆA LISTA - TVOJE USLUGE -->
     <select id="usluga" class="w-full p-3 bg-black border border-zinc-700 rounded focus:border-red-500 outline-none text-gray-300" required>
-      <option value="" disabled selected>--- IZABERI USLUGU ---</option>
-      <option value="Voice Asistent">🎙️ Voice Asistent</option>
+      <option value="" disabled selected>--- SELECT SERVICE ---</option>
+      <option value="Voice Assistant">🎙️ Voice Assistant</option>
       <option value="CV Generator">📄 CV Generator</option>
       <option value="Email Generator">✉️ Email Generator</option>
-      <option value="Fakture">💰 Fakture</option>
-      <option value="Izvještaj">📊 Izvještaj</option>
-      <option value="Ponuda Generator">🤝 Ponuda Generator</option>
-      <option value="Ugovori">📝 Ugovori</option>
-      <option value="Zapisnik Generator">📋 Zapisnik Generator</option>
+      <option value="Invoices">💰 Invoices</option>
+      <option value="Report">📊 Report</option>
+      <option value="Proposal Generator">🤝 Proposal Generator</option>
+      <option value="Contracts">📝 Contracts</option>
+      <option value="Meeting Minutes">📋 Meeting Minutes</option>
     </select>
 
-    <textarea id="pitanje" class="w-full p-3 bg-black border border-zinc-700 rounded focus:border-red-500 outline-none" placeholder="PITANJE" required></textarea>
+    <textarea id="pitanje" class="w-full p-3 bg-black border border-zinc-700 rounded focus:border-red-500 outline-none" placeholder="QUESTION" required></textarea>
     
     <input id="email" class="w-full p-3 bg-black border border-zinc-700 rounded focus:border-red-500 outline-none" placeholder="EMAIL">
     
-    <input id="telefon" class="w-full p-3 bg-black border border-zinc-700 rounded focus:border-red-500 outline-none" placeholder="TELEFON">
+    <input id="telefon" class="w-full p-3 bg-black border border-zinc-700 rounded focus:border-red-500 outline-none" placeholder="PHONE">
     
     <button type="submit" class="w-full bg-red-600 hover:bg-red-700 transition p-3 font-bold rounded">
-      POŠALJI
+      SEND
     </button>
   </form>
 </div>
 
-<!-- LISTA -->
 <div id="lista" class="space-y-4"></div>
 
 </div>
@@ -71,7 +66,7 @@
 const API = "https://mpgbpgmsorunfbdskbwn.supabase.co/functions/v1/groq-chat";
 const SHEETDB = "https://sheetdb.io/api/v1/4u3goec782bvg";
 
-const firmaId = localStorage.getItem("prijavljenaFirma") || "Nepoznata Firma";
+const firmaId = localStorage.getItem("prijavljenaFirma") || "Unknown Company";
 document.getElementById("firma").innerText = firmaId;
 
 // ================= AI =================
@@ -83,9 +78,9 @@ async function callAI(text){
       body: JSON.stringify({ poruka: text })
     });
     const data = await res.json();
-    return data.odgovor || "Nema AI odgovora";
+    return data.odgovor || "No AI response";
   } catch {
-    return "AI greška";
+    return "AI Error";
   }
 }
 
@@ -100,16 +95,16 @@ document.getElementById("form").addEventListener("submit", async (e) => {
     const email = document.getElementById("email").value;
     const telefon = document.getElementById("telefon").value;
 
-    // AI Analiza
-    const ai = await callAI(`[Upit za uslugu: ${usluga}] ${naslov} | ${pitanje}`);
+    // AI Analysis
+    const ai = await callAI(`[Service inquiry: ${usluga}] ${naslov} | ${pitanje}`);
 
-    // SAVE
+    // SAVE (Database keys kept in local language to prevent breaking your Sheet)
     await fetch(SHEETDB, {
       method: "POST",
       headers: {"Content-Type":"application/json"},
       body: JSON.stringify({
         data:[{
-          "Datum": new Date().toLocaleString(),
+          "Datum": new Date().toLocaleString("en-GB"),
           "Korisnik ID": firmaId,
           "USLUGA": usluga,
           "NASLOV": naslov,
@@ -119,7 +114,7 @@ document.getElementById("form").addEventListener("submit", async (e) => {
           "AI Analiza": ai,
           "ODGOVOR GAZDE": "",
           "ODGOVOR DIREKTORA": "",
-          "STATUS": "NOVO"
+          "STATUS": "NEW"
         }]
       })
     });
@@ -128,7 +123,7 @@ document.getElementById("form").addEventListener("submit", async (e) => {
     load();
 
   } catch(err){
-    alert("Greška: " + err.message);
+    alert("Error: " + err.message);
   }
 });
 
@@ -146,28 +141,28 @@ async function load(){
     document.getElementById("lista").innerHTML = moji.reverse().map(x => `
       <div class="bg-zinc-900 p-4 rounded-xl border border-zinc-700">
         <div class="flex justify-between items-start">
-          <div class="text-blue-400 font-bold text-lg">${x.NASLOV || "Bez naslova"}</div>
-          <span class="bg-zinc-800 text-xs px-2 py-1 rounded text-red-400 border border-zinc-600">${x.USLUGA || "Nije odabrano"}</span>
+          <div class="text-blue-400 font-bold text-lg">${x.NASLOV || "No title"}</div>
+          <span class="bg-zinc-800 text-xs px-2 py-1 rounded text-red-400 border border-zinc-600">${x.USLUGA || "Not selected"}</span>
         </div>
         
         <div class="text-white mt-2">
-          ❓ ${x.PITANJE || "Nema pitanja"}
+          ❓ ${x.PITANJE || "No question"}
         </div>
         
         <div class="text-green-400 mt-2">
-          🤖 AI: ${x["AI Analiza"] || "Nema AI"}
+          🤖 AI: ${x["AI Analiza"] || "No AI response"}
         </div>
         
         <div class="text-yellow-400 mt-2">
-          👨‍💼 Gazda: ${x["ODGOVOR GAZDE"] || "Čeka"}
+          👨‍💼 Boss: ${x["ODGOVOR GAZDE"] || "Pending"}
         </div>
         
         <div class="text-red-400 mt-2">
-          🏢 Direktor: ${x["ODGOVOR DIREKTORA"] || "Čeka"}
+          🏢 Manager: ${x["ODGOVOR DIREKTORA"] || "Pending"}
         </div>
         
         <div class="flex justify-between items-center mt-3 pt-3 border-t border-zinc-800">
-          <div class="text-gray-400 text-sm">📊 Status: ${x.STATUS || "NOVO"}</div>
+          <div class="text-gray-400 text-sm">📊 Status: ${x.STATUS || "NEW"}</div>
           <div class="text-gray-500 text-xs">${x.Datum || ""}</div>
         </div>
       </div>
