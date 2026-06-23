@@ -1,100 +1,36 @@
 <!DOCTYPE html>
 <html lang="hr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>AI Faktura Generator</title>
-
     <script src="https://cdn.tailwindcss.com"></script>
-
     <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-
-        /* Profesionalni izgled tabele */
-        .faktura-tabela {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 25px;
-        }
-
-        .faktura-tabela th {
-            background-color: #1f2937;
-            color: white;
-            border: 1px solid #374151;
-            padding: 12px 10px;
-            text-align: left;
-            font-weight: bold;
-        }
-
-        .faktura-tabela td {
-            border: 1px solid #d1d5db;
-            padding: 12px 10px;
-            color: #111827;
-        }
-
-        .faktura-tabela tr:nth-child(even) {
-            background-color: #f9fafb;
-        }
-
-        .text-right {
-            text-align: right;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
+        body { font-family: Arial, sans-serif; }
+        .faktura-tabela { width: 100%; border-collapse: collapse; margin-top: 25px; }
+        .faktura-tabela th { background-color: #1f2937; color: white; border: 1px solid #374151; padding: 12px 10px; text-align: left; font-weight: bold; }
+        .faktura-tabela td { border: 1px solid #d1d5db; padding: 12px 10px; color: #111827; }
+        .faktura-tabela tr:nth-child(even) { background-color: #f9fafb; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
         @media print {
-            body {
-                background: white;
-                padding: 0;
-            }
-
-            #input-dio,
-            .akcija-dugmad,
-            #kontrolna-traka {
-                display: none !important;
-            }
-
-            #faktura-prikaz {
-                box-shadow: none;
-                margin: 0;
-                max-width: 100%;
-                padding: 0;
-            }
+            body { background: white; padding: 0; }
+            #input-dio, .akcija-dugmad, #kontrolna-traka { display: none !important; }
+            #faktura-prikaz { box-shadow: none; margin: 0; max-width: 100%; padding: 0; }
         }
     </style>
 </head>
-
 <body class="bg-zinc-100 p-6">
-
     <div id="input-dio" class="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-xl">
-
-        <h1 class="text-3xl font-bold mb-4">
-            AI Generator Faktura
-        </h1>
-
-        <p class="mb-4 text-gray-600">
-            Upiši ili izdiktiraj šta si utrošio.
-        </p>
-
-        <textarea id="ai-prompt-tekst" rows="6" class="w-full border border-gray-300 p-4 rounded-xl" placeholder="Primjer:
-10 kg eksera po 2.50 KM,
-2 m3 daske po 450 KM,
-2 paketa šarafa po 8 KM"></textarea>
-
+        <h1 class="text-3xl font-bold mb-4">AI Generator Faktura</h1>
+        <p class="mb-4 text-gray-600">Upiši ili izdiktiraj šta si utrošio.</p>
+        <textarea id="ai-prompt-tekst" rows="6" class="w-full border border-gray-300 p-4 rounded-xl" placeholder="Primjer: 10 kg eksera po 2.50 KM, 2 m3 daske po 450 KM..."></textarea>
         <button id="mikrofon-dugme" onclick="pokreniMikrofon()" class="mt-4 w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-bold akcija-dugmad">
             🎤 DIKTIRAJ U MIKROFON
         </button>
-
         <button onclick="generisiFakturu()" id="dugme-generisi" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold text-lg akcija-dugmad">
             KREIRAJ FAKTURU
         </button>
-
     </div>
 
     <div id="kontrolna-traka" class="hidden max-w-4xl mx-auto mb-4 flex justify-between items-center bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-md">
@@ -105,232 +41,59 @@
     </div>
 
     <div id="faktura-prikaz" class="hidden max-w-4xl mx-auto bg-white p-12 shadow-2xl rounded-2xl">
-
         <div class="flex justify-between border-b-2 border-black pb-6 mb-6">
             <div>
-                <h2 class="text-3xl font-bold">
-                    MOJA FIRMA D.O.O.
-                </h2>
-                <p>Ulica bb</p>
-                <p>71000 Sarajevo</p>
+                <h2 class="text-3xl font-bold">MOJA FIRMA D.O.O.</h2>
+                <p>Ulica bb, 71000 Sarajevo</p>
                 <p>ID: 420000000000</p>
             </div>
-
             <div class="text-right">
-                <h3 class="text-2xl font-bold uppercase mb-1" id="broj-fakture-polje">
-                    Faktura br. --/2026
-                </h3>
+                <h3 class="text-2xl font-bold uppercase mb-1" id="broj-fakture-polje">Faktura br. --/2026</h3>
                 <p id="datum-fakture" class="text-gray-700 font-medium"></p>
             </div>
         </div>
-
         <div id="faktura-sadrzaj-render"></div>
-
     </div>
 
     <script>
-        // DATUM
+        const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wZ2JwZ21zb3J1bmZiZHNrYnduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMTM0ODIsImV4cCI6MjA5Mzc4OTQ4Mn0.Wh5yo6Z2kx9QaERzTeBuRModEXw3BJYjTzhBjTq6ncs";
+        
         const danas = new Date();
-        document.getElementById("datum-fakture").innerText =
-            "Datum: " + danas.toLocaleDateString("bs-BA");
-
-        // Generisanje broja fakture (lokalno i sigurno)
+        document.getElementById("datum-fakture").innerText = "Datum: " + danas.toLocaleDateString("bs-BA");
         const slucajanBroj = String(Math.floor(Math.random() * 100) + 1).padStart(3, '0');
         document.getElementById("broj-fakture-polje").innerText = `Broj fakture: ${slucajanBroj}/2026`;
 
-        // MIKROFON
         function pokreniMikrofon() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) { alert("Browser ne podržava mikrofon!"); return; }
-
             const recognition = new SpeechRecognition();
             recognition.lang = "hr-HR";
-            recognition.continuous = false;
-            recognition.interimResults = false;
             recognition.start();
-
-            const mikrofonDugme = document.getElementById("mikrofon-dugme");
-            mikrofonDugme.innerText = "🎤 SLUŠAM...";
-            mikrofonDugme.classList.remove("bg-red-600");
-            mikrofonDugme.classList.add("bg-yellow-500");
-
-            recognition.onresult = function(event) {
-                const tekst = event.results[0][0].transcript;
-                document.getElementById("ai-prompt-tekst").value += "\n" + tekst;
-            };
-
-            recognition.onend = function() {
-                mikrofonDugme.innerText = "🎤 DIKTIRAJ U MIKROFON";
-                mikrofonDugme.classList.remove("bg-yellow-500");
-                mikrofonDugme.classList.add("bg-red-600");
-            };
-
-            recognition.onerror = function(event) { console.error(event); alert("Greška mikrofona!"); };
+            recognition.onresult = (e) => { document.getElementById("ai-prompt-tekst").value += "\n" + e.results[0][0].transcript; };
         }
 
-        // FUNKCIJA KOJA ČISTI BROJEVE IZ TEKSTA (Npr. "10 kg" -> 10, "450.00 KM" -> 450)
-        function ocistiBroj(vrijednost) {
-            if (!vrijednost) return 0;
-            // Uklanja sve osim brojeva, zareza i tačke
-            let cisto = vrijednost.toString().replace(/[^0-9.,]/g, '');
-            // Zamjenjuje zarez sa tačkom ako postoji
-            cisto = cisto.replace(',', '.');
-            return parseFloat(cisto) || 0;
-        }
+        function ocistiBroj(v) { return parseFloat(v.toString().replace(/[^0-9.,]/g, '').replace(',', '.')) || 0; }
 
-        // GENERISANJE FAKTURE
         async function generisiFakturu() {
             const tekst = document.getElementById("ai-prompt-tekst").value;
             const dugme = document.getElementById("dugme-generisi");
-
             if (!tekst.trim()) { alert("Unesi podatke!"); return; }
-
             dugme.disabled = true;
             dugme.innerText = "Generišem...";
 
             try {
-                // Tražimo od AI-ja da nam vrati običnu HTML tabelu, ali BEZ zbrojeva na dnu
-                const response = await fetch(
-                    "https://mpgbpgmsorunfbdskbwn.supabase.co/functions/v1/FAKTURE", 
-                    {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            userText: `
-Generiši jednostavnu HTML tabelu sa stavkama na osnovu teksta korisnika.
-Stavke moraju odgovarati onome što je korisnik unio (npr. ekseri, daske, šarafi).
-
-Obavezne kolone u <thead>:
-Rbr, Opis, Kol., Cijena, Iznos
-
-VAŽNA PRAVILA:
-1. U tabelu stavljaj samo obične redove sa stavkama unutar <tbody>.
-2. STROGO JE ZABRANJENO generisati redove za Subtotal, PDV ili Ukupno unutar HTML-a. To nemoj pisati!
-3. Nemoj pisati nikakav tekst prije ili poslije tabele.
-
-Podaci:
-${tekst}
-`
-                        })
-                    }
-                );
-
-                if (!response.ok) throw new Error("Greška servera");
-
-                const data = await response.json();
-                
-                // Privremeni div da učitamo ono što je AI poslao i da to sredimo kako treba
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = data.tekst || data.content || data.response || "";
-                
-                const staraTabela = tempDiv.querySelector('table');
-                if (!staraTabela) {
-                    throw new Error("AI nije vratio ispravnu tabelu.");
-                }
-
-                // Uzimamo redove iz stare tabele
-                const stariRedovi = staraTabela.querySelectorAll('tbody tr');
-                
-                // Kreiramo NOVI, ČIST I PREPRAVLJEN HTML ZA TABELU
-                let novaTabelaHTML = `
-                    <table class="faktura-tabela">
-                        <thead>
-                            <tr>
-                                <th style="width: 8%;" class="text-center">Rbr.</th>
-                                <th style="width: 47%;">Opis</th>
-                                <th style="width: 15%;" class="text-center">Kol.</th>
-                                <th style="width: 15%;" class="text-right">Cijena</th>
-                                <th style="width: 15%;" class="text-right">Iznos</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-
-                let subtotal = 0;
-                let brojac = 1;
-
-                stariRedovi.forEach((red) => {
-                    const celije = red.querySelectorAll('td');
-                    
-                    // Provjeravamo da li red sadrži stvarne podatke (i preskačemo ako je AI slučajno ubacio neki tekst sume)
-                    if (celije.length >= 4) {
-                        const tekstOpis = celije[1].innerText.trim();
-                        
-                        // Preskoči ako je prazno ili ako liči na sumu
-                        if (!tekstOpis || tekstOpis.toLowerCase().includes('ukupno') || tekstOpis.toLowerCase().includes('subtotal') || tekstOpis.toLowerCase().includes('pdv')) {
-                            return;
-                        }
-
-                        // Uzimamo sirovu količinu i cijenu iz ćelija koje je AI napravio
-                        const sirovaKolicina = celije[2].innerText.trim();
-                        const sirovaCijena = celije[3].innerText.trim();
-
-                        // Čistimo ih od teksta da dobijemo čiste brojeve za matematiku
-                        const brojKolicina = ocistiBroj(sirovaKolicina);
-                        const brojCijena = ocistiBroj(sirovaCijena);
-                        
-                        // Računamo tačan iznos stavke
-                        const iznosStavke = brojKolicina * brojCijena;
-                        subtotal += iznosStavke;
-
-                        // Gradimo čist, ravan i siguran red u novoj tabeli
-                        novaTabelaHTML += `
-                            <tr>
-                                <td class="text-center">${brojac}.</td>
-                                <td>${tekstOpis}</td>
-                                <td class="text-center">${sirovaKolicina}</td>
-                                <td class="text-right">${brojCijena.toFixed(2)} KM</td>
-                                <td class="text-right">${iznosStavke.toFixed(2)} KM</td>
-                            </tr>
-                        `;
-                        brojac++;
-                    }
+                const response = await fetch("https://mpgbpgmsorunfbdskbwn.supabase.co/functions/v1/FAKTURE", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${ANON_KEY}` },
+                    body: JSON.stringify({ userText: `Generiši HTML tabelu (thead, tbody) za: ${tekst}. Kolone: Rbr, Opis, Kol., Cijena, Iznos. Samo HTML kod, nista drugo.` })
                 });
-
-                // Precizan proračun poreza i finalne sume
-                const pdv = subtotal * 0.17;
-                const ukupnoZaUplatu = subtotal + pdv;
-
-                // Zatvaramo tbody i dodajemo fiksni, čisti blok sa sumama ispod tabele
-                novaTabelaHTML += `
-                        </tbody>
-                    </table>
-
-                    <div class="w-80 ml-auto mt-6 text-base">
-                        <div class="flex justify-between py-1 border-b border-gray-200">
-                            <span class="text-gray-600">Subtotal:</span>
-                            <span class="font-medium">${subtotal.toFixed(2)} KM</span>
-                        </div>
-                        <div class="flex justify-between py-1 border-b border-gray-200">
-                            <span class="text-gray-600">PDV (17%):</span>
-                            <span class="font-medium">${pdv.toFixed(2)} KM</span>
-                        </div>
-                        <div class="flex justify-between py-2 text-xl font-bold text-black pt-3">
-                            <span>UKUPNO:</span>
-                            <span>${ukupnoZaUplatu.toFixed(2)} KM</span>
-                        </div>
-                    </div>
-                `;
-
-                // Ubacujemo kompletno prepravljenu tabelu sa tačnim podacima na ekran
-                const kontejner = document.getElementById("faktura-sadrzaj-render");
-                kontejner.innerHTML = novaTabelaHTML;
-
-                // Sakrij unos, prikaži gotov račun i traku za ispis
+                const data = await response.json();
+                document.getElementById("faktura-sadrzaj-render").innerHTML = data.tekst;
                 document.getElementById("input-dio").classList.add("hidden");
                 document.getElementById("kontrolna-traka").classList.remove("hidden");
                 document.getElementById("faktura-prikaz").classList.remove("hidden");
-
-            } catch (error) {
-                console.error(error);
-                alert("Greška pri obradi tabele. Pokušaj ponovo pokrenuti kreiranje.");
-            } finally {
-                dugme.disabled = false;
-                dugme.innerText = "KREIRAJ FAKTURU";
-            }
+            } catch (err) { alert("Greška: " + err.message); } finally { dugme.disabled = false; dugme.innerText = "KREIRAJ FAKTURU"; }
         }
     </script>
-
 </body>
-
 </html>
