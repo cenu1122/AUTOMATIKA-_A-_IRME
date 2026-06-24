@@ -29,22 +29,45 @@
         <button class="w-full mt-3 text-slate-400 hover:text-white text-sm underline" onclick="window.location.reload()">Back to Login</button>
     </div>
 
-  <script>
-    const SUPABASE_URL = "https://mpgbpgmsorunfbdskbwn.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wZ2JwZ21zb3J1bmZiZHNrYnduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMTM0ODIsImV4cCI6MjA5Mzc4OTQ4Mn0.Wh5yo6Z2kx9QaERzTeBuRModEXw3BJYjTzhBjTq6ncs-A"; 
+ <<script>
+const SUPABASE_URL = "https://mpgbpgmsorunfbdskbwn.supabase.co";
+const SUPABASE_KEY = "TVOJ_SUPABASE_ANON_KEY";
 
-    async function handleRegister() {
-        const btn = document.getElementById('registerBtn');
-        btn.innerText = "Registering...";
-        btn.disabled = true;
+async function handleRegister() {
 
-        const firma = document.getElementById('reg-firma').value;
-        const email = document.getElementById('reg-email').value;
-        const adresa = document.getElementById('reg-adresa').value;
-        const telefon = document.getElementById('reg-telefon').value;
+    const btn = document.getElementById('registerBtn');
 
-        try {
-            const response = await fetch(`${SUPABASE_URL}/rest/v1/AUTOVOXA_KLIJENTI`, {
+    btn.innerText = "Registering...";
+    btn.disabled = true;
+
+    const firma = document.getElementById('reg-firma').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const adresa = document.getElementById('reg-adresa').value.trim();
+    const telefon = document.getElementById('reg-telefon').value.trim();
+
+    if (!firma || !email || !adresa || !telefon) {
+        alert("Popunite sva polja!");
+        btn.innerText = "Register Now";
+        btn.disabled = false;
+        return;
+    }
+
+    try {
+
+        const payload = {
+            FIRMA: firma,
+            EMAIL: email,
+            ADRESA: adresa,
+            TELLEFON: telefon,
+            STATUS: "NEW"
+        };
+
+        console.log("=== PODACI ZA SLANJE ===");
+        console.log(payload);
+
+        const response = await fetch(
+            `${SUPABASE_URL}/rest/v1/AUTOVOXA_KLIJENTI`,
+            {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -52,29 +75,71 @@
                     "Authorization": `Bearer ${SUPABASE_KEY}`,
                     "Prefer": "return=representation"
                 },
-                body: JSON.stringify({
-                    FIRMA: firma,
-                    EMAIL: email,
-                    ADRESA: adresa,
-                    TELLEFON: telefon,
-                    STATUS: "NEW"
-                })
-            });
-
-            if (!response.ok) {
-                const errorData = await response.text();
-                console.error("Supabase greška:", errorData);
-                alert("SERVER GREŠKA: " + errorData);
-            } else {
-                alert("Uspješno registrovano!");
-                window.location.reload();
+                body: JSON.stringify(payload)
             }
-        } catch (e) {
-            alert("Greška u povezivanju: " + e.message);
-        } finally {
-            btn.innerText = "Register Now";
-            btn.disabled = false;
+        );
+
+        const responseText = await response.text();
+
+        console.log("=== HTTP STATUS ===");
+        console.log(response.status);
+
+        console.log("=== SUPABASE RESPONSE ===");
+        console.log(responseText);
+
+        if (!response.ok) {
+
+            let errorObj;
+
+            try {
+                errorObj = JSON.parse(responseText);
+            } catch {
+                errorObj = {
+                    message: responseText
+                };
+            }
+
+            console.error("=== SUPABASE ERROR ===");
+            console.error(errorObj);
+
+            alert(
+                "REGISTRACIJA NIJE USPJELA\n\n" +
+                "HTTP STATUS: " + response.status + "\n\n" +
+                "CODE: " + (errorObj.code || "N/A") + "\n\n" +
+                "MESSAGE: " + (errorObj.message || "N/A") + "\n\n" +
+                "DETAILS: " + (errorObj.details || "N/A") + "\n\n" +
+                "HINT: " + (errorObj.hint || "N/A")
+            );
+
+            return;
         }
+
+        console.log("=== USPJEŠNO REGISTROVANO ===");
+        console.log(responseText);
+
+        alert("Uspješno registrovano!");
+
+        window.location.reload();
+
+    } catch (e) {
+
+        console.error("=== JAVASCRIPT GREŠKA ===");
+        console.error(e);
+
+        alert(
+            "GREŠKA PRI POVEZIVANJU\n\n" +
+            e.message
+        );
+
+    } finally {
+
+        btn.innerText = "Register Now";
+        btn.disabled = false;
+
     }
-</script></body>
+}
+</script>
+
+      </body>
+
 </html>
