@@ -14,7 +14,6 @@
 <body class="bg-zinc-100 p-6">
 
     <div id="info-firma" class="fixed top-4 left-4 bg-white p-4 rounded-xl shadow-md border border-zinc-200 z-50">
-        <div class="text-xs text-gray-500 uppercase font-bold">Firma / ID</div>
         <div id="prikaz-info" class="text-blue-600 font-bold">Učitavanje...</div>
     </div>
 
@@ -30,52 +29,49 @@
     </div>
 
     <script>
-        const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wZ2JwZ21zb3J1bmZiZHNrYnduIiwicm9sZSI6IkpXVCJ9.Wh5yo6Z2kx9QaERzTeBuRModEXw3BJYjTzhBjTq6ncs";
+        const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wZ2JwZ21zb3J1bmZiZHNrYnduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMTM0ODIsImV4cCI6MjA5Mzc4OTQ4Mn0.Wh5yo6Z2kx9QaERzTeBuRModEXw3BJYjTzhBjTq6ncs";
 
-        // AUTOMATSKO POVLAČENJE PODATAKA
-        window.addEventListener('load', () => {
+        // 1. Inicijalizacija pri učitavanju
+        window.addEventListener('DOMContentLoaded', () => {
             const naziv = localStorage.getItem('nazivFirme') || "Unknown Company";
             const id = localStorage.getItem('prijavljenaFirma') || "Nema ID";
             
             document.getElementById("naziv-firme").value = naziv;
             document.getElementById("prikaz-info").innerText = `${naziv} (${id})`;
+
+            // 2. Event Listener ovdje sigurno radi jer je HTML učitan
+            document.getElementById("dugme-generisi").addEventListener("click", async () => {
+                const nazivFirme = document.getElementById("naziv-firme").value;
+                const tekst = document.getElementById("ai-prompt-tekst").value;
+                const dugme = document.getElementById("dugme-generisi");
+                
+                if (!tekst.trim()) { alert("Upiši stavke!"); return; }
+                
+                dugme.disabled = true;
+                dugme.innerText = "Generišem...";
+
+                try {
+                    const response = await fetch("https://mpgbpgmsorunfbdskbwn.supabase.co/functions/v1/FAKTURE", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${ANON_KEY}` },
+                        body: JSON.stringify({ userText: `Firma: ${nazivFirme}. Generiši tabelu za: ${tekst}.` })
+                    });
+
+                    const data = await response.json();
+                    
+                    document.getElementById("prikaz-naziva-firme").innerText = nazivFirme;
+                    document.getElementById("faktura-sadrzaj-render").innerHTML = data.tekst || "Greška pri kreiranju tabele.";
+                    
+                    document.getElementById("input-dio").classList.add("hidden");
+                    document.getElementById("faktura-prikaz").classList.remove("hidden");
+                } catch (err) {
+                    alert("Greška: " + err.message);
+                } finally {
+                    dugme.disabled = false;
+                    dugme.innerText = "CREATE INVOICE";
+                }
+            });
         });
-
-        async function generisiFakturu() {
-            const nazivFirme = document.getElementById("naziv-firme").value;
-            const tekst = document.getElementById("ai-prompt-tekst").value;
-            const dugme = document.getElementById("dugme-generisi");
-            
-            if (!tekst.trim()) { alert("Upiši stavke!"); return; }
-            
-            dugme.disabled = true;
-            dugme.innerText = "Generišem...";
-
-            try {
-                const response = await fetch("https://mpgbpgmsorunfbdskbwn.supabase.co/functions/v1/FAKTURE", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${ANON_KEY}` },
-                    body: JSON.stringify({ 
-                        userText: `Firma: ${nazivFirme}. Generiši kompletnu fakturu sa tabelom za: ${tekst}.` 
-                    })
-                });
-
-                const data = await response.json();
-                
-                document.getElementById("prikaz-naziva-firme").innerText = nazivFirme;
-                document.getElementById("faktura-sadrzaj-render").innerHTML = data.tekst || "Greška.";
-                
-                document.getElementById("input-dio").classList.add("hidden");
-                document.getElementById("faktura-prikaz").classList.remove("hidden");
-            } catch (err) {
-                alert("Greška: " + err.message);
-            } finally {
-                dugme.disabled = false;
-                dugme.innerText = "CREATE INVOICE";
-            }
-        }
-
-        document.getElementById("dugme-generisi").addEventListener("click", generisiFakturu);
     </script>
 </body>
 </html>
