@@ -2,141 +2,70 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NH AI-Automation | Control Panel</title>
+    <title>NH AI-Automation | Login & Register</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1a202c;
-            color: #e2e8f0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            flex-direction: column;
-        }
-
-        /* Meni za jezike */
-        .lang-container { position: absolute; top: 20px; right: 20px; display: flex; gap: 5px; }
-        .lang-btn { background: #2d3748; color: white; border: 1px solid #4a5568; padding: 8px 14px; cursor: pointer; border-radius: 6px; font-weight: bold; transition: all 0.3s; text-decoration: none; font-size: 0.8rem; }
-        .lang-btn.active { background: #e53e3e; border-color: #c53030; }
-
-        .card { background: #2d3748; padding: 2.5rem; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; max-width: 420px; border: 1px solid #4a5568; }
-        h1 { color: #63b3ed; text-align: center; margin-bottom: 5px; font-size: 2rem; }
-        .subtitle { text-align: center; color: #a0aec0; margin-bottom: 30px; font-size: 0.95rem; }
-        label { display: block; margin-bottom: 6px; font-size: 0.9rem; color: #cbd5e0; }
-        input { width: 100%; padding: 12px; margin-bottom: 1.2rem; border-radius: 6px; border: 1px solid #4a5568; background: #1a202c; color: white; box-sizing: border-box; font-size: 1rem; }
-        .btn-login { width: 100%; padding: 14px; background-color: #4299e1; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem; margin-bottom: 15px; }
-        .action-group { display: flex; gap: 10px; }
-        .btn-secondary { flex: 1; padding: 12px; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: center; text-decoration: none; }
-        .btn-demo { background-color: #48bb78; }
-        .btn-register { background-color: #718096; }
+        body { background-color: #1a202c; color: #e2e8f0; }
+        .card { background: #2d3748; padding: 2rem; border-radius: 12px; border: 1px solid #4a5568; }
     </style>
 </head>
-<body>
+<body class="flex justify-center items-center min-h-screen p-4">
 
-    <div class="lang-container">
-        <a href="#" id="lang-bs" class="lang-btn"
-           onclick="localStorage.setItem('selectedLanguage','bs'); setLanguage('bs'); return false;">
-           BS
-        </a>
-
-        <a href="#" id="lang-en" class="lang-btn active"
-           onclick="localStorage.setItem('selectedLanguage','en'); setLanguage('en'); return false;">
-           EN
-        </a>
-
-        <a href="#" id="lang-de" class="lang-btn"
-           onclick="localStorage.setItem('selectedLanguage','de'); setLanguage('de'); return false;">
-           DE
-        </a>
-    </div>
-
-    <div class="card">
-        <h1>NH AI-Automation</h1>
-        <p class="subtitle" id="lbl-subtitle">AI Automation and Voice Assistants Control Panel</p>
-
-<div style="background:#2b6cb0; color:white; padding:12px 16px; border-radius:8px; margin-bottom:15px; font-weight:bold; text-align:center;">
-    ⚠️ The system is currently under maintenance. We are working to resolve the issue shortly.
-</div>
+    <div class="card w-full max-w-md">
+        <h1 class="text-blue-400 text-2xl font-bold text-center mb-6">NH AI-Automation</h1>
         
-        <div id="login-section">
-            <label id="lbl-username-tag">Username / User ID:</label>
-            <input type="text" id="companyId" placeholder="Enter your User ID">
-            
-            <label id="lbl-password-tag">Password:</label>
-            <input type="password" id="password" placeholder="Enter your password">
-            
-            <button id="loginBtn" class="btn-login" onclick="handleLogin()">Login</button>
-            
-            <div class="action-group">
-                <button id="demoBtn" class="btn-secondary btn-demo" onclick="window.location.href='izvjestaj.html'">Try Demo</button>
-                <button id="registerBtn" class="btn-secondary btn-register" onclick="handleRegisterClick()">Register</button>
-            </div>
+        <div id="register-section">
+            <h2 class="text-white text-lg mb-4 border-b border-gray-600 pb-2">Register New Client</h2>
+            <input type="text" id="reg-firma" placeholder="Company Name (ID)" class="w-full p-2 mb-2 bg-black rounded border border-gray-600">
+            <input type="email" id="reg-email" placeholder="Email" class="w-full p-2 mb-2 bg-black rounded border border-gray-600">
+            <input type="text" id="reg-adresa" placeholder="Address" class="w-full p-2 mb-2 bg-black rounded border border-gray-600">
+            <input type="text" id="reg-telefon" placeholder="Phone Number" class="w-full p-2 mb-4 bg-black rounded border border-gray-600">
+            <button onclick="handleRegister()" class="w-full bg-green-600 p-3 rounded font-bold hover:bg-green-700">SUBMIT REGISTRATION</button>
+            <p onclick="showLogin()" class="text-blue-400 text-sm mt-4 cursor-pointer text-center underline">Back to Login</p>
         </div>
     </div>
 
     <script>
-        const scriptURL = "https://script.google.com/macros/s/AKfycbweiMSOZNQI8UFdwTaB8Lf93WHAO5Ev7co_t-PmFkQ8chU9ngtuJxx-2KO-q_G65xQO/exec";
-        
-        const translations = {
-            en: { subtitle: "AI Automation and Voice Assistants Control Panel", usernameTag: "Username / User ID:", passwordTag: "Password:", usernamePlaceholder: "Enter your User ID", passwordPlaceholder: "Enter your password", loginBtn: "Login", demoBtn: "Try Demo", registerBtn: "Register", checking: "Checking..." },
-            de: { subtitle: "KI-Automatisierung und Sprachassistenten-Kontrollzentrum", usernameTag: "Benutzername / Benutzer-ID:", passwordTag: "Passwort:", usernamePlaceholder: "Geben Sie Ihre Benutzer-ID ein", passwordPlaceholder: "Geben Sie Ihr Passwort ein", loginBtn: "Einloggen", demoBtn: "Demo testen", registerBtn: "Registrieren", checking: "Überprüfung..." },
-            bs: { subtitle: "AI Automatizacija i Kontrolni Panel za Glasovne Asistente", usernameTag: "Korisničko ime / ID:", passwordTag: "Šifra:", usernamePlaceholder: "Unesite vaš ID", passwordPlaceholder: "Unesite vašu šifru", loginBtn: "Prijava", demoBtn: "Probaj Demo", registerBtn: "Registracija", checking: "Provjera..." }
-        };
+        // === CONFIG ===
+        const SUPABASE_URL = "https://mpgbpgmsorunfbdskbwn.supabase.co";
+        const SUPABASE_KEY = "VAŠ_ANON_KLJUČ"; // OVDJE STAVITE VAŠ KLJUČ
 
-        function setLanguage(lang) {
-            document.getElementById('lbl-subtitle').innerText = translations[lang].subtitle;
-            document.getElementById('lbl-username-tag').innerText = translations[lang].usernameTag;
-            document.getElementById('lbl-password-tag').innerText = translations[lang].passwordTag;
-            document.getElementById('companyId').placeholder = translations[lang].usernamePlaceholder;
-            document.getElementById('password').placeholder = translations[lang].passwordPlaceholder;
-            document.getElementById('loginBtn').innerText = translations[lang].loginBtn;
-            document.getElementById('demoBtn').innerText = translations[lang].demoBtn;
-            document.getElementById('registerBtn').innerText = translations[lang].registerBtn;
-            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('lang-' + lang).classList.add('active');
-        }
+        async function handleRegister() {
+            const firma = document.getElementById('reg-firma').value;
+            const email = document.getElementById('reg-email').value;
+            const adresa = document.getElementById('reg-adresa').value;
+            const telefon = document.getElementById('reg-telefon').value;
 
-        async function handleLogin() {
-            const uneseniId = document.getElementById('companyId').value.trim();
-            const unesenaSifra = document.getElementById('password').value.trim();
-            const btn = document.getElementById('loginBtn');
-            if (!uneseniId || !unesenaSifra) { alert("Please enter credentials."); return; }
-            
-            btn.disabled = true;
-            btn.innerText = "Checking...";
+            if(!firma || !email) { alert("Please fill in Company Name and Email"); return; }
+
             try {
-                const response = await fetch(scriptURL + "?t=" + new Date().getTime());
-                const korisnici = await response.json();
-                const korisnik = korisnici.find(k => k.user_id.toString() === uneseniId);
-                
-                if (korisnik && korisnik.password.toString() === unesenaSifra) {
-                    localStorage.setItem("prijavljenaFirma", uneseniId);
-                    const lang = localStorage.getItem("selectedLanguage") || "en";
-                    if (lang === "bs") {
-                        window.location.href = "izvjestajBS.html";
-                    } else if (lang === "de") {
-                        window.location.href = "izvjestajDE.html";
-                    } else {
-                        window.location.href = "izvjestaj.html";
-                    }
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/AUTOVOXA_KLIJENTI`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": `Bearer ${SUPABASE_KEY}`,
+                        "Prefer": "return=representation"
+                    },
+                    body: JSON.stringify({
+                        FIRMA: firma,
+                        EMAIL: email,
+                        ADRESA: adresa,
+                        TELLEFON: telefon,
+                        STATUS: "NEW"
+                    })
+                });
+
+                if(res.ok) {
+                    alert("Registration successful! You can now login.");
+                    location.reload();
                 } else {
-                    alert("Invalid ID or Password.");
-                    btn.disabled = false;
-                    btn.innerText = "Login";
+                    alert("Error saving to database.");
                 }
-            } catch (e) { alert("Error connecting to database."); btn.disabled = false; btn.innerText = "Login"; }
+            } catch(e) {
+                alert("Database connection error: " + e.message);
+            }
         }
-
-        function handleRegisterClick() {
-            alert("Registration is managed via the Administrator Panel.");
-        }
-
-        const savedLang = localStorage.getItem("selectedLanguage") || "en";
-        setLanguage(savedLang);
     </script>
 </body>
 </html>
