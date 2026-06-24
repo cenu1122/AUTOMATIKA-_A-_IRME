@@ -29,58 +29,52 @@
         <button class="w-full mt-3 text-slate-400 hover:text-white text-sm underline" onclick="window.location.reload()">Back to Login</button>
     </div>
 
-    <script>
-        const SUPABASE_URL = "https://mpgbpgmsorunfbdskbwn.supabase.co";
-        const SUPABASE_KEY = "VAŠ_ANON_KLJUČ"; 
+  <script>
+    const SUPABASE_URL = "https://mpgbpgmsorunfbdskbwn.supabase.co";
+    const SUPABASE_KEY = "VAŠ_ANON_KLJUČ_SA_SUPABASE_DASHBOARD-A"; 
 
-        async function handleRegister() {
-            const btn = document.getElementById('registerBtn');
-            btn.innerText = "Registering...";
-            btn.disabled = true;
+    async function handleRegister() {
+        const btn = document.getElementById('registerBtn');
+        btn.innerText = "Registering...";
+        btn.disabled = true;
 
-            const firma = document.getElementById('reg-firma').value;
-            const email = document.getElementById('reg-email').value;
-            const adresa = document.getElementById('reg-adresa').value;
-            const telefon = document.getElementById('reg-telefon').value;
+        const firma = document.getElementById('reg-firma').value;
+        const email = document.getElementById('reg-email').value;
+        const adresa = document.getElementById('reg-adresa').value;
+        const telefon = document.getElementById('reg-telefon').value;
 
-            if(!firma || !email) { 
-                alert("Please fill in Company Name and Email"); 
-                btn.innerText = "Register Now";
-                btn.disabled = false;
-                return; 
+        try {
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/AUTOVOXA_KLIJENTI`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`,
+                    "Prefer": "return=representation"
+                },
+                body: JSON.stringify({
+                    FIRMA: firma,
+                    EMAIL: email,
+                    ADRESA: adresa,
+                    TELLEFON: telefon,
+                    STATUS: "NEW"
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.text();
+                console.error("Supabase greška:", errorData);
+                alert("SERVER GREŠKA: " + errorData);
+            } else {
+                alert("Uspješno registrovano!");
+                window.location.reload();
             }
-
-            try {
-                const res = await fetch(`${SUPABASE_URL}/rest/v1/AUTOVOXA_KLIJENTI`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "apikey": SUPABASE_KEY,
-                        "Authorization": `Bearer ${SUPABASE_KEY}`,
-                        "Prefer": "return=representation"
-                    },
-                    body: JSON.stringify({
-                        FIRMA: firma,
-                        EMAIL: email,
-                        ADRESA: adresa,
-                        TELLEFON: telefon,
-                        STATUS: "NEW"
-                    })
-                });
-
-                if(res.ok) {
-                    alert("Registration successful!");
-                    window.location.reload();
-                } else {
-                    alert("Error saving to database.");
-                }
-            } catch(e) {
-                alert("Database connection error: " + e.message);
-            } finally {
-                btn.innerText = "Register Now";
-                btn.disabled = false;
-            }
+        } catch (e) {
+            alert("Greška u povezivanju: " + e.message);
+        } finally {
+            btn.innerText = "Register Now";
+            btn.disabled = false;
         }
-    </script>
-</body>
+    }
+</script></body>
 </html>
