@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="bs">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dobrodošli</title>
+    <title>Welcome</title>
     <style>
         /* Osnovni stilovi za stranicu */
         body {
@@ -41,6 +41,19 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* Selektor jezika */
+        .language-selector {
+            position: absolute;
+            top: 65px;
+            right: 20px;
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+            cursor: pointer;
         }
 
         /* Kontejner za centriranje dugmadi */
@@ -51,11 +64,15 @@
             justify-content: center;
             flex-direction: column;
             gap: 20px;
+            text-align: center;
+            padding: 20px;
         }
 
         .button-group {
             display: flex;
             gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         /* Stilovi za dugmad */
@@ -99,16 +116,70 @@
 
     <div class="warning-banner">
         <div class="warning-icon">?</div>
-        <span>OBAVJEŠTENJE: Stranica je u rekonstrukciji i neke funkcije možda neće raditi.</span>
+        <span id="warning-text">NOTICE: The site is under construction and some features may not work.</span>
     </div>
 
+    <select class="language-selector" id="lang-switch" onchange="changeLanguage()">
+        <option value="en">English</option>
+        <option value="bs">Bosanski</option>
+        <option value="de">Deutsch</option>
+        <option value="fr">Français</option>
+    </select>
+
     <div class="container">
-        <h2>Dobrodošli</h2>
+        <h2 id="welcome-title">Welcome</h2>
         <div class="button-group">
-            <a href="login.html" class="btn btn-login">Login</a>
-            <a href="register.html" class="btn btn-register">Registracija</a>
+            <a href="login.html" class="btn btn-login" id="btn-login">Login</a>
+            <a href="register.html" class="btn btn-register" id="btn-register">Register</a>
         </div>
     </div>
 
+    <script>
+        const translations = {
+            en: {
+                warning: "NOTICE: The site is under construction and some features may not work.",
+                welcome: "Welcome",
+                login: "Login",
+                register: "Register"
+            },
+            bs: {
+                warning: "OBAVJEŠTENJE: Stranica je u rekonstrukciji i neke funkcije možda neće raditi.",
+                welcome: "Dobrodošli",
+                login: "Prijava",
+                register: "Registracija"
+            },
+            de: {
+                warning: "HINWEIS: Die Seite befindet sich im Umbau und einige Funktionen funktionieren möglicherweise nicht.",
+                welcome: "Willkommen",
+                login: "Anmelden",
+                register: "Registrieren"
+            },
+            fr: {
+                warning: "AVIS : Le site est en construction et certaines fonctionnalités peuvent ne pas fonctionner.",
+                welcome: "Bienvenue",
+                login: "Connexion",
+                register: "S'inscrire"
+            }
+        };
+
+        function changeLanguage() {
+            const lang = document.getElementById('lang-switch').value;
+            
+            // Mijenjanje teksta na osnovu izabranog jezika
+            document.getElementById('warning-text').innerText = translations[lang].warning;
+            document.getElementById('welcome-title').innerText = translations[lang].welcome;
+            document.getElementById('btn-login').innerText = translations[lang].login;
+            document.getElementById('btn-register').innerText = translations[lang].register;
+            
+            // Ažuriranje HTML lang atributa
+            document.documentElement.lang = lang;
+        }
+
+        // Postavljanje engleskog kao osnovnog jezika pri učitavanju
+        window.onload = () => {
+            document.getElementById('lang-switch').value = 'en';
+            changeLanguage();
+        };
+    </script>
 </body>
 </html>
