@@ -38,11 +38,14 @@
 <body class="bg-zinc-100 p-6">
 
 <div id="input-dio" class="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-xl">
+
     <h1 class="text-2xl font-bold mb-4">AI Invoice Generator</h1>
 
+    <!-- firma iz localStorage -->
     <input id="naziv-firme" class="w-full border p-3 rounded mb-3" placeholder="Company name">
 
-    <textarea id="ai-prompt-tekst" rows="6" class="w-full border p-3 rounded"
+    <textarea id="ai-prompt-tekst" rows="6"
+    class="w-full border p-3 rounded"
     placeholder="10 kg nails at 2.5, 3 m wood at 50..."></textarea>
 
     <button id="dugme-generisi"
@@ -68,9 +71,28 @@
 </div>
 
 <script>
+
 const ANON_KEY = "TVOJ_KEY";
 
-document.getElementById("dugme-generisi").addEventListener("click", generisiFakturu);
+/* =========================
+   1. LOAD FIRMA IZ HEADERA
+========================= */
+window.addEventListener("DOMContentLoaded", () => {
+
+    const firma =
+        localStorage.getItem("nazivFirme") ||
+        localStorage.getItem("prijavljenaFirma") ||
+        "Unknown Company";
+
+    document.getElementById("naziv-firme").value = firma;
+    document.getElementById("prikaz-naziva-firme").innerText = firma;
+});
+
+/* =========================
+   2. BUTTON CLICK
+========================= */
+document.getElementById("dugme-generisi")
+.addEventListener("click", generisiFakturu);
 
 async function generisiFakturu() {
 
@@ -99,10 +121,11 @@ async function generisiFakturu() {
 
     const data = await response.json();
 
-    document.getElementById("prikaz-naziva-firme").innerText = naziv;
+    const html =
+        data.tekst || data.response || data.odgovor || "<p>No data</p>";
 
-    document.getElementById("faktura-sadrzaj-render").innerHTML =
-        data.tekst || "";
+    document.getElementById("prikaz-naziva-firme").innerText = naziv;
+    document.getElementById("faktura-sadrzaj-render").innerHTML = html;
 
     document.getElementById("input-dio").classList.add("hidden");
     document.getElementById("faktura-prikaz").classList.remove("hidden");
@@ -110,6 +133,9 @@ async function generisiFakturu() {
     setTimeout(izracunajTotale, 200);
 }
 
+/* =========================
+   3. CALCULATIONS
+========================= */
 function izracunajTotale() {
 
     let rows = document.querySelectorAll("#faktura-sadrzaj-render tbody tr");
@@ -117,10 +143,14 @@ function izracunajTotale() {
     let subtotal = 0;
 
     rows.forEach(row => {
+
         let cells = row.querySelectorAll("td");
 
         if (cells.length >= 5) {
-            let iznos = parseFloat(cells[4].innerText.replace(",", ".")) || 0;
+            let iznos = parseFloat(
+                cells[4].innerText.replace(",", ".")
+            ) || 0;
+
             subtotal += iznos;
         }
     });
@@ -128,10 +158,16 @@ function izracunajTotale() {
     let vat = subtotal * 0.17;
     let total = subtotal + vat;
 
-    document.getElementById("subtotal-polje").innerText = subtotal.toFixed(2) + " €";
-    document.getElementById("vat-polje").innerText = vat.toFixed(2) + " €";
-    document.getElementById("ukupno-polje").innerText = total.toFixed(2) + " €";
+    document.getElementById("subtotal-polje").innerText =
+        subtotal.toFixed(2) + " €";
+
+    document.getElementById("vat-polje").innerText =
+        vat.toFixed(2) + " €";
+
+    document.getElementById("ukupno-polje").innerText =
+        total.toFixed(2) + " €";
 }
+
 </script>
 
 </body>
