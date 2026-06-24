@@ -2,41 +2,53 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>NH AI-Automation | Login & Register</title>
+    <title>NH AI-Automation | Register</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background-color: #1a202c; color: #e2e8f0; }
-        .card { background: #2d3748; padding: 2rem; border-radius: 12px; border: 1px solid #4a5568; }
-    </style>
 </head>
-<body class="flex justify-center items-center min-h-screen p-4">
+<body class="bg-slate-900 min-h-screen flex items-center justify-center p-4">
 
-    <div class="card w-full max-w-md">
-        <h1 class="text-blue-400 text-2xl font-bold text-center mb-6">NH AI-Automation</h1>
+    <div id="login-section" class="card bg-slate-800 p-8 rounded-xl border border-slate-700 shadow-2xl w-full max-w-sm">
+        <h2 class="text-white text-xl font-bold mb-6 text-center">Register New Client</h2>
         
-        <div id="register-section">
-            <h2 class="text-white text-lg mb-4 border-b border-gray-600 pb-2">Register New Client</h2>
-            <input type="text" id="reg-firma" placeholder="Company Name (ID)" class="w-full p-2 mb-2 bg-black rounded border border-gray-600">
-            <input type="email" id="reg-email" placeholder="Email" class="w-full p-2 mb-2 bg-black rounded border border-gray-600">
-            <input type="text" id="reg-adresa" placeholder="Address" class="w-full p-2 mb-2 bg-black rounded border border-gray-600">
-            <input type="text" id="reg-telefon" placeholder="Phone Number" class="w-full p-2 mb-4 bg-black rounded border border-gray-600">
-            <button onclick="handleRegister()" class="w-full bg-green-600 p-3 rounded font-bold hover:bg-green-700">SUBMIT REGISTRATION</button>
-            <p onclick="showLogin()" class="text-blue-400 text-sm mt-4 cursor-pointer text-center underline">Back to Login</p>
-        </div>
+        <label class="block text-slate-300 text-sm mb-1">Company Name:</label>
+        <input type="text" id="reg-firma" class="w-full p-2 mb-3 bg-slate-900 border border-slate-600 rounded text-white focus:border-blue-500 outline-none" placeholder="Enter Company Name">
+        
+        <label class="block text-slate-300 text-sm mb-1">Email:</label>
+        <input type="email" id="reg-email" class="w-full p-2 mb-3 bg-slate-900 border border-slate-600 rounded text-white focus:border-blue-500 outline-none" placeholder="Enter Email">
+        
+        <label class="block text-slate-300 text-sm mb-1">Address:</label>
+        <input type="text" id="reg-adresa" class="w-full p-2 mb-3 bg-slate-900 border border-slate-600 rounded text-white focus:border-blue-500 outline-none" placeholder="Enter Address">
+        
+        <label class="block text-slate-300 text-sm mb-1">Phone:</label>
+        <input type="text" id="reg-telefon" class="w-full p-2 mb-6 bg-slate-900 border border-slate-600 rounded text-white focus:border-blue-500 outline-none" placeholder="Enter Phone">
+        
+        <button id="registerBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold p-3 rounded transition" onclick="handleRegister()">
+            Register Now
+        </button>
+        
+        <button class="w-full mt-3 text-slate-400 hover:text-white text-sm underline" onclick="window.location.reload()">Back to Login</button>
     </div>
 
     <script>
-        // === CONFIG ===
         const SUPABASE_URL = "https://mpgbpgmsorunfbdskbwn.supabase.co";
-        const SUPABASE_KEY = "VAŠ_ANON_KLJUČ"; // OVDJE STAVITE VAŠ KLJUČ
+        const SUPABASE_KEY = "VAŠ_ANON_KLJUČ"; 
 
         async function handleRegister() {
+            const btn = document.getElementById('registerBtn');
+            btn.innerText = "Registering...";
+            btn.disabled = true;
+
             const firma = document.getElementById('reg-firma').value;
             const email = document.getElementById('reg-email').value;
             const adresa = document.getElementById('reg-adresa').value;
             const telefon = document.getElementById('reg-telefon').value;
 
-            if(!firma || !email) { alert("Please fill in Company Name and Email"); return; }
+            if(!firma || !email) { 
+                alert("Please fill in Company Name and Email"); 
+                btn.innerText = "Register Now";
+                btn.disabled = false;
+                return; 
+            }
 
             try {
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/AUTOVOXA_KLIJENTI`, {
@@ -57,13 +69,16 @@
                 });
 
                 if(res.ok) {
-                    alert("Registration successful! You can now login.");
-                    location.reload();
+                    alert("Registration successful!");
+                    window.location.reload();
                 } else {
                     alert("Error saving to database.");
                 }
             } catch(e) {
                 alert("Database connection error: " + e.message);
+            } finally {
+                btn.innerText = "Register Now";
+                btn.disabled = false;
             }
         }
     </script>
