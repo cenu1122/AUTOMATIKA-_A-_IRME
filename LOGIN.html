@@ -21,45 +21,6 @@
     <button type="button" onclick="login()">Prijavi se</button>
 </div>
 
-<script>
-    // TVOJI PODACI IZ SUPABASE-A
-    const supabaseUrl = 'https://mpgbpgmsorunfbdskbwn.supabase.co';
-    const supabaseKey = 'sb_publishable_PIRKTE7AzJKSBwLJpB04yg_laTBEEb6'; 
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-    async function login() {
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-
-        // 1. Prijava u Auth sistem
-        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: password,
-        });
-
-        if (authError) {
-            alert("Greška pri prijavi: " + authError.message);
-            return;
-        }
-
-        // 2. Povlačenje podataka iz tabele AUTOVOXA_KLIJENTI
-        const { data: klijent, error: dbError } = await supabase
-            .from('AUTOVOXA_KLIJENTI')
-            .select('*')
-            .eq('EMAIL', email)
-            .single();
-
-        if (dbError) {
-            alert("Uspješno prijavljeni, ali podaci klijenta nisu pronađeni u bazi.");
-            return;
-        }
-
-        // 3. Spremanje podataka u memoriju
-        localStorage.setItem('klijent_podaci', JSON.stringify(klijent));
-
-        // 4. Preusmjeravanje
-        window.location.href = "izvjestajhj.html";
-    }
-</script>
+<script> const supabaseUrl = 'https://mpgbpgmsorunfbdskbwn.supabase.co'; const supabaseKey = 'sb_publishable_PIRKTE7AzJKSBwLJpB04yg_laTBEEb6';; const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey); async function login() { const email = document.getElementById('email').value.trim(); const password = document.getElementById('password').value; if (!email) { alert("Unesite email adresu."); return; } if (!password) { alert("Unesite lozinku."); return; } const { data: korisnik } = await supabaseClient .from('AUTOVOXA_KLIJENTI') .select('EMAIL') .eq('EMAIL', email) .maybeSingle(); if (!korisnik) { alert("Email adresa nije pronađena."); return; } const { error: authError } = await supabaseClient.auth.signInWithPassword({ email, password }); if (authError) { alert("Lozinka nije ispravna."); return; } const { data: klijent, error: dbError } = await supabaseClient .from('AUTOVOXA_KLIJENTI') .select('*') .eq('EMAIL', email) .single(); if (dbError) { alert("Prijava uspješna, ali podaci klijenta nisu pronađeni."); return; } localStorage.setItem( 'klijent_podaci', JSON.stringify(klijent) ); window.location.href = "izvjestajhj.html"; } </script>
 </body>
 </html>
