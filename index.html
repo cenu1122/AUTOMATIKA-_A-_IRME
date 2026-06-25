@@ -136,33 +136,28 @@
 
     <script>
         const translations = {
-            en: {
-                warning: "NOTICE: The site is under construction and some features may not work.",
-                welcome: "Welcome",
-                login: "Login",
-                register: "Register"
-            },
-            bs: {
-                warning: "OBAVJEŠTENJE: Stranica je u rekonstrukciji i neke funkcije možda neće raditi.",
-                welcome: "Dobrodošli",
-                login: "Prijava",
-                register: "Registracija"
-            },
-            de: {
-                warning: "HINWEIS: Die Seite befindet sich im Umbau und einige Funktionen funktionieren möglicherweise nicht.",
-                welcome: "Willkommen",
-                login: "Anmelden",
-                register: "Registrieren"
-            },
-            fr: {
-                warning: "AVIS : Le site est en construction et certaines fonctionnalités peuvent ne pas fonctionner.",
-                welcome: "Bienvenue",
-                login: "Connexion",
-                register: "S'inscrire"
-            }
-        };
-
-        function changeLanguage() {
+           const translations = {
+    en: {
+        warning: "NOTICE: The site is currently under reconstruction and some features may not work as expected.",
+        welcome: "Welcome",
+        // ... ostalo
+    },
+    bs: {
+        warning: "OBAVJEŠTENJE: Stranica je trenutno u fazi rekonstrukcije i mnoge funkcije možda neće raditi.",
+        welcome: "Dobrodošli",
+        // ... ostalo
+    },
+    de: {
+        warning: "HINWEIS: Die Seite befindet sich derzeit im Umbau und einige Funktionen funktionieren möglicherweise nicht.",
+        welcome: "Willkommen",
+        // ... ostalo
+    },
+    fr: {
+        warning: "AVIS : Le site est actuellement en reconstruction et certaines fonctionnalités peuvent ne pas fonctionner.",
+        welcome: "Bienvenue",
+        // ... ostalo
+    }
+};        function changeLanguage() {
             const lang = document.getElementById('lang-switch').value;
             
             // Mijenjanje teksta na osnovu izabranog jezika
