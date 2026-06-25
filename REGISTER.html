@@ -2,59 +2,107 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NH AI-Automation | Register</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-900 min-h-screen flex items-center justify-center p-4">
 
-    <div id="login-section" class="card bg-slate-800 p-8 rounded-xl border border-slate-700 shadow-2xl w-full max-w-sm">
-        <h2 class="text-white text-xl font-bold mb-6 text-center">Register New Client</h2>
+    <div id="login-section"
+         class="bg-slate-800 p-8 rounded-xl border border-slate-700 shadow-2xl w-full max-w-sm">
 
-        <label class="block text-slate-300 text-sm mb-1">Company Name:</label>
-        <input type="text" id="reg-firma" class="w-full p-2 mb-3 bg-slate-900 border border-slate-600 rounded text-white focus:border-blue-500 outline-none" placeholder="Enter Company Name">
+        <h2 class="text-white text-3xl font-bold mb-6 text-center">
+            Register New Client
+        </h2>
 
-        <label class="block text-slate-300 text-sm mb-1">Email:</label>
-        <input type="email" id="reg-email" class="w-full p-2 mb-3 bg-slate-900 border border-slate-600 rounded text-white focus:border-blue-500 outline-none" placeholder="Enter Email">
+        <label class="block text-slate-300 text-sm mb-1">
+            Company Name:
+        </label>
+        <input
+            type="text"
+            id="reg-firma"
+            class="w-full p-2 mb-3 bg-slate-900 border border-slate-600 rounded text-white outline-none"
+            placeholder="Enter Company Name">
 
-        <label class="block text-slate-300 text-sm mb-1">Address:</label>
-        <input type="text" id="reg-adresa" class="w-full p-2 mb-3 bg-slate-900 border border-slate-600 rounded text-white focus:border-blue-500 outline-none" placeholder="Enter Address">
+        <label class="block text-slate-300 text-sm mb-1">
+            Email:
+        </label>
+        <input
+            type="email"
+            id="reg-email"
+            class="w-full p-2 mb-3 bg-slate-900 border border-slate-600 rounded text-white outline-none"
+            placeholder="Enter Email">
 
-        <label class="block text-slate-300 text-sm mb-1">Phone:</label>
-        <input type="text" id="reg-telefon" class="w-full p-2 mb-6 bg-slate-900 border border-slate-600 rounded text-white focus:border-blue-500 outline-none" placeholder="Enter Phone">
+        <label class="block text-slate-300 text-sm mb-1">
+            Address:
+        </label>
+        <input
+            type="text"
+            id="reg-adresa"
+            class="w-full p-2 mb-3 bg-slate-900 border border-slate-600 rounded text-white outline-none"
+            placeholder="Enter Address">
 
-        <button id="registerBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold p-3 rounded transition" onclick="handleRegister()">
+        <label class="block text-slate-300 text-sm mb-1">
+            Phone:
+        </label>
+        <input
+            type="text"
+            id="reg-telefon"
+            class="w-full p-2 mb-6 bg-slate-900 border border-slate-600 rounded text-white outline-none"
+            placeholder="Enter Phone">
+
+        <button
+            id="registerBtn"
+            onclick="handleRegister()"
+            class="w-full bg-green-600 hover:bg-green-700 text-white font-bold p-3 rounded transition">
             Register Now
         </button>
 
-        <button class="w-full mt-3 text-slate-400 hover:text-white text-sm underline" onclick="window.location.reload()">Back to Login</button>
+        <button
+            class="w-full mt-3 text-slate-400 hover:text-white text-sm underline"
+            onclick="window.location.reload()">
+            Back to Login
+        </button>
+
     </div>
 
 <script>
-    const SUPABASE_URL = "https://mpgbpgmsorunfbdskbwn.supabase.co";
-    // Ovdje stavi svoj anon public ključ iz Settings -> API
-    const SUPABASE_KEY = "sb_publishable_PIRKTE7AzJKSBwLJpB04yg_laTBEEb6";
+const SUPABASE_URL = "https://mpgbpgmsorunfbdskbwn.supabase.co";
+const SUPABASE_KEY = "TVOJ_SUPABASE_ANON_KEY";
 
-    async function handleRegister() {
-        const btn = document.getElementById('registerBtn');
-        btn.innerText = "Registering...";
-        btn.disabled = true;
+async function handleRegister() {
 
-        const firma = document.getElementById('reg-firma').value.trim();
-        const email = document.getElementById('reg-email').value.trim();
-        const adresa = document.getElementById('reg-adresa').value.trim();
-        const telefon = document.getElementById('reg-telefon').value.trim();
+    const btn = document.getElementById("registerBtn");
 
-        if (!firma || !email || !adresa || !telefon) {
-            alert("Popunite sva polja!");
-            btn.innerText = "Register Now";
-            btn.disabled = false;
-            return;
-        }
+    btn.innerText = "Registering...";
+    btn.disabled = true;
 
-        try {
-            const payload = { FIRMA: firma, EMAIL: email, ADRESA: adresa, TELLEFON: telefon, STATUS: "NEW" };
+    const firma = document.getElementById("reg-firma").value.trim();
+    const email = document.getElementById("reg-email").value.trim();
+    const adresa = document.getElementById("reg-adresa").value.trim();
+    const telefon = document.getElementById("reg-telefon").value.trim();
 
-            const response = await fetch(`${SUPABASE_URL}/rest/v1/AUTOVOXA_KLIJENTI`, {
+    if (!firma || !email || !adresa || !telefon) {
+        alert("Popunite sva polja!");
+        btn.innerText = "Register Now";
+        btn.disabled = false;
+        return;
+    }
+
+    try {
+
+        const payload = {
+            FIRMA: firma,
+            EMAIL: email,
+            ADRESA: adresa,
+            TELLEFON: telefon,
+            STATUS: "NEW"
+        };
+
+        const response = await fetch(
+            `${SUPABASE_URL}/rest/v1/AUTOVOXA_KLIJENTI`,
+            {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -63,22 +111,26 @@
                     "Prefer": "return=representation"
                 },
                 body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.message || "Greška pri unosu");
             }
+        );
 
-            alert("Uspješno registrovano!");
-            window.location.reload();
-        } catch (e) {
-            alert("GREŠKA: " + e.message);
-        } finally {
-            btn.innerText = "Register Now";
-            btn.disabled = false;
+        const responseText = await response.text();
+
+        if (!response.ok) {
+            throw new Error(responseText);
         }
+
+        alert("Uspješno registrovano!");
+        window.location.reload();
+
+    } catch (e) {
+        alert("GREŠKA: " + e.message);
+    } finally {
+        btn.innerText = "Register Now";
+        btn.disabled = false;
     }
+}
 </script>
+
 </body>
 </html>
