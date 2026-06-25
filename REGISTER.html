@@ -69,7 +69,7 @@
 
 <script>
 const SUPABASE_URL = "https://mpgbpgmsorunfbdskbwn.supabase.co";
-const SUPABASE_KEY = "sb_publishable_PIRKTE7AzJKSBwLJpB04yg_laTBEEb6";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wZ2JwZ21zb3J1bmZiZHNrYnduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMTM0ODIsImV4cCI6MjA5Mzc4OTQ4Mn0.Wh5yo6Z2kx9QaERzTeBuRModEXw3BJYjTzhBjTq6ncs";
 
 async function handleRegister() {
 
@@ -95,11 +95,11 @@ async function handleRegister() {
         const payload = {
             FIRMA: firma,
             EMAIL: email,
+            PASSWWOTF: sifra, // Ovdje smo stavili tačno ime tvoje kolone
             ADRESA: adresa,
             TELLEFON: telefon,
             STATUS: "NEW"
         };
-
         const response = await fetch(
             `${SUPABASE_URL}/rest/v1/AUTOVOXA_KLIJENTI`,
             {
