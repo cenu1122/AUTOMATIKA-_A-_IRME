@@ -1,10 +1,3 @@
-
-Da bi ti Login radio sa podacima iz tvoje Supabase tabele AUTOVOXA_KLIJENTI, moramo koristiti Supabase Authentication sistem (koji automatski provjerava email i lozinku).
-
-Ovo je kod za LOGIN.html koji provjerava kredencijale, a ako je prijava uspješna, prebacuje te na izvjestajhj.html.
-Kompletan kod za LOGIN.html
-HTML
-
 <!DOCTYPE html>
 <html lang="bs">
 <head>
@@ -12,10 +5,11 @@ HTML
     <title>Prijava | AutoVox</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f4f7f6; }
-        .box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 300px; }
-        input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #4f46e5; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f4f7f6; margin: 0; }
+        .box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 300px; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #4f46e5; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #4338ca; }
     </style>
 </head>
 <body>
@@ -24,31 +18,47 @@ HTML
     <h2>Prijava</h2>
     <input type="email" id="email" placeholder="Email adresa">
     <input type="password" id="password" placeholder="Lozinka">
-    <button onclick="login()">Prijavi se</button>
+    <button type="button" onclick="login()">Prijavi se</button>
 </div>
 
 <script>
-    // TVOJI PODACI (OBAVEZNO POPUNI)
+    // TVOJI PODACI IZ SUPABASE-A
     const supabaseUrl = 'https://mpgbpgmsorunfbdskbwn.supabase.co';
-    const supabaseKey = 'TVOJ_ANON_KLJUC'; 
+    const supabaseKey = 'sb_publishable_PIRKTE7AzJKSBwLJpB04yg_laTBEEb6'; 
     const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
     async function login() {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
 
-        // Supabase automatski provjerava email i password u auth sistemu
-        const { data, error } = await supabase.auth.signInWithPassword({
+        // 1. Prijava u Auth sistem
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
             email: email,
             password: password,
         });
 
-        if (error) {
-            alert("Greška: " + error.message);
-        } else {
-            // Ako je prijava uspješna, preusmjeri na izvjestaj
-            window.location.href = "izvjestajhj.html";
+        if (authError) {
+            alert("Greška pri prijavi: " + authError.message);
+            return;
         }
+
+        // 2. Povlačenje podataka iz tabele AUTOVOXA_KLIJENTI
+        const { data: klijent, error: dbError } = await supabase
+            .from('AUTOVOXA_KLIJENTI')
+            .select('*')
+            .eq('EMAIL', email)
+            .single();
+
+        if (dbError) {
+            alert("Uspješno prijavljeni, ali podaci klijenta nisu pronađeni u bazi.");
+            return;
+        }
+
+        // 3. Spremanje podataka u memoriju
+        localStorage.setItem('klijent_podaci', JSON.stringify(klijent));
+
+        // 4. Preusmjeravanje
+        window.location.href = "izvjestajhj.html";
     }
 </script>
 </body>
