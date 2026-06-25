@@ -4,59 +4,6 @@
     <meta charset="UTF-8">
     <title>Prijava | AutoVox</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body class="bg-slate-900 min-h-screen flex items-center justify-center p-4">
-
-    <div class="card bg-slate-800 p-8 rounded-xl border border-slate-700 shadow-2xl w-full max-w-sm">
-        <h2 class="text-white text-xl font-bold mb-6 text-center">Prijava</h2>
-        
-        <input type="email" id="email" class="w-full p-2 mb-3 bg-slate-900 border border-slate-600 rounded text-white" placeholder="Email">
-        <input type="password" id="password" class="w-full p-2 mb-6 bg-slate-900 border border-slate-600 rounded text-white" placeholder="Lozinka">
-        
-        <button id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 rounded transition" onclick="login()">
-            Prijavi se
-        </button>
-    </div>
-
-    <script>
-        // Inicijalizacija Supabase klijenta
-        const SUPABASE_URL = "https://mpgbpgmsorunfbdskbwn.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_PIRKTE7AzJKSBwLJpB04yg_laTBEEb6";
-        
-        // Provjera da li je supabase već definisan da izbjegnemo SyntaxError
-        window.supabaseClient = window.supabaseClient || supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        async function login() {
-            const btn = document.getElementById('loginBtn');
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-
-            if (!email || !password) {
-                alert("Unesite email i lozinku!");
-                return;
-            }
-
-            btn.innerText = "Prijava u toku...";
-            btn.disabled = true;
-
-            try {
-                // 1. Auth prijava
-                const { data, error } = await window.supabaseClient.auth.signInWithPassword({
-                    email: email,
-                    password: password,
-                });
-
-                if (error) throw error;
-
-                // 2. Ako je uspješno, preusmjeri
-                <!DOCTYPE html>
-<html lang="bs">
-<head>
-    <meta charset="UTF-8">
-    <title>Prijava | AutoVox</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body class="bg-slate-900 min-h-screen flex items-center justify-center p-4">
@@ -65,68 +12,82 @@
         <h2 class="text-white text-xl font-bold mb-6 text-center">Prijava</h2>
 
         <input type="email" id="email"
-               class="w-full p-2 mb-3 bg-slate-900 border border-slate-600 rounded text-white"
-               placeholder="Email">
+            class="w-full p-2 mb-3 bg-slate-900 border border-slate-600 rounded text-white"
+            placeholder="Email">
 
         <input type="password" id="password"
-               class="w-full p-2 mb-6 bg-slate-900 border border-slate-600 rounded text-white"
-               placeholder="Lozinka">
+            class="w-full p-2 mb-6 bg-slate-900 border border-slate-600 rounded text-white"
+            placeholder="Lozinka">
 
         <button id="loginBtn"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 rounded transition">
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 rounded transition"
+            onclick="login()">
             Prijavi se
         </button>
     </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
 
-    const SUPABASE_URL = "https://mpgbpgmsorunfbdskbwn.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_PIRKTE7AzJKSBwLJpB04yg_laTBEEb6";
+const SUPABASE_URL = "https://mpgbpgmsorunfbdskbwn.supabase.co";
+const SUPABASE_KEY = "TVOJ_ANON_KEY"; // 👈 ubaci pravi anon key iz Supabase dashboarda
 
-    // PROVJERA da li supabase postoji
-    if (!window.supabase) {
-        alert("Supabase nije učitan!");
+async function login() {
+
+    const btn = document.getElementById("loginBtn");
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (!email || !password) {
+        alert("Unesi email i lozinku!");
         return;
     }
 
-    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    btn.innerText = "Prijava...";
+    btn.disabled = true;
 
-    const btn = document.getElementById("loginBtn");
+    try {
 
-    btn.addEventListener("click", async () => {
-        const email = document.getElementById("email").value.trim();
-        const password = document.getElementById("password").value;
+        const response = await fetch(
+            `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`
+                },
+                body: JSON.stringify({
+                    email,
+                    password
+                })
+            }
+        );
 
-        if (!email || !password) {
-            alert("Unesite email i lozinku!");
-            return;
+        const data = await response.json();
+
+        console.log("LOGIN RESPONSE:", data);
+
+        if (!response.ok) {
+            throw new Error(data.error_description || data.message);
         }
 
-        btn.innerText = "Prijava u toku...";
-        btn.disabled = true;
+        // SAVE SESSION
+        localStorage.setItem("supabase_token", data.access_token);
+        localStorage.setItem("user", JSON.stringify(data.user));
 
-        try {
-            const { data, error } = await client.auth.signInWithPassword({
-                email,
-                password
-            });
+        alert("Uspješna prijava!");
 
-            if (error) throw error;
+        window.location.href = "dashboard.html";
 
-            alert("Uspješna prijava!");
-            window.location.href = "izvjestajhj.html";
+    } catch (err) {
+        console.error(err);
+        alert("Login error: " + err.message);
+    } finally {
+        btn.innerText = "Prijavi se";
+        btn.disabled = false;
+    }
+}
 
-        } catch (err) {
-            console.error(err);
-            alert("Prijava nije uspjela: " + err.message);
-        } finally {
-            btn.innerText = "Prijavi se";
-            btn.disabled = false;
-        }
-    });
-
-});
 </script>
 
 </body>
