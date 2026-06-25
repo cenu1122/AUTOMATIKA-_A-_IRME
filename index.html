@@ -3,133 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome</title>
+    <title>Welcome | AutoVox Portal</title>
     <style>
-      .btn-demo {
-    background-color: #6c757d;
-    color: white;
-    border: 2px solid #6c757d;
-}
+        :root {
+            --primary: #4f46e5;
+            --secondary: #10b981;
+            --accent: #6b7280;
+            --bg: #f9fafb;
+        }
 
-.btn-demo:hover {
-    background-color: #5a6268;
-    border-color: #5a6268;
-    box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
-}
-        
-        /* Osnovni stilovi za stranicu */
         body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
+            margin: 0; font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg); display: flex; flex-direction: column;
+            height: 100vh; color: #1f2937;
         }
 
-        /* Stilovi za traku obavještenja na vrhu */
         .warning-banner {
-            background-color: #fff3cd;
-            color: #856404;
-            padding: 15px 20px;
-            text-align: center;
-            font-weight: bold;
-            border-bottom: 1px solid #ffeeba;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: #fffbeb; color: #92400e; padding: 12px;
+            text-align: center; font-size: 0.9rem; border-bottom: 1px solid #fef3c7;
         }
 
-        .warning-icon {
-            font-size: 1.5rem;
-            background-color: #ffc107;
-            color: white;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        /* Selektor jezika */
-        .language-selector {
-            position: absolute;
-            top: 65px;
-            right: 20px;
-            padding: 5px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            font-size: 1rem;
-            cursor: pointer;
-        }
-
-        /* Kontejner za centriranje dugmadi */
         .container {
-            flex-grow: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 20px;
-            text-align: center;
-            padding: 20px;
+            flex-grow: 1; display: flex; align-items: center; justify-content: center;
+            flex-direction: column; gap: 30px;
         }
 
-        .button-group {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
+        h2 { font-size: 2.5rem; margin: 0; }
 
-        /* Stilovi za dugmad */
+        .button-group { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+
         .btn {
-            text-decoration: none;
-            padding: 12px 30px;
-            font-size: 1.2rem;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            text-align: center;
-            min-width: 150px;
+            text-decoration: none; padding: 14px 28px; border-radius: 12px;
+            font-weight: 600; transition: transform 0.2s, box-shadow 0.2s;
+            border: none; cursor: pointer; color: white;
         }
 
-        .btn-login {
-            background-color: #007bff;
-            color: white;
-            border: 2px solid #007bff;
-        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
 
-        .btn-login:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
-            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
-        }
+        .btn-login { background: var(--primary); }
+        .btn-register { background: var(--secondary); }
+        .btn-demo { background: var(--accent); }
 
-        .btn-register {
-            background-color: #28a745;
-            color: white;
-            border: 2px solid #28a745;
-        }
-
-        .btn-register:hover {
-            background-color: #218838;
-            border-color: #218838;
-            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+        .language-selector {
+            position: absolute; top: 80px; right: 30px;
+            padding: 8px; border-radius: 8px; border: 1px solid #ddd;
         }
     </style>
 </head>
 <body>
 
-    <div class="warning-banner">
-        <div class="warning-icon">?</div>
-        <span id="warning-text">NOTICE: The site is under construction and some features may not work.</span>
-    </div>
+    <div class="warning-banner" id="warning-text">NOTICE: The site is under construction.</div>
 
     <select class="language-selector" id="lang-switch" onchange="changeLanguage()">
         <option value="en">English</option>
@@ -142,56 +65,30 @@
         <h2 id="welcome-title">Welcome</h2>
         <div class="button-group">
             <a href="LOGIN.html" class="btn btn-login" id="btn-login">Login</a>
-          <a href="izvjestajhj.html" class="btn btn-demo" id="btn-demo">Try Demo</a>
+            <a href="izvjestajhj.html" class="btn btn-demo" id="btn-demo">Try Demo</a>
             <a href="REGISTER.html" class="btn btn-register" id="btn-register">Register</a>
         </div>
     </div>
 
     <script>
-     const translations = {
-    en: {
-        warning: "NOTICE: The site is currently under reconstruction and some features may not work as expected.",
-        welcome: "Welcome",
-        login: "Login",
-        register: "Register"
-    },
-    bs: {
-        warning: "OBAVJEŠTENJE: Stranica je trenutno u fazi rekonstrukcije i mnoge funkcije možda neće raditi.",
-        welcome: "Dobrodošli",
-        login: "Prijava",
-        register: "Registracija"
-    },
-    de: {
-        warning: "HINWEIS: Die Seite befindet sich derzeit im Umbau und einige Funktionen funktionieren möglicherweise nicht.",
-        welcome: "Willkommen",
-        login: "Anmelden",
-        register: "Registrieren"
-    },
-    fr: {
-        warning: "AVIS : Le site est actuellement en reconstruction et certaines fonctionnalités peuvent ne pas fonctionner.",
-        welcome: "Bienvenue",
-        login: "Connexion",
-        register: "Inscription"
-    }
-};
+        const translations = {
+            en: { warning: "NOTICE: Site under reconstruction.", welcome: "Welcome", login: "Login", register: "Register", demo: "Try Demo" },
+            bs: { warning: "OBAVJEŠTENJE: Stranica u rekonstrukciji.", welcome: "Dobrodošli", login: "Prijava", register: "Registracija", demo: "Probaj Demo" },
+            de: { warning: "HINWEIS: Seite im Umbau.", welcome: "Willkommen", login: "Anmelden", register: "Registrieren", demo: "Demo testen" },
+            fr: { warning: "AVIS: Site en reconstruction.", welcome: "Bienvenue", login: "Connexion", register: "S'inscrire", demo: "Essayer" }
+        };
+
         function changeLanguage() {
             const lang = document.getElementById('lang-switch').value;
-            
-            // Mijenjanje teksta na osnovu izabranog jezika
             document.getElementById('warning-text').innerText = translations[lang].warning;
             document.getElementById('welcome-title').innerText = translations[lang].welcome;
             document.getElementById('btn-login').innerText = translations[lang].login;
             document.getElementById('btn-register').innerText = translations[lang].register;
-            
-            // Ažuriranje HTML lang atributa
+            document.getElementById('btn-demo').innerText = translations[lang].demo;
             document.documentElement.lang = lang;
         }
 
-        // Postavljanje engleskog kao osnovnog jezika pri učitavanju
-        window.onload = () => {
-            document.getElementById('lang-switch').value = 'en';
-            changeLanguage();
-        };
+        window.onload = changeLanguage;
     </script>
 </body>
 </html>
