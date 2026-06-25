@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome</title>
     <style>
+      .btn-demo {
+    background-color: #6c757d;
+    color: white;
+    border: 2px solid #6c757d;
+}
+
+.btn-demo:hover {
+    background-color: #5a6268;
+    border-color: #5a6268;
+    box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+}
+        
         /* Osnovni stilovi za stranicu */
         body {
             margin: 0;
@@ -130,34 +142,39 @@
         <h2 id="welcome-title">Welcome</h2>
         <div class="button-group">
             <a href="LOGIN.html" class="btn btn-login" id="btn-login">Login</a>
+          <a href="izvjestajhj.html" class="btn btn-demo" id="btn-demo">Try Demo</a>
             <a href="REGISTER.html" class="btn btn-register" id="btn-register">Register</a>
         </div>
     </div>
 
     <script>
-        const translations = {
-           const translations = {
+     const translations = {
     en: {
         warning: "NOTICE: The site is currently under reconstruction and some features may not work as expected.",
         welcome: "Welcome",
-        // ... ostalo
+        login: "Login",
+        register: "Register"
     },
     bs: {
         warning: "OBAVJEŠTENJE: Stranica je trenutno u fazi rekonstrukcije i mnoge funkcije možda neće raditi.",
         welcome: "Dobrodošli",
-        // ... ostalo
+        login: "Prijava",
+        register: "Registracija"
     },
     de: {
         warning: "HINWEIS: Die Seite befindet sich derzeit im Umbau und einige Funktionen funktionieren möglicherweise nicht.",
         welcome: "Willkommen",
-        // ... ostalo
+        login: "Anmelden",
+        register: "Registrieren"
     },
     fr: {
         warning: "AVIS : Le site est actuellement en reconstruction et certaines fonctionnalités peuvent ne pas fonctionner.",
         welcome: "Bienvenue",
-        // ... ostalo
+        login: "Connexion",
+        register: "Inscription"
     }
-};        function changeLanguage() {
+};
+        function changeLanguage() {
             const lang = document.getElementById('lang-switch').value;
             
             // Mijenjanje teksta na osnovu izabranog jezika
