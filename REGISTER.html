@@ -46,7 +46,14 @@ async function handleRegister() {
     const adresa = document.getElementById("reg-adresa").value.trim();
     const telefon = document.getElementById("reg-telefon").value.trim();
 
-    if (!firma || !email || !sifra || !adresa || !telefon) {
+console.log({
+    firma,
+    email,
+    sifra,
+    adresa,
+    telefon
+});
+    (!firma || !email || !sifra || !adresa || !telefon) {
         alert("Popunite sva polja!");
         btn.innerText = "Register Now";
         btn.disabled = false;
@@ -91,3 +98,5 @@ async function handleRegister() {
 </script>
 </body>
 </html>
+
+
