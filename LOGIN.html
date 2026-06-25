@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>NH AI-Automation | Login</title>
+    <title>Prijava | AutoVox</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-900 min-h-screen flex items-center justify-center p-4">
 
     <div id="login-section" class="card bg-slate-800 p-8 rounded-xl border border-slate-700 shadow-2xl w-full max-w-sm">
-        <h2 class="text-white text-xl font-bold mb-6 text-center">Prijava korisnika</h2>
+        <h2 class="text-white text-xl font-bold mb-6 text-center">Prijava</h2>
         
         <label class="block text-slate-300 text-sm mb-1">Email:</label>
         <input type="email" id="email" class="w-full p-2 mb-3 bg-slate-900 border border-slate-600 rounded text-white focus:border-blue-500 outline-none" placeholder="Enter Email">
@@ -23,8 +23,10 @@
     </div>
 
     <script>
+        // OVI PODACI SU IZVUČENI IZ TVOG PROJEKTA
         const SUPABASE_URL = "https://mpgbpgmsorunfbdskbwn.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_PIRKTE7AzJKSBwLJpB04yg_laTBEEb6"; // Tvoj ispravan ključ
+        const SUPABASE_KEY = "sb_publishable_PIRKTE7AzJKSBwLJpB04yg_laTBEEb6"; 
+        
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         async function login() {
@@ -40,14 +42,14 @@
             btn.innerText = "Prijavljivanje...";
             btn.disabled = true;
 
-            // 1. Auth prijava
+            // 1. Prijava u Auth sistem
             const { error: authError } = await supabase.auth.signInWithPassword({
                 email: email,
                 password: password,
             });
 
             if (authError) {
-                alert("Greška: " + authError.message);
+                alert("Greška pri prijavi: " + authError.message);
                 btn.innerText = "Prijavi se";
                 btn.disabled = false;
                 return;
@@ -61,14 +63,14 @@
                 .single();
 
             if (dbError) {
-                alert("Uspješna prijava, ali podaci klijenta nisu pronađeni.");
+                alert("Uspješna prijava, ali podaci klijenta nisu pronađeni u bazi.");
                 console.error(dbError);
                 btn.innerText = "Prijavi se";
                 btn.disabled = false;
                 return;
             }
 
-            // 3. Spremanje u memoriju
+            // 3. Spremanje podataka
             localStorage.setItem('klijent_podaci', JSON.stringify(klijent));
             
             // 4. Preusmjeravanje
