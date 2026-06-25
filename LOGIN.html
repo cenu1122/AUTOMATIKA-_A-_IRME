@@ -1,71 +1,79 @@
 <!DOCTYPE html>
-<html lang="bs">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Prijava | AutoVox</title>
+    <title>NH AI-Automation | Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f4f7f6; margin: 0; }
-        .box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 300px; }
-        input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #4f46e5; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #4338ca; }
-    </style>
 </head>
-<body>
+<body class="bg-slate-900 min-h-screen flex items-center justify-center p-4">
 
-<div class="box">
-    <h2>Prijava</h2>
-    <input type="email" id="email" placeholder="Email adresa">
-    <input type="password" id="password" placeholder="Lozinka">
-    <button type="button" onclick="login()">Prijavi se</button> 
-    
-</div>
+    <div id="login-section" class="card bg-slate-800 p-8 rounded-xl border border-slate-700 shadow-2xl w-full max-w-sm">
+        <h2 class="text-white text-xl font-bold mb-6 text-center">Prijava korisnika</h2>
+        
+        <label class="block text-slate-300 text-sm mb-1">Email:</label>
+        <input type="email" id="email" class="w-full p-2 mb-3 bg-slate-900 border border-slate-600 rounded text-white focus:border-blue-500 outline-none" placeholder="Enter Email">
+        
+        <label class="block text-slate-300 text-sm mb-1">Lozinka:</label>
+        <input type="password" id="password" class="w-full p-2 mb-6 bg-slate-900 border border-slate-600 rounded text-white focus:border-blue-500 outline-none" placeholder="Enter Password">
+        
+        <button id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 rounded transition" onclick="login()">
+            Prijavi se
+        </button>
+    </div>
 
-<script>
-    const supabaseUrl = 'https://mpgbpgmsorunfbdskbwn.supabase.co';
-    const supabaseKey = 'sb_publishable_PIRKTE7AzJKSBwLJpB04yg_laTBEEb6';
-    const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+    <script>
+        const SUPABASE_URL = "https://mpgbpgmsorunfbdskbwn.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_PIRKTE7AzJKSBwLJpB04yg_laTBEEb6"; // Tvoj ispravan ključ
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    async function login() {
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value;
+        async function login() {
+            const btn = document.getElementById('loginBtn');
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
 
-        if (!email || !password) {
-            alert("Molimo unesite email i lozinku.");
-            return;
+            if (!email || !password) {
+                alert("Unesite email i lozinku!");
+                return;
+            }
+
+            btn.innerText = "Prijavljivanje...";
+            btn.disabled = true;
+
+            // 1. Auth prijava
+            const { error: authError } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
+
+            if (authError) {
+                alert("Greška: " + authError.message);
+                btn.innerText = "Prijavi se";
+                btn.disabled = false;
+                return;
+            }
+
+            // 2. Povlačenje podataka iz tabele AUTOVOXA_KLIJENTI
+            const { data: klijent, error: dbError } = await supabase
+                .from('AUTOVOXA_KLIJENTI')
+                .select('*')
+                .eq('EMAIL', email)
+                .single();
+
+            if (dbError) {
+                alert("Uspješna prijava, ali podaci klijenta nisu pronađeni.");
+                console.error(dbError);
+                btn.innerText = "Prijavi se";
+                btn.disabled = false;
+                return;
+            }
+
+            // 3. Spremanje u memoriju
+            localStorage.setItem('klijent_podaci', JSON.stringify(klijent));
+            
+            // 4. Preusmjeravanje
+            window.location.href = "izvjestajhj.html";
         }
-
-        // 1. Prijava u Auth sistem
-        const { error: authError } = await supabaseClient.auth.signInWithPassword({
-            email: email,
-            password: password,
-        });
-
-        if (authError) {
-            alert("Prijava nije uspjela: " + authError.message);
-            return;
-        }
-
-        // 2. Povlačenje podataka iz tabele AUTOVOXA_KLIJENTI
-        const { data: klijent, error: dbError } = await supabaseClient
-            .from('AUTOVOXA_KLIJENTI')
-            .select('*')
-            .eq('EMAIL', email)
-            .single();
-
-        if (dbError) {
-            alert("Prijava uspješna, ali podaci klijenta nisu pronađeni u bazi.");
-            console.error(dbError);
-            return;
-        }
-
-        // 3. Spremanje podataka u memoriju
-        localStorage.setItem('klijent_podaci', JSON.stringify(klijent));
-
-        // 4. Preusmjeravanje na izvještaj
-        window.location.href = "izvjestajhj.html";
-    }
-</script>
+    </script>
 </body>
 </html>
