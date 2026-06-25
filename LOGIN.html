@@ -50,17 +50,84 @@
                 if (error) throw error;
 
                 // 2. Ako je uspješno, preusmjeri
-                alert("Uspješna prijava!");
-                window.location.href = "izvjestajhj.html";
+                <!DOCTYPE html>
+<html lang="bs">
+<head>
+    <meta charset="UTF-8">
+    <title>Prijava | AutoVox</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
 
-            } catch (err) {
-                console.error("Greška:", err);
-                alert("Prijava nije uspjela: " + err.message);
-            } finally {
-                btn.innerText = "Prijavi se";
-                btn.disabled = false;
-            }
+<body class="bg-slate-900 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-slate-800 p-8 rounded-xl border border-slate-700 shadow-2xl w-full max-w-sm">
+        <h2 class="text-white text-xl font-bold mb-6 text-center">Prijava</h2>
+
+        <input type="email" id="email"
+               class="w-full p-2 mb-3 bg-slate-900 border border-slate-600 rounded text-white"
+               placeholder="Email">
+
+        <input type="password" id="password"
+               class="w-full p-2 mb-6 bg-slate-900 border border-slate-600 rounded text-white"
+               placeholder="Lozinka">
+
+        <button id="loginBtn"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 rounded transition">
+            Prijavi se
+        </button>
+    </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const SUPABASE_URL = "https://mpgbpgmsorunfbdskbwn.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_PIRKTE7AzJKSBwLJpB04yg_laTBEEb6";
+
+    // PROVJERA da li supabase postoji
+    if (!window.supabase) {
+        alert("Supabase nije učitan!");
+        return;
+    }
+
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const btn = document.getElementById("loginBtn");
+
+    btn.addEventListener("click", async () => {
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+
+        if (!email || !password) {
+            alert("Unesite email i lozinku!");
+            return;
         }
-    </script>
+
+        btn.innerText = "Prijava u toku...";
+        btn.disabled = true;
+
+        try {
+            const { data, error } = await client.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            if (error) throw error;
+
+            alert("Uspješna prijava!");
+            window.location.href = "izvjestajhj.html";
+
+        } catch (err) {
+            console.error(err);
+            alert("Prijava nije uspjela: " + err.message);
+        } finally {
+            btn.innerText = "Prijavi se";
+            btn.disabled = false;
+        }
+    });
+
+});
+</script>
+
 </body>
 </html>
