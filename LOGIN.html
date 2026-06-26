@@ -23,23 +23,26 @@
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value.trim();
 
-        const { data, error } = await client.auth.signInWithPassword({
-            email,
-            password
-        });
+        console.log("Pokušavam pronaći:", email, password);
+
+        const { data, error } = await client
+            .from('AUTOVOXA_KLIJENTI')
+            .select('*')
+            .eq('EMAIL', email)
+            .eq('PASSWWOTF', password);
 
         if (error) {
-            alert("Greška: " + error.message);
+            console.error("DETALJNA GREŠKA:", error);
+            alert("Baza kaže: " + error.message);
         } else {
-            if (error) {
-            alert("Greška: " + error.message);
-        } else {
-            // Umjesto alerta, odmah idi na izvještaje
-            console.log("Uspješna prijava, prebacujem na izvještaje...");
-            window.location.href = "izvjestaji.html";
+            console.log("Podaci iz baze:", data);
+            if (data && data.length > 0) {
+                window.location.href = "izvjestaji.html";
+            } else {
+                alert("Nije pronađeno podudaranje. Provjeri tačnost unosa!");
+            }
         }
     });
 </script>
-
 </body>
 </html>
