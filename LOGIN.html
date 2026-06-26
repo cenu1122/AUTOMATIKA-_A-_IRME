@@ -31,8 +31,11 @@
         if (error) {
             alert("Greška: " + error.message);
         } else {
-            alert("Uspješno ste prijavljeni!");
-            // OVDJE TE PREBACUJE NA IZVJESTAJI.HTML
+            if (error) {
+            alert("Greška: " + error.message);
+        } else {
+            // Umjesto alerta, odmah idi na izvještaje
+            console.log("Uspješna prijava, prebacujem na izvještaje...");
             window.location.href = "izvjestaji.html";
         }
     });
