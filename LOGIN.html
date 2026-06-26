@@ -1,21 +1,13 @@
 <!DOCTYPE html>
-<html lang="bs">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Prijava | AutoVox</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-900 min-h-screen flex items-center justify-center p-4">
+<body>
 
-    <div class="bg-slate-800 p-8 rounded-xl border border-slate-700 shadow-2xl w-full max-w-sm">
-        <h2 class="text-white text-xl font-bold mb-6 text-center">Prijava</h2>
-        
-        <input type="email" id="email" class="w-full p-2 mb-3 bg-slate-900 border border-slate-600 rounded text-white" placeholder="Email">
-        <input type="password" id="password" class="w-full p-2 mb-6 bg-slate-900 border border-slate-600 rounded text-white" placeholder="Lozinka">
-        
-        <button id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 rounded transition" onclick="handleLogin()">Prijavi se</button>
-    </div>
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Lozinka">
+    <button id="loginBtn" onclick="handleLogin()">Prijavi se</button>
 
 <script>
 const supabase = supabase.createClient(
@@ -24,12 +16,8 @@ const supabase = supabase.createClient(
 );
 
 async function handleLogin() {
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
-    const btn = document.getElementById("loginBtn");
-
-    btn.disabled = true;
-    btn.innerText = "Prijava...";
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
 
     const { data, error } = await supabase.auth.signInWithPassword({
         email: email,
@@ -37,14 +25,9 @@ async function handleLogin() {
     });
 
     if (error) {
-        alert("Greška: " + error.message);
-        btn.disabled = false;
-        btn.innerText = "Prijavi se";
+        alert("Greska: " + error.message);
     } else {
-        // SAMO PORUKA, NEMA PREUSMJERAVANJA
-        alert("Uspješno ste logovani!");
-        btn.disabled = false;
-        btn.innerText = "Prijavi se";
+        alert("Uspjesno ste logovani!");
     }
 }
 </script>
