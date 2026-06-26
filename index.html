@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="bs">
 <head>
 <meta charset="UTF-8">
@@ -14,13 +13,9 @@
     --bg:#f9fafb;
 }
 
-*{
-    box-sizing:border-box;
-}
+*{ box-sizing:border-box; }
 
-html{
-    scroll-behavior:smooth;
-}
+html{ scroll-behavior:smooth; }
 
 body{
     margin:0;
@@ -44,8 +39,8 @@ body{
     padding:15px;
     display:flex;
     justify-content:center;
-    flex-wrap:wrap;
     gap:25px;
+    flex-wrap:wrap;
     box-shadow:0 2px 10px rgba(0,0,0,0.1);
     z-index:999;
 }
@@ -88,20 +83,11 @@ body{
     border-radius:12px;
     font-weight:600;
     color:white;
-    display:inline-block;
 }
 
-.btn-login{
-    background:var(--primary);
-}
-
-.btn-register{
-    background:var(--secondary);
-}
-
-.btn-demo{
-    background:var(--accent);
-}
+.btn-login{ background:var(--primary); }
+.btn-register{ background:var(--secondary); }
+.btn-demo{ background:var(--accent); }
 
 .section{
     margin-bottom:80px;
@@ -138,8 +124,8 @@ body{
     padding:10px 20px;
     background:var(--primary);
     color:white;
-    text-decoration:none;
     border-radius:8px;
+    text-decoration:none;
 }
 
 footer{
@@ -149,21 +135,22 @@ footer{
     padding:30px 20px;
 }
 </style>
-
 </head>
 
 <body>
+
+<div id="top"></div>
 
 <div class="warning-banner" id="warning-text">
 NOTICE: Site under reconstruction.
 </div>
 
-<nav class="top-nav" id="top">
-    <a href="#about">O nama</a>
-    <a href="#whyus">Zašto mi</a>
-    <a href="#services">Usluge</a>
-    <a href="#reviews">Recenzije</a>
-    <a href="#contact">Kontakt</a>
+<nav class="top-nav">
+    <a href="#about" id="nav-about">O nama</a>
+    <a href="#whyus" id="nav-why">Zašto mi</a>
+    <a href="#services" id="nav-services">Usluge</a>
+    <a href="#reviews" id="nav-reviews">Recenzije</a>
+    <a href="#contact" id="nav-contact">Kontakt</a>
 </nav>
 
 <select class="language-selector" id="lang-switch" onchange="changeLanguage()">
@@ -176,189 +163,272 @@ NOTICE: Site under reconstruction.
 <div class="container">
     <h1 id="welcome-title">Welcome to AutoVox</h1>
 
-```
-<div class="button-group">
-    <a href="LOGIN.html" class="btn btn-login" id="btn-login">Login</a>
-    <a href="izvjestajhj.html" class="btn btn-demo" id="btn-demo">Try Demo</a>
-    <a href="REGISTER.html" class="btn btn-register" id="btn-register">Register</a>
-</div>
-```
-
+    <div class="button-group">
+        <a href="LOGIN.html" class="btn btn-login" id="btn-login">Login</a>
+        <a href="izvjestajhj.html" class="btn btn-demo" id="btn-demo">Try Demo</a>
+        <a href="REGISTER.html" class="btn btn-register" id="btn-register">Register</a>
+    </div>
 </div>
 
-<section class="section" id="about">
+    <section class="section" id="about">
     <h2 id="title-about">O nama</h2>
 
-```
-<p>
-    AutoVox je moderna digitalna platforma za upravljanje vozilima,
-    izvještajima, korisnicima i poslovnim procesima.
-</p>
+    <p id="about-text1"></p>
+    <p id="about-text2"></p>
 
-<p>
-    Naš cilj je omogućiti jednostavno, brzo i sigurno upravljanje
-    podacima kroz intuitivno korisničko iskustvo.
-</p>
-
-<a href="#top" class="back-top">↑ Povratak na vrh</a>
-```
-
+    <a href="#top" class="back-top">↑ Povratak na vrh</a>
 </section>
 
 <section class="section" id="whyus">
     <h2 id="title-whyUs">Zašto odabrati nas?</h2>
 
-```
-<div class="features">
+    <div class="features">
 
-    <div class="feature-card">
-        <h3>Brzina</h3>
-        <p>Optimizovan sistem za maksimalne performanse.</p>
+        <div class="feature-card">
+            <h3 id="card1-title">Brzina</h3>
+            <p id="card1-text"></p>
+        </div>
+
+        <div class="feature-card">
+            <h3 id="card2-title">Sigurnost</h3>
+            <p id="card2-text"></p>
+        </div>
+
+        <div class="feature-card">
+            <h3 id="card3-title">Podrška</h3>
+            <p id="card3-text"></p>
+        </div>
+
     </div>
 
-    <div class="feature-card">
-        <h3>Sigurnost</h3>
-        <p>Napredna zaštita korisničkih podataka.</p>
-    </div>
-
-    <div class="feature-card">
-        <h3>Podrška</h3>
-        <p>Kontinuirana tehnička podrška i razvoj.</p>
-    </div>
-
-</div>
-
-<a href="#top" class="back-top">↑ Povratak na vrh</a>
-```
-
+    <a href="#top" class="back-top">↑ Povratak na vrh</a>
 </section>
 
 <section class="section" id="services">
     <h2 id="title-services">Naše usluge</h2>
 
-```
-<p>
-    Nudimo upravljanje voznim parkom, pregled izvještaja,
-    evidenciju korisnika, analitiku i integraciju sa drugim sistemima.
-</p>
+    <p id="services-text1"></p>
+    <p id="services-text2"></p>
 
-<p>
-    Naša rješenja prilagođena su privatnim korisnicima,
-    malim preduzećima i velikim organizacijama.
-</p>
-
-<a href="#top" class="back-top">↑ Povratak na vrh</a>
-```
-
+    <a href="#top" class="back-top">↑ Povratak na vrh</a>
 </section>
 
 <section class="section" id="reviews">
-    <h2 id="title-reviews">Recenzije korisnika</h2>
+    <h2 id="title-reviews">Recenzije</h2>
 
-```
-<p>★★★★★ "Odlična platforma i veoma jednostavna za korištenje."</p>
+    <p id="review1"></p>
+    <p id="review2"></p>
+    <p id="review3"></p>
 
-<p>★★★★★ "Uštedjeli smo mnogo vremena koristeći AutoVox."</p>
-
-<p>★★★★★ "Profesionalan izgled i pouzdan rad sistema."</p>
-
-<a href="#top" class="back-top">↑ Povratak na vrh</a>
-```
-
+    <a href="#top" class="back-top">↑ Povratak na vrh</a>
 </section>
 
 <section class="section" id="contact">
-    <h2 id="title-contact">Kontaktirajte nas</h2>
+    <h2 id="title-contact">Kontakt</h2>
 
-```
-<p>Email: info@autovox.com</p>
-<p>Telefon: +387 XX XXX XXX</p>
-<p>Radno vrijeme: Ponedjeljak - Petak, 08:00 - 16:00</p>
+    <p id="contact1"></p>
+    <p id="contact2"></p>
+    <p id="contact3"></p>
 
-<a href="#top" class="back-top">↑ Povratak na vrh</a>
-```
-
+    <a href="#top" class="back-top">↑ Povratak na vrh</a>
 </section>
 
 <footer>
-    <p>© 2026 AutoVox Portal. Sva prava zadržana.</p>
+    <p id="footer-text">© 2026 AutoVox Portal</p>
 </footer>
 
 <script>
+
 const translations = {
-    en: {
-        warning:"NOTICE: Site under reconstruction.",
-        welcome:"Welcome to AutoVox",
-        login:"Login",
-        register:"Register",
-        demo:"Try Demo",
-        about:"About Us",
-        whyUs:"Why Choose Us?",
-        services:"Our Services",
-        reviews:"User Reviews",
-        contact:"Contact Us"
-    },
 
-    bs: {
-        warning:"OBAVJEŠTENJE: Stranica u rekonstrukciji.",
-        welcome:"Dobrodošli u AutoVox",
-        login:"Prijava",
-        register:"Registracija",
-        demo:"Probaj Demo",
-        about:"O nama",
-        whyUs:"Zašto odabrati nas?",
-        services:"Naše usluge",
-        reviews:"Recenzije korisnika",
-        contact:"Kontaktirajte nas"
-    },
+en:{
+warning:"NOTICE: Site under reconstruction.",
+welcome:"Welcome to AutoVox",
+login:"Login",
+register:"Register",
+demo:"Try Demo",
 
-    de: {
-        warning:"HINWEIS: Seite im Umbau.",
-        welcome:"Willkommen bei AutoVox",
-        login:"Anmelden",
-        register:"Registrieren",
-        demo:"Demo testen",
-        about:"Über uns",
-        whyUs:"Warum uns wählen?",
-        services:"Unsere Leistungen",
-        reviews:"Kundenbewertungen",
-        contact:"Kontaktieren Sie uns"
-    },
+about:"About Us",
+why:"Why Choose Us?",
+services:"Our Services",
+reviews:"Reviews",
+contact:"Contact",
 
-    fr: {
-        warning:"AVIS: Site en reconstruction.",
-        welcome:"Bienvenue chez AutoVox",
-        login:"Connexion",
-        register:"S'inscrire",
-        demo:"Essayer la démo",
-        about:"À propos",
-        whyUs:"Pourquoi nous choisir ?",
-        services:"Nos services",
-        reviews:"Avis des utilisateurs",
-        contact:"Contactez-nous"
-    }
+about1:"AutoVox is a modern vehicle management platform.",
+about2:"We provide fast and secure solutions for companies.",
+
+card1:"Optimized system for speed.",
+card2:"Advanced data protection.",
+card3:"Continuous support and updates.",
+
+services1:"Fleet management and reporting tools.",
+services2:"Integrated analytics and system solutions.",
+
+review1:"Great platform, very easy to use.",
+review2:"Saved us a lot of time.",
+review3:"Very professional system.",
+
+contact1:"Email: info@autovox.com",
+contact2:"Phone: +387 XX XXX XXX",
+contact3:"Mon–Fri 08:00–16:00",
+
+footer:"© 2026 AutoVox Portal"
+},
+
+bs:{
+warning:"OBAVJEŠTENJE: Stranica u rekonstrukciji.",
+welcome:"Dobrodošli u AutoVox",
+login:"Prijava",
+register:"Registracija",
+demo:"Probaj Demo",
+
+about:"O nama",
+why:"Zašto odabrati nas?",
+services:"Naše usluge",
+reviews:"Recenzije",
+contact:"Kontakt",
+
+about1:"AutoVox je moderna platforma za upravljanje vozilima.",
+about2:"Nudimo brza i sigurna rješenja za kompanije.",
+
+card1:"Optimizovan sistem za brzinu.",
+card2:"Napredna zaštita podataka.",
+card3:"Kontinuirana podrška i ažuriranja.",
+
+services1:"Alati za upravljanje voznim parkom.",
+services2:"Integrisana analitika sistema.",
+
+review1:"Odlična platforma, jednostavna za korištenje.",
+review2:"Uštedjeli smo mnogo vremena.",
+review3:"Profesionalan sistem.",
+
+contact1:"Email: info@autovox.com",
+contact2:"Telefon: +387 XX XXX XXX",
+contact3:"Pon–Pet 08:00–16:00",
+
+footer:"© 2026 AutoVox Portal"
+},
+
+de:{
+warning:"HINWEIS: Seite im Umbau.",
+welcome:"Willkommen bei AutoVox",
+login:"Anmelden",
+register:"Registrieren",
+demo:"Demo testen",
+
+about:"Über uns",
+why:"Warum uns wählen?",
+services:"Unsere Dienste",
+reviews:"Bewertungen",
+contact:"Kontakt",
+
+about1:"AutoVox ist eine moderne Fahrzeugplattform.",
+about2:"Wir bieten schnelle und sichere Lösungen.",
+
+card1:"Optimiertes Geschwindigkeitssystem.",
+card2:"Erweiterter Datenschutz.",
+card3:"Kontinuierlicher Support.",
+
+services1:"Flottenmanagement-Tools.",
+services2:"Systemanalyse und Integration.",
+
+review1:"Sehr einfach zu benutzen.",
+review2:"Hat viel Zeit gespart.",
+review3:"Sehr professionell.",
+
+contact1:"E-Mail: info@autovox.com",
+contact2:"Telefon: +387 XX XXX XXX",
+contact3:"Mo–Fr 08:00–16:00",
+
+footer:"© 2026 AutoVox Portal"
+},
+
+fr:{
+warning:"AVIS: Site en reconstruction.",
+welcome:"Bienvenue chez AutoVox",
+login:"Connexion",
+register:"S'inscrire",
+demo:"Essayer",
+
+about:"À propos",
+why:"Pourquoi nous choisir ?",
+services:"Nos services",
+reviews:"Avis",
+contact:"Contact",
+
+about1:"AutoVox est une plateforme moderne.",
+about2:"Solutions rapides et sécurisées.",
+
+card1:"Système rapide.",
+card2:"Sécurité avancée.",
+card3:"Support continu.",
+
+services1:"Gestion de flotte.",
+services2:"Analyse intégrée.",
+
+review1:"Très facile à utiliser.",
+review2:"Gain de temps important.",
+review3:"Très professionnel.",
+
+contact1:"Email: info@autovox.com",
+contact2:"Téléphone: +387 XX XXX XXX",
+contact3:"Lun–Ven 08:00–16:00",
+
+footer:"© 2026 AutoVox Portal"
+}
+
 };
 
 function changeLanguage(){
-    const lang = document.getElementById('lang-switch').value;
-    const t = translations[lang];
 
-    document.getElementById('warning-text').innerText = t.warning;
-    document.getElementById('welcome-title').innerText = t.welcome;
-    document.getElementById('btn-login').innerText = t.login;
-    document.getElementById('btn-register').innerText = t.register;
-    document.getElementById('btn-demo').innerText = t.demo;
+const lang=document.getElementById("lang-switch").value;
+const t=translations[lang];
 
-    document.getElementById('title-about').innerText = t.about;
-    document.getElementById('title-whyUs').innerText = t.whyUs;
-    document.getElementById('title-services').innerText = t.services;
-    document.getElementById('title-reviews').innerText = t.reviews;
-    document.getElementById('title-contact').innerText = t.contact;
+document.getElementById("warning-text").innerText=t.warning;
+document.getElementById("welcome-title").innerText=t.welcome;
 
-    document.documentElement.lang = lang;
+document.getElementById("btn-login").innerText=t.login;
+document.getElementById("btn-register").innerText=t.register;
+document.getElementById("btn-demo").innerText=t.demo;
+
+document.getElementById("nav-about").innerText=t.about;
+document.getElementById("nav-why").innerText=t.why;
+document.getElementById("nav-services").innerText=t.services;
+document.getElementById("nav-reviews").innerText=t.reviews;
+document.getElementById("nav-contact").innerText=t.contact;
+
+document.getElementById("title-about").innerText=t.about;
+document.getElementById("title-whyUs").innerText=t.why;
+document.getElementById("title-services").innerText=t.services;
+document.getElementById("title-reviews").innerText=t.reviews;
+document.getElementById("title-contact").innerText=t.contact;
+
+document.getElementById("about-text1").innerText=t.about1;
+document.getElementById("about-text2").innerText=t.about2;
+
+document.getElementById("card1-text").innerText=t.card1;
+document.getElementById("card2-text").innerText=t.card2;
+document.getElementById("card3-text").innerText=t.card3;
+
+document.getElementById("services-text1").innerText=t.services1;
+document.getElementById("services-text2").innerText=t.services2;
+
+document.getElementById("review1").innerText=t.review1;
+document.getElementById("review2").innerText=t.review2;
+document.getElementById("review3").innerText=t.review3;
+
+document.getElementById("contact1").innerText=t.contact1;
+document.getElementById("contact2").innerText=t.contact2;
+document.getElementById("contact3").innerText=t.contact3;
+
+document.getElementById("footer-text").innerText=t.footer;
+
+document.documentElement.lang=lang;
+
 }
 
-window.onload = changeLanguage;
+window.onload=changeLanguage;
+
 </script>
 
 </body>
