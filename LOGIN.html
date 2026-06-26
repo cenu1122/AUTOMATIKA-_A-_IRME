@@ -1,21 +1,22 @@
-<input type="email" id="login-email" class="..." placeholder="Email">
-<input type="password" id="login-password" class="..." placeholder="Lozinka">
-<button onclick="handleLogin()">Prijavi se</button>
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+    <meta charset="UTF-8">
+    <title>Prijava | AutoVox</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-slate-800 p-8 rounded-xl border border-slate-700 shadow-2xl w-full max-w-sm">
+        <h2 class="text-white text-xl font-bold mb-6 text-center">Prijava</h2>
+        
+        <input type="email" id="email" class="w-full p-2 mb-3 bg-slate-900 border border-slate-600 rounded text-white" placeholder="Email">
+        <input type="password" id="password" class="w-full p-2 mb-6 bg-slate-900 border border-slate-600 rounded text-white" placeholder="Lozinka">
+        
+        <button id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold p-3 rounded transition" onclick="handleLogin()">Prijavi se</button>
+    </div>
 
 <script>
-async function handleLogin() {
-    // Čitamo direktno po ID-ovima
-    const email = document.getElementById("login-email").value.trim();
-    const password = document.getElementById("login-password").value.trim();
-
-    // Dodaj ovaj log da vidiš šta on tačno pokupi iz forme
-    console.log("Šaljem na provjeru:", { email, password });
-
-    const url = `${SUPABASE_URL}/rest/v1/AUTOVOXA_KLIJENTI?EMAIL=eq.${encodeURIComponent(email)}&PASSWWOTF=eq.${encodeURIComponent(password)}&select=*`;
-    
-    // ... ostatak fetch koda
-}
-</script>
 const SUPABASE_URL = "https://mpgbpgmsorunfbdskbwn.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wZ2JwZ21zb3J1bmZiZHNrYnduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMTM0ODIsImV4cCI6MjA5Mzc4OTQ4Mn0.Wh5yo6Z2kx9QaERzTeBuRModEXw3BJYjTzhBjTq6ncs";
 
@@ -24,11 +25,12 @@ async function handleLogin() {
     const password = document.getElementById("password").value.trim();
     const btn = document.getElementById("loginBtn");
 
+    console.log("Provjeravam email:", email, "i lozinku:", password);
+
     btn.disabled = true;
     btn.innerText = "Prijava...";
 
     try {
-        // Fokusiraj se na EMAIL i PASSWWOTF kolone
         const url = `${SUPABASE_URL}/rest/v1/AUTOVOXA_KLIJENTI?EMAIL=eq.${encodeURIComponent(email)}&PASSWWOTF=eq.${encodeURIComponent(password)}&select=*`;
         
         const response = await fetch(url, {
@@ -40,13 +42,12 @@ async function handleLogin() {
         });
 
         const data = await response.json();
-        console.log("Rezultat iz baze:", data); // OVO PROVJERI U KONZOLI (F12)
+        console.log("Rezultat iz baze:", data);
 
         if (data && data.length > 0) {
-            // Uspješno pronađen korisnik
             window.location.href = "izvjestaji.html"; 
         } else {
-            alert("Podaci nisu pronađeni u bazi. Provjeri konzolu (F12).");
+            alert("Podaci nisu pronađeni. Provjeri da li je email ispravno upisan.");
         }
     } catch (error) {
         alert("Greška: " + error.message);
