@@ -20,26 +20,26 @@
     );
 
     document.getElementById('loginBtn').addEventListener('click', async () => {
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value.trim();
 
-    // Direktno pretraživanje tvoje tabele
-    const { data, error } = await client
-        .from('AUTOVOXA_KLIJENTI')
-        .select('*')
-        .eq('EMAIL', email) // Provjeri da li se kolona u bazi zove EMAIL
-        .eq('PASSWWOTF', password); // Provjeri da li se kolona u bazi zove PASSWWOTF
+        // Direktno pretraživanje tvoje tabele
+        const { data, error } = await client
+            .from('AUTOVOXA_KLIJENTI')
+            .select('*')
+            .eq('EMAIL', email)
+            .eq('PASSWWOTF', password);
 
-    if (error) {
-        console.error("Greška:", error);
-        alert("Greška u bazi: " + error.message);
-    } else if (data && data.length > 0) {
-        alert("Uspješna prijava!");
-        // Ovdje možeš dodati preusmjeravanje, npr:
-        // window.location.href = "izvjestaji.html";
-    } else {
-        alert("Pogrešan email ili lozinka.");
-    }
-});
-</body>
+        if (error) {
+            console.error("Greška:", error);
+            alert("Greška u bazi: " + error.message);
+        } else if (data && data.length > 0) {
+            alert("Uspješna prijava!");
+            // Ovo će te prebaciti na izvjestaje nakon klika na "U redu"
+            window.location.href = "izvjestaji.html";
+        } else {
+            alert("Pogrešan email ili lozinka.");
+        }
+    });
+</script> </body>
 </html>
