@@ -25,32 +25,24 @@ async function handleLogin() {
     const password = document.getElementById("password").value.trim();
     const btn = document.getElementById("loginBtn");
 
-    console.log("Provjeravam email:", email, "i lozinku:", password);
-
     btn.disabled = true;
     btn.innerText = "Prijava...";
 
     try {
-        const url = `${SUPABASE_URL}/rest/v1/AUTOVOXA_KLIJENTI?EMAIL=eq.${encodeURIComponent(email)}&PASSWWOTF=eq.${encodeURIComponent(password)}&select=*`;
-        
-        const response = await fetch(url, {
-            headers: {
-                "apikey": SUPABASE_KEY,
-                "Authorization": `Bearer ${SUPABASE_KEY}`,
-                "Content-Type": "application/json"
-            }
+        // Ovo koristi Supabase ugrađeni Auth sistem
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password,
         });
 
-        const data = await response.json();
-        console.log("Rezultat iz baze:", data);
-
-        if (data && data.length > 0) {
-            window.location.href = "izvjestaji.html"; 
+        if (error) {
+            alert("Greška: " + error.message);
         } else {
-            alert("Podaci nisu pronađeni. Provjeri da li je email ispravno upisan.");
+            alert("Uspješna prijava!");
+            window.location.href = "izvjestaji.html"; 
         }
     } catch (error) {
-        alert("Greška: " + error.message);
+        alert("Sistemska greška: " + error.message);
     } finally {
         btn.disabled = false;
         btn.innerText = "Prijavi se";
