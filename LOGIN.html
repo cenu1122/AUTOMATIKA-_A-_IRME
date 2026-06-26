@@ -32,7 +32,8 @@
             alert("Greška: " + error.message);
         } else {
             alert("Uspješno ste prijavljeni!");
-            console.log("User:", data.user);
+            // OVDJE TE PREBACUJE NA IZVJESTAJI.HTML
+            window.location.href = "izvjestaji.html";
         }
     });
 </script>
