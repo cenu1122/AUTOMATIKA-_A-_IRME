@@ -1,203 +1,29 @@
-```html
 <!DOCTYPE html>
 <html lang="bs">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome | AutoVox Portal</title>
-
     <style>
-        :root {
-            --primary: #4f46e5;
-            --secondary: #10b981;
-            --accent: #6b7280;
-            --bg: #f9fafb;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: 'Inter', system-ui, sans-serif;
-            background-color: var(--bg);
-            color: #1f2937;
-            min-height: 100vh;
-        }
-
-        .warning-banner {
-            background: #fffbeb;
-            color: #92400e;
-            padding: 12px;
-            text-align: center;
-            font-size: 0.9rem;
-            border-bottom: 1px solid #fef3c7;
-        }
-
-        .language-selector {
-            position: fixed;
-            top: 70px;
-            right: 20px;
-            padding: 8px;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            z-index: 100;
-        }
-
-        .container {
-            min-height: 80vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            gap: 30px;
-            text-align: center;
-            padding: 20px;
-        }
-
-        h2 {
-            font-size: 2.8rem;
-            margin: 0;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .btn {
-            text-decoration: none;
-            padding: 14px 28px;
-            border-radius: 12px;
-            font-weight: 600;
-            transition: 0.3s;
-            border: none;
-            cursor: pointer;
-            color: white;
-        }
-
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.12);
-        }
-
-        .btn-login {
-            background: var(--primary);
-        }
-
-        .btn-register {
-            background: var(--secondary);
-        }
-
-        .btn-demo {
-            background: var(--accent);
-        }
-
-        .info-section {
-            max-width: 1200px;
-            margin: auto;
-            padding: 50px 20px;
-        }
-
-        .section {
-            margin-bottom: 80px;
-            text-align: center;
-        }
-
-        .section h2 {
-            color: var(--primary);
-            margin-bottom: 20px;
-        }
-
-        .section p {
-            max-width: 800px;
-            margin: auto;
-            line-height: 1.7;
-        }
-
-        .features {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-top: 30px;
-        }
-
-        .feature-card {
-            background: white;
-            width: 300px;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-            transition: 0.3s;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .review {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            margin: 15px auto;
-            max-width: 700px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-        }
-
-        .contact-form {
-            max-width: 600px;
-            margin: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .contact-form input,
-        .contact-form textarea {
-            padding: 14px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            font-size: 1rem;
-        }
-
-        .contact-form textarea {
-            resize: vertical;
-        }
-
-        .footer {
-            background: #111827;
-            color: white;
-            text-align: center;
-            padding: 25px;
-            margin-top: 50px;
-        }
-
-        @media (max-width: 768px) {
-            h2 {
-                font-size: 2rem;
-            }
-
-            .feature-card {
-                width: 100%;
-            }
-
-            .language-selector {
-                position: static;
-                margin: 15px auto;
-                display: block;
-            }
-        }
+        :root { --primary: #4f46e5; --secondary: #10b981; --accent: #6b7280; --bg: #f9fafb; }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background-color: var(--bg); color: #1f2937; }
+        .warning-banner { background: #fffbeb; color: #92400e; padding: 12px; text-align: center; border-bottom: 1px solid #fef3c7; }
+        .language-selector { position: fixed; top: 70px; right: 20px; padding: 8px; z-index: 100; }
+        .container { min-height: 80vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 30px; text-align: center; }
+        .btn { text-decoration: none; padding: 14px 28px; border-radius: 12px; font-weight: 600; color: white; display: inline-block; }
+        .btn-login { background: var(--primary); }
+        .btn-register { background: var(--secondary); }
+        .btn-demo { background: var(--accent); }
+        .section { margin-bottom: 80px; text-align: center; padding: 0 20px; }
+        .section h2 { color: var(--primary); margin-bottom: 20px; }
+        .features { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        .feature-card { background: white; width: 300px; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); }
     </style>
 </head>
 <body>
 
-    <div class="warning-banner" id="warning-text">
-        NOTICE: Site under reconstruction.
-    </div>
+    <div class="warning-banner" id="warning-text">NOTICE: Site under reconstruction.</div>
 
     <select class="language-selector" id="lang-switch" onchange="changeLanguage()">
         <option value="en">English</option>
@@ -208,7 +34,6 @@
 
     <div class="container">
         <h2 id="welcome-title">Welcome</h2>
-
         <div class="button-group">
             <a href="LOGIN.html" class="btn btn-login" id="btn-login">Login</a>
             <a href="izvjestajhj.html" class="btn btn-demo" id="btn-demo">Try Demo</a>
@@ -216,156 +41,58 @@
         </div>
     </div>
 
-    <div class="info-section">
+    <section class="section">
+        <h2 id="title-about">O nama</h2>
+        <p>AutoVox je moderna platforma za upravljanje vozilima i izvještajima.</p>
+    </section>
 
-        <section class="section">
-            <h2>O nama</h2>
-            <p>
-                AutoVox je moderna platforma za upravljanje vozilima, izvještajima i poslovnim procesima.
-                Naša misija je pojednostaviti administraciju i omogućiti korisnicima brz pristup svim važnim podacima na jednom mjestu.
-            </p>
-        </section>
+    <section class="section">
+        <h2 id="title-whyUs">Zašto odabrati nas?</h2>
+        <div class="features">
+            <div class="feature-card"><h3>Brzina</h3><p>Optimizovan sistem.</p></div>
+        </div>
+    </section>
 
-        <section class="section">
-            <h2>Zašto odabrati nas?</h2>
+    <section class="section">
+        <h2 id="title-services">Naše usluge</h2>
+    </section>
 
-            <div class="features">
-                <div class="feature-card">
-                    <h3>Brzina</h3>
-                    <p>Optimizovan sistem za maksimalne performanse.</p>
-                </div>
+    <section class="section">
+        <h2 id="title-reviews">Recenzije korisnika</h2>
+    </section>
 
-                <div class="feature-card">
-                    <h3>Sigurnost</h3>
-                    <p>Vaši podaci su zaštićeni savremenim sigurnosnim standardima.</p>
-                </div>
-
-                <div class="feature-card">
-                    <h3>Jednostavnost</h3>
-                    <p>Intuitivan dizajn prilagođen svim korisnicima.</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="section">
-            <h2>Naše usluge</h2>
-
-            <div class="features">
-                <div class="feature-card">
-                    <h3>Izvještaji</h3>
-                    <p>Automatsko generisanje detaljnih izvještaja.</p>
-                </div>
-
-                <div class="feature-card">
-                    <h3>Praćenje vozila</h3>
-                    <p>Potpuna evidencija i upravljanje voznim parkom.</p>
-                </div>
-
-                <div class="feature-card">
-                    <h3>Administracija</h3>
-                    <p>Jednostavno upravljanje korisnicima i podacima.</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="section">
-            <h2>Recenzije korisnika</h2>
-
-            <div class="review">
-                ⭐⭐⭐⭐⭐
-                <p>"Odličan sistem i veoma jednostavan za korištenje."</p>
-                <strong>- Amir H.</strong>
-            </div>
-
-            <div class="review">
-                ⭐⭐⭐⭐⭐
-                <p>"Uštedio nam je mnogo vremena u svakodnevnom radu."</p>
-                <strong>- Firma XYZ</strong>
-            </div>
-
-            <div class="review">
-                ⭐⭐⭐⭐⭐
-                <p>"Moderan izgled i vrhunske funkcionalnosti."</p>
-                <strong>- Marko P.</strong>
-            </div>
-        </section>
-
-        <section class="section">
-            <h2>Kontaktirajte nas</h2>
-
-            <form class="contact-form">
-                <input type="text" placeholder="Vaše ime" required>
-                <input type="email" placeholder="Email adresa" required>
-                <textarea rows="5" placeholder="Vaša poruka" required></textarea>
-
-                <button type="submit" class="btn btn-login">
-                    Pošalji poruku
-                </button>
-            </form>
-        </section>
-
-    </div>
-
-    <footer class="footer">
-        © 2026 AutoVox Portal. Sva prava zadržana.
-    </footer>
+    <section class="section">
+        <h2 id="title-contact">Kontaktirajte nas</h2>
+    </section>
 
     <script>
         const translations = {
-            en: {
-                warning: "NOTICE: Site under reconstruction.",
-                welcome: "Welcome",
-                login: "Login",
-                register: "Register",
-                demo: "Try Demo"
-            },
-            bs: {
-                warning: "OBAVJEŠTENJE: Stranica u rekonstrukciji.",
-                welcome: "Dobrodošli",
-                login: "Prijava",
-                register: "Registracija",
-                demo: "Probaj Demo"
-            },
-            de: {
-                warning: "HINWEIS: Seite im Umbau.",
-                welcome: "Willkommen",
-                login: "Anmelden",
-                register: "Registrieren",
-                demo: "Demo testen"
-            },
-            fr: {
-                warning: "AVIS: Site en reconstruction.",
-                welcome: "Bienvenue",
-                login: "Connexion",
-                register: "S'inscrire",
-                demo: "Essayer"
-            }
+            en: { warning: "NOTICE: Site under reconstruction.", welcome: "Welcome", login: "Login", register: "Register", demo: "Try Demo", about: "About Us", whyUs: "Why Choose Us?", services: "Our Services", reviews: "User Reviews", contact: "Contact Us" },
+            bs: { warning: "OBAVJEŠTENJE: Stranica u rekonstrukciji.", welcome: "Dobrodošli", login: "Prijava", register: "Registracija", demo: "Probaj Demo", about: "O nama", whyUs: "Zašto odabrati nas?", services: "Naše usluge", reviews: "Recenzije korisnika", contact: "Kontaktirajte nas" },
+            de: { warning: "HINWEIS: Seite im Umbau.", welcome: "Willkommen", login: "Anmelden", register: "Registrieren", demo: "Demo testen", about: "Über uns", whyUs: "Warum uns wählen?", services: "Unsere Leistungen", reviews: "Kundenbewertungen", contact: "Kontaktieren Sie uns" },
+            fr: { warning: "AVIS: Site en reconstruction.", welcome: "Bienvenue", login: "Connexion", register: "S'inscrire", demo: "Essayer", about: "À propos", whyUs: "Pourquoi nous choisir ?", services: "Nos services", reviews: "Avis des utilisateurs", contact: "Contactez-nous" }
         };
 
         function changeLanguage() {
             const lang = document.getElementById('lang-switch').value;
+            const t = translations[lang];
 
-            document.getElementById('warning-text').innerText =
-                translations[lang].warning;
-
-            document.getElementById('welcome-title').innerText =
-                translations[lang].welcome;
-
-            document.getElementById('btn-login').innerText =
-                translations[lang].login;
-
-            document.getElementById('btn-register').innerText =
-                translations[lang].register;
-
-            document.getElementById('btn-demo').innerText =
-                translations[lang].demo;
+            document.getElementById('warning-text').innerText = t.warning;
+            document.getElementById('welcome-title').innerText = t.welcome;
+            document.getElementById('btn-login').innerText = t.login;
+            document.getElementById('btn-register').innerText = t.register;
+            document.getElementById('btn-demo').innerText = t.demo;
+            
+            document.getElementById('title-about').innerText = t.about;
+            document.getElementById('title-whyUs').innerText = t.whyUs;
+            document.getElementById('title-services').innerText = t.services;
+            document.getElementById('title-reviews').innerText = t.reviews;
+            document.getElementById('title-contact').innerText = t.contact;
 
             document.documentElement.lang = lang;
         }
 
         window.onload = changeLanguage;
     </script>
-
 </body>
 </html>
-```
