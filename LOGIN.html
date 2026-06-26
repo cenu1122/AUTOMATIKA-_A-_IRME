@@ -16,7 +16,6 @@
 
 <script>
 const SUPABASE_URL = "https://mpgbpgmsorunfbdskbwn.supabase.co";
-// Koristimo tvoj JWT anon ključ za REST pozive
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wZ2JwZ21zb3J1bmZiZHNrYnduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMTM0ODIsImV4cCI6MjA5Mzc4OTQ4Mn0.Wh5yo6Z2kx9QaERzTeBuRModEXw3BJYjTzhBjTq6ncs";
 
 async function handleLogin() {
@@ -24,16 +23,11 @@ async function handleLogin() {
     const password = document.getElementById("password").value.trim();
     const btn = document.getElementById("loginBtn");
 
-    if (!email || !password) {
-        alert("Unesite email i lozinku!");
-        return;
-    }
-
     btn.disabled = true;
     btn.innerText = "Prijava...";
 
     try {
-        // Provjera direktno u tvojoj tabeli
+        // Fokusiraj se na EMAIL i PASSWWOTF kolone
         const url = `${SUPABASE_URL}/rest/v1/AUTOVOXA_KLIJENTI?EMAIL=eq.${encodeURIComponent(email)}&PASSWWOTF=eq.${encodeURIComponent(password)}&select=*`;
         
         const response = await fetch(url, {
@@ -45,12 +39,13 @@ async function handleLogin() {
         });
 
         const data = await response.json();
+        console.log("Rezultat iz baze:", data); // OVO PROVJERI U KONZOLI (F12)
 
         if (data && data.length > 0) {
-            alert("Uspješna prijava!");
-            // window.location.href = "dashboard.html"; // Ovdje stavi svoj link
+            // Uspješno pronađen korisnik
+            window.location.href = "izvjestaji.html"; 
         } else {
-            alert("Pogrešan email ili lozinka!");
+            alert("Podaci nisu pronađeni u bazi. Provjeri konzolu (F12).");
         }
     } catch (error) {
         alert("Greška: " + error.message);
