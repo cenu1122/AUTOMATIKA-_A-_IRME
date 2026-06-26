@@ -27,22 +27,41 @@ async function handleLogin() {
     const password = document.getElementById("password").value.trim();
     const btn = document.getElementById("loginBtn");
 
+    // 1. LOG: Šta smo unijeli u formu?
+    console.log("--- POKRETANJE PRIJAVE ---");
+    console.log("Uneseni Email:", email);
+    console.log("Unesena Lozinka:", password);
+
     btn.disabled = true;
     btn.innerText = "Prijava...";
 
     try {
+        // 2. LOG: Šta pokušavamo pronaći u bazi?
+        console.log("Slanje upita prema Supabase...");
+        
         const { data, error } = await supabase.auth.signInWithPassword({
             email: email,
             password: password,
         });
 
+        // 3. LOG: Šta je baza odgovorila?
         if (error) {
+            console.error("Greška iz Supabase-a:", error);
             alert("Greška: " + error.message);
         } else {
+            console.log("Uspješan odgovor iz baze (Podaci korisnika):", data);
+            
+            // OVO JE DODATNI LOG: Provjeri šta tačno dolazi u 'data'
+            if (data && data.user) {
+                console.log("Prijavljeni User ID:", data.user.id);
+                console.log("Prijavljeni Email:", data.user.email);
+            }
+            
             alert("Uspješna prijava!");
             window.location.href = "izvjestaji.html"; 
         }
     } catch (error) {
+        console.error("Uhvaćena sistemska greška:", error);
         alert("Sistemska greška: " + error.message);
     } finally {
         btn.disabled = false;
