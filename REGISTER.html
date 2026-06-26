@@ -46,14 +46,7 @@ async function handleRegister() {
     const adresa = document.getElementById("reg-adresa").value.trim();
     const telefon = document.getElementById("reg-telefon").value.trim();
 
-console.log({
-    firma,
-    email,
-    sifra,
-    adresa,
-    telefon
-});
-   if (!firma || !email || !sifra || !adresa || !telefon) {
+    if (!firma || !email || !sifra || !adresa || !telefon) {
         alert("Popunite sva polja!");
         btn.innerText = "Register Now";
         btn.disabled = false;
@@ -64,7 +57,7 @@ console.log({
         const payload = {
             FIRMA: firma,
             EMAIL: email,
-            PASSWWOTF: sifra, // Ime kolone u bazi
+            PASSWWOTF: sifra,
             ADRESA: adresa,
             TELLEFON: telefon,
             STATUS: "NEW"
@@ -75,8 +68,7 @@ console.log({
             headers: {
                 "Content-Type": "application/json",
                 "apikey": SUPABASE_KEY,
-                "Authorization": `Bearer ${SUPABASE_KEY}`,
-                "Prefer": "return=representation"
+                "Authorization": `Bearer ${SUPABASE_KEY}`
             },
             body: JSON.stringify(payload)
         });
@@ -98,5 +90,3 @@ console.log({
 </script>
 </body>
 </html>
-
-
