@@ -20,10 +20,15 @@
     );
 
     document.getElementById('loginBtn').addEventListener('click', async () => {
+        // 1. Provjera da li kod uopšte radi
+        console.log("Dugme je kliknuto!");
+
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value.trim();
 
-        // Direktno pretraživanje tvoje tabele
+        // 2. Provjera šta kucamo
+        console.log("Pokušavam prijavu sa:", email, password);
+
         const { data, error } = await client
             .from('AUTOVOXA_KLIJENTI')
             .select('*')
@@ -31,15 +36,18 @@
             .eq('PASSWWOTF', password);
 
         if (error) {
-            console.error("Greška:", error);
-            alert("Greška u bazi: " + error.message);
-        } else if (data && data.length > 0) {
-            alert("Uspješna prijava!");
-            // Ovo će te prebaciti na izvjestaje nakon klika na "U redu"
-            window.location.href = "izvjestaji.html";
+            console.error("Greška iz baze:", error);
         } else {
-            alert("Pogrešan email ili lozinka.");
+            console.log("Rezultat iz baze:", data);
+            
+            if (data && data.length > 0) {
+                console.log("Uspjeh! Prebacujem na izvještaje.");
+                window.location.href = "izvjestaji.html";
+            } else {
+                console.log("Nema korisnika sa ovim podacima.");
+            }
         }
     });
-</script> </body>
+</script>
+ </body>
 </html>
