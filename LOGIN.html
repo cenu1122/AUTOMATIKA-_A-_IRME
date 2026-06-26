@@ -1,35 +1,46 @@
 <!DOCTYPE html>
-<html>
+<html lang="bs">
 <head>
+    <meta charset="UTF-8">
+    <title>Prijava</title>
+    <!-- Učitaj Supabase jednom -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
+    <h2>Prijava</h2>
     <input type="email" id="email" placeholder="Email">
     <input type="password" id="password" placeholder="Lozinka">
-    <button id="loginBtn" onclick="handleLogin()">Prijavi se</button>
+    <button id="loginBtn">Prijavi se</button>
 
-<script>
-const supabase = supabase.createClient(
-    "https://mpgbpgmsorunfbdskbwn.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wZ2JwZ21zb3J1bmZiZHNrYnduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMTM0ODIsImV4cCI6MjA5Mzc4OTQ4Mn0.Wh5yo6Z2kx9QaERzTeBuRModEXw3BJYjTzhBjTq6ncs"
-);
+    <script>
+        // 1. Inicijalizacija
+        const client = supabase.createClient(
+            "https://mpgbpgmsorunfbdskbwn.supabase.co",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wZ2JwZ21zb3J1bmZiZHNrYnduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMTM0ODIsImV4cCI6MjA5Mzc4OTQ4Mn0.Wh5yo6Z2kx9QaERzTeBuRModEXw3BJYjTzhBjTq6ncs"
+        );
 
-async function handleLogin() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+        // 2. Dodaj event listener (umjesto direktnog onclick u HTML-u)
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
-    });
+            console.log("Pokušaj prijave za:", email);
 
-    if (error) {
-        alert("Greska: " + error.message);
-    } else {
-        alert("Uspjesno ste logovani!");
-    }
-}
-</script>
+            const { data, error } = await client
+                .from('AUTOVOXA_KLIJENTI')
+                .select('*')
+                .eq('EMAIL', email)
+                .eq('PASSWWOTF', password);
+
+            if (error) {
+                alert("Greška baze: " + error.message);
+            } else if (data && data.length > 0) {
+                alert("Uspješno ste logovani!");
+            } else {
+                alert("Pogrešan email ili lozinka.");
+            }
+        });
+    </script>
 </body>
 </html>
