@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Prijava | AutoVox</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-900 min-h-screen flex items-center justify-center p-4">
 
@@ -16,53 +15,41 @@
     </div>
 
 <script>
-// INICIJALIZACIJA (Moras imati ovo!)
-const supabase = supabase.createClient(
-    "https://mpgbpgmsorunfbdskbwn.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wZ2JwZ21zb3J1bmZiZHNrYnduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMTM0ODIsImV4cCI6MjA5Mzc4OTQ4Mn0.Wh5yo6Z2kx9QaERzTeBuRModEXw3BJYjTzhBjTq6ncs"
-);
+const SUPABASE_URL = "https://mpgbpgmsorunfbdskbwn.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wZ2JwZ21zb3J1bmZiZHNrYnduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMTM0ODIsImV4cCI6MjA5Mzc4OTQ4Mn0.Wh5yo6Z2kx9QaERzTeBuRModEXw3BJYjTzhBjTq6ncs";
 
 async function handleLogin() {
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
     const btn = document.getElementById("loginBtn");
-
-    // 1. LOG: Šta smo unijeli u formu?
+    
     console.log("--- POKRETANJE PRIJAVE ---");
-    console.log("Uneseni Email:", email);
-    console.log("Unesena Lozinka:", password);
+    console.log("Provjeravam email:", email, "i lozinku:", password);
 
     btn.disabled = true;
     btn.innerText = "Prijava...";
 
     try {
-        // 2. LOG: Šta pokušavamo pronaći u bazi?
-        console.log("Slanje upita prema Supabase...");
+        const url = `${SUPABASE_URL}/rest/v1/AUTOVOXA_KLIJENTI?EMAIL=eq.${encodeURIComponent(email)}&PASSWWOTF=eq.${encodeURIComponent(password)}&select=*`;
         
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: password,
+        const response = await fetch(url, {
+            headers: {
+                "apikey": SUPABASE_KEY,
+                "Authorization": `Bearer ${SUPABASE_KEY}`,
+                "Content-Type": "application/json"
+            }
         });
 
-        // 3. LOG: Šta je baza odgovorila?
-        if (error) {
-            console.error("Greška iz Supabase-a:", error);
-            alert("Greška: " + error.message);
-        } else {
-            console.log("Uspješan odgovor iz baze (Podaci korisnika):", data);
-            
-            // OVO JE DODATNI LOG: Provjeri šta tačno dolazi u 'data'
-            if (data && data.user) {
-                console.log("Prijavljeni User ID:", data.user.id);
-                console.log("Prijavljeni Email:", data.user.email);
-            }
-            
-            alert("Uspješna prijava!");
+        const data = await response.json();
+        console.log("Rezultat iz baze:", data);
+
+        if (data && data.length > 0) {
             window.location.href = "izvjestaji.html"; 
+        } else {
+            alert("Podaci nisu pronađeni. Provjeri konzolu (F12).");
         }
     } catch (error) {
-        console.error("Uhvaćena sistemska greška:", error);
-        alert("Sistemska greška: " + error.message);
+        alert("Greška: " + error.message);
     } finally {
         btn.disabled = false;
         btn.innerText = "Prijavi se";
