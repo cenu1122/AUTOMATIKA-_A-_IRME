@@ -18,13 +18,11 @@
     </div>
 
 <script>
-// 1. Inicijalizacija Supabase klijenta
 const supabase = supabase.createClient(
     "https://mpgbpgmsorunfbdskbwn.supabase.co",
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wZ2JwZ21zb3J1bmZiZHNrYnduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyMTM0ODIsImV4cCI6MjA5Mzc4OTQ4Mn0.Wh5yo6Z2kx9QaERzTeBuRModEXw3BJYjTzhBjTq6ncs"
 );
 
-// 2. Funkcija za prijavu
 async function handleLogin() {
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
@@ -43,7 +41,10 @@ async function handleLogin() {
         btn.disabled = false;
         btn.innerText = "Prijavi se";
     } else {
-        window.location.href = "izvjestaji.html";
+        // SAMO PORUKA, NEMA PREUSMJERAVANJA
+        alert("Uspješno ste logovani!");
+        btn.disabled = false;
+        btn.innerText = "Prijavi se";
     }
 }
 </script>
