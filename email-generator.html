@@ -1,165 +1,81 @@
-async function posaljiZahtjevZaEmail(e) {
-    e.preventDefault();
-    const btn = document.getElementById("btn-slanje");
-    const tema = document.getElementById("email-tema").value.trim();
-    const detalji = document.getElementById("email-detalji").value.trim();
-    
-    // 1. Sigurno izvlačenje emaila
-    const match = detalji.match(/[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi);
-    const primaoc = match ? match[0] : null;
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NH AI - Email Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white p-6 font-sans">
 
-    if (!primaoc) { 
-        alert("Sistem nije uspio pronaći email adresu u tekstu. Provjeri format!"); 
-        return; 
-    }
-
-    btn.disabled = true;
-    btn.innerText = "🤖 AI PIŠE I ŠALJE...";
-
-    try {
-        const response = await fetch(AI_EDGE_URL, {
-            method: "POST",
-            headers: { 
-                "Content-Type": "application/json",
-                "Authorization": "Bearer TVOJ_SUPABASE_ANON_KEY" // OVDJE STAVI SVOJ KLJUČ
-            },
-            body: JSON.stringify({ tema, detalji, ton: trenutniTon.toUpperCase(), primaoc })
-        });
-
-        const data = await response.json();
+<div class="max-w-4xl mx-auto">
+    <div class="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl mb-8">
+        <h2 class="text-orange-500 font-black text-xl uppercase italic mb-4">✉️ NH AI Generator</h2>
         
-        // 2. Provjera server odgovora
-        if (!response.ok) throw new Error(data.error || "Greška na serveru: " + response.status);
+        <form id="email-forma" onsubmit="posaljiZahtjevZaEmail(event)" class="space-y-4">
+            <div>
+                <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Tema:</label>
+                <input type="text" id="email-tema" required class="w-full bg-black border border-zinc-800 p-3 rounded-xl outline-none focus:border-orange-500" />
+            </div>
+            <div>
+                <label class="block text-[10px] uppercase text-zinc-500 font-bold mb-1">Natuknice (i email primaoca):</label>
+                <textarea id="email-detalji" rows="4" required class="w-full bg-black border border-zinc-800 p-3 rounded-xl outline-none focus:border-orange-500"></textarea>
+            </div>
+            <button type="submit" id="btn-slanje" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-4 rounded-xl uppercase transition">🚀 GENERIŠI I POŠALJI</button>
+        </form>
+    </div>
 
-        document.getElementById("ai-gotov-mail").innerText = data.tekst || "Mail poslan.";
-        document.getElementById("ai-rezultat-kontejner").classList.remove("hidden");
-    } catch (err) {
-        alert("Greška: " + err.message);
-    } finally {
-        btn.disabled = false;
-        btn.innerText = "🚀 GENERIŠI I POŠALJI EMAIL ODMAH";
-    }
-}async function posaljiZahtjevZaEmail(e) {
-    e.preventDefault();
-    const btn = document.getElementById("btn-slanje");
-    const tema = document.getElementById("email-tema").value.trim();
-    const detalji = document.getElementById("email-detalji").value.trim();
-    
-    // 1. Sigurno izvlačenje emaila
-    const match = detalji.match(/[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi);
-    const primaoc = match ? match[0] : null;
+    <div id="ai-rezultat-kontejner" class="hidden bg-zinc-900 border-2 border-emerald-500/30 p-6 rounded-2xl">
+        <h3 class="text-emerald-400 font-black uppercase italic mb-2">✅ Uspješno!</h3>
+        <div id="ai-gotov-mail" class="bg-black border border-zinc-800 p-4 rounded-xl text-sm font-mono whitespace-pre-wrap"></div>
+    </div>
+</div>
 
-    if (!primaoc) { 
-        alert("Sistem nije uspio pronaći email adresu u tekstu. Provjeri format!"); 
-        return; 
-    }
+<script>
+    const AI_EDGE_URL = 'https://mpgbpgmsorunfbdskbwn.supabase.co/functions/v1/POSALJI_MAIL';
+    let trenutniTon = "profesionalan";
 
-    btn.disabled = true;
-    btn.innerText = "🤖 AI PIŠE I ŠALJE...";
-
-    try {
-        const response = await fetch(AI_EDGE_URL, {
-            method: "POST",
-            headers: { 
-                "Content-Type": "application/json",
-                "Authorization": "Bearer TVOJ_SUPABASE_ANON_KEY" // OVDJE STAVI SVOJ KLJUČ
-            },
-            body: JSON.stringify({ tema, detalji, ton: trenutniTon.toUpperCase(), primaoc })
-        });
-
-        const data = await response.json();
+    async function posaljiZahtjevZaEmail(e) {
+        e.preventDefault();
+        const btn = document.getElementById("btn-slanje");
+        const tema = document.getElementById("email-tema").value.trim();
+        const detalji = document.getElementById("email-detalji").value.trim();
         
-        // 2. Provjera server odgovora
-        if (!response.ok) throw new Error(data.error || "Greška na serveru: " + response.status);
+        // Izvlačenje emaila
+        const match = detalji.match(/[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi);
+        const primaoc = match ? match[0] : null;
 
-        document.getElementById("ai-gotov-mail").innerText = data.tekst || "Mail poslan.";
-        document.getElementById("ai-rezultat-kontejner").classList.remove("hidden");
-    } catch (err) {
-        alert("Greška: " + err.message);
-    } finally {
-        btn.disabled = false;
-        btn.innerText = "🚀 GENERIŠI I POŠALJI EMAIL ODMAH";
+        if (!primaoc) { 
+            alert("Nije pronađena email adresa u tekstu!"); 
+            return; 
+        }
+
+        btn.disabled = true;
+        btn.innerText = "🤖 AI RADI...";
+
+        try {
+            const response = await fetch(AI_EDGE_URL, {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json",
+                    // OVDJE ZAMIJENI TEKST SA SVOJIM KLJUČEM
+                    "Authorization": "Bearer TVOJ_SUPABASE_ANON_KEY" 
+                },
+                body: JSON.stringify({ tema, detalji, ton: 'PROFESIONALAN', primaoc })
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || "Greška servera");
+
+            document.getElementById("ai-gotov-mail").innerText = data.tekst || "Poslano.";
+            document.getElementById("ai-rezultat-kontejner").classList.remove("hidden");
+        } catch (err) {
+            alert("Greška: " + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "🚀 GENERIŠI I POŠALJI";
+        }
     }
-}async function posaljiZahtjevZaEmail(e) {
-    e.preventDefault();
-    const btn = document.getElementById("btn-slanje");
-    const tema = document.getElementById("email-tema").value.trim();
-    const detalji = document.getElementById("email-detalji").value.trim();
-    
-    // 1. Sigurno izvlačenje emaila
-    const match = detalji.match(/[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi);
-    const primaoc = match ? match[0] : null;
-
-    if (!primaoc) { 
-        alert("Sistem nije uspio pronaći email adresu u tekstu. Provjeri format!"); 
-        return; 
-    }
-
-    btn.disabled = true;
-    btn.innerText = "🤖 AI PIŠE I ŠALJE...";
-
-    try {
-        const response = await fetch(AI_EDGE_URL, {
-            method: "POST",
-            headers: { 
-                "Content-Type": "application/json",
-                "Authorization": "Bearer TVOJ_SUPABASE_ANON_KEY" // OVDJE STAVI SVOJ KLJUČ
-            },
-            body: JSON.stringify({ tema, detalji, ton: trenutniTon.toUpperCase(), primaoc })
-        });
-
-        const data = await response.json();
-        
-        // 2. Provjera server odgovora
-        if (!response.ok) throw new Error(data.error || "Greška na serveru: " + response.status);
-
-        document.getElementById("ai-gotov-mail").innerText = data.tekst || "Mail poslan.";
-        document.getElementById("ai-rezultat-kontejner").classList.remove("hidden");
-    } catch (err) {
-        alert("Greška: " + err.message);
-    } finally {
-        btn.disabled = false;
-        btn.innerText = "🚀 GENERIŠI I POŠALJI EMAIL ODMAH";
-    }
-}async function posaljiZahtjevZaEmail(e) {
-    e.preventDefault();
-    const btn = document.getElementById("btn-slanje");
-    const tema = document.getElementById("email-tema").value.trim();
-    const detalji = document.getElementById("email-detalji").value.trim();
-    
-    // 1. Sigurno izvlačenje emaila
-    const match = detalji.match(/[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi);
-    const primaoc = match ? match[0] : null;
-
-    if (!primaoc) { 
-        alert("Sistem nije uspio pronaći email adresu u tekstu. Provjeri format!"); 
-        return; 
-    }
-
-    btn.disabled = true;
-    btn.innerText = "🤖 AI PIŠE I ŠALJE...";
-
-    try {
-        const response = await fetch(AI_EDGE_URL, {
-            method: "POST",
-            headers: { 
-                "Content-Type": "application/json",
-                "Authorization": "Bearer TVOJ_SUPABASE_ANON_KEY" // OVDJE STAVI SVOJ KLJUČ
-            },
-            body: JSON.stringify({ tema, detalji, ton: trenutniTon.toUpperCase(), primaoc })
-        });
-
-        const data = await response.json();
-        
-        // 2. Provjera server odgovora
-        if (!response.ok) throw new Error(data.error || "Greška na serveru: " + response.status);
-
-        document.getElementById("ai-gotov-mail").innerText = data.tekst || "Mail poslan.";
-        document.getElementById("ai-rezultat-kontejner").classList.remove("hidden");
-    } catch (err) {
-        alert("Greška: " + err.message);
-    } finally {
-        btn.disabled = false;
-        btn.innerText = "🚀 GENERIŠI I POŠALJI EMAIL ODMAH";
-    }
-}
+</script>
+</body>
+</html>
