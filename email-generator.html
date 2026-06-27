@@ -101,9 +101,13 @@ async function posaljiZahtjevZaEmail(e) {
     btn.innerText = "🤖 AI PIŠE I ŠALJE...";
 
     try {
+        // OVDJE SAM DODAO AUTHORIZATION HEADER
         const response = await fetch(AI_EDGE_URL, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": "Bearer TVOJ_SUPABASE_ANON_KEY" 
+            },
             body: JSON.stringify({ tema, detalji, ton: trenutniTon.toUpperCase(), primaoc })
         });
 
