@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NH AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white p-6">
+    <form id="email-forma" class="max-w-xl mx-auto">
+        <input type="text" id="email-tema" placeholder="Tema" class="w-full bg-zinc-900 p-3 mb-4 rounded">
+        <textarea id="email-detalji" placeholder="Natuknice i email..." class="w-full bg-zinc-900 p-3 mb-4 rounded"></textarea>
+        <button type="submit" id="btn-slanje" class="w-full bg-orange-600 p-3 rounded">POŠALJI</button>
+    </form>
+    <div id="ai-gotov-mail" class="max-w-xl mx-auto mt-4 p-4 bg-zinc-900 rounded hidden"></div>
+
+    <script>
+        const API_KEY = 'TVOJ_SUPABASE_ANON_KLJUC';
+        document.getElementById('email-forma').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const detalji = document.getElementById('email-detalji').value;
+            const match = detalji.match(/[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi);
+            
+            if (!match) return alert('Nema emaila u tekstu!');
+
+            const res = await fetch('https://mpgbpgmsorunfbdskbwn.supabase.co/functions/v1/POSALJI_MAIL', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + API_KEY, 'apikey': API_KEY },
+                body: JSON.stringify({ 
+                    tema: document.getElementById('email-tema').value, 
+                    detalji: detalji, 
+                    primaoc: match[0] 
+                })
+            });
+            const data = await res.json();
+            document.getElementById('ai-gotov-mail').innerText = data.tekst || data.error;
+            document.getElementById('ai-gotov-mail').classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>
