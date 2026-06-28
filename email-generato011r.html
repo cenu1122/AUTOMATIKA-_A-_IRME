@@ -12,40 +12,51 @@
             <textarea id="email-detalji" placeholder="Natuknice i email..." class="w-full bg-black p-3 rounded border border-zinc-700 text-white"></textarea>
             <button type="submit" id="btn-slanje" class="w-full bg-orange-600 p-3 rounded font-bold hover:bg-orange-700 transition">POŠALJI</button>
         </form>
-        <div id="ai-gotov-mail" class="mt-4 p-4 bg-black rounded hidden border border-emerald-500 text-sm"></div>
+        <div id="ai-rezultat" class="mt-4 p-4 bg-black rounded hidden border border-emerald-500 text-sm"></div>
     </div>
 
     <script>
-        const AI_EDGE_URL = 'https://mpgbpgmsorunfbdskbwn.supabase.co/functions/v1/POSALJI_MAIL';
-        const API_KEY = 'sb_publishable_PIRKTE7AzJKSBwLjPB04yg_laTBEEb6'; // OVDJE UPISI SVOJ KLJUC
+        const API_URL = 'https://mpgbpgmsorunfbdskbwn.supabase.co/functions/v1/POSALJI_MAIL';
+        const API_KEY = 'sb_publishable_PIRKTE7AzJKSBwLjPB04yg_laTBEEb6'; // OVDJE STAVI SVOJ KLJUČ
 
         document.getElementById('email-forma').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-slanje');
             const detalji = document.getElementById('email-detalji').value;
-            const match = detalji.match(/[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi);
             
-            if (!match) return alert('Nije pronađen email u tekstu!');
+            // Sigurno traženje emaila
+            const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi;
+            const match = detalji.match(emailRegex);
+            
+            if (!match) {
+                alert('Greška: Nisam pronašao email adresu u tekstu! Molim te provjeri format.');
+                return;
+            }
 
             btn.disabled = true;
-            btn.innerText = 'AI RADI...';
+            btn.innerText = 'ŠALJEM...';
 
             try {
-                const res = await fetch(AI_EDGE_URL, {
+                const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + API_KEY, 'apikey': API_KEY },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + API_KEY,
+                        'apikey': API_KEY
+                    },
                     body: JSON.stringify({ 
                         tema: document.getElementById('email-tema').value, 
                         detalji: detalji, 
                         primaoc: match[0] 
                     })
                 });
-                const data = await res.json();
-                const div = document.getElementById('ai-gotov-mail');
-                div.innerText = data.tekst || data.error || "Uspješno";
-                div.classList.remove('hidden');
+
+                const data = await response.json();
+                const rezDiv = document.getElementById('ai-rezultat');
+                rezDiv.innerText = JSON.stringify(data);
+                rezDiv.classList.remove('hidden');
             } catch (err) {
-                alert('Greška: ' + err.message);
+                alert('Greška pri slanju: ' + err.message);
             } finally {
                 btn.disabled = false;
                 btn.innerText = 'POŠALJI';
