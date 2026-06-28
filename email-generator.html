@@ -29,25 +29,26 @@
 </div>
 
 <script>
+// URL tvoje funkcije
 const AI_EDGE_URL = 'https://mpgbpgmsorunfbdskbwn.supabase.co/functions/v1/POSALJI_MAIL';
-const SUPABASE_ANON_KEY = 'sb_publishable_PIRKTE7AzJKSBwLjPB04yg_laTBEEb6'; // OVDJE STAVI SVOJ KLJUČ
+// OVDJE UPAKUJ SVOJ KLJUČ
+const SUPABASE_ANON_KEY = 'sb_publishable_PIRKTE7AzJKSBwLjPB04yg_laTBEEb6'; 
 
 document.getElementById('email-forma').addEventListener('submit', async function(e) {
     e.preventDefault();
     const btn = document.getElementById('btn-slanje');
     const detalji = document.getElementById('email-detalji').value.trim();
+    const tema = document.getElementById('email-tema').value.trim();
     
     // Provjera emaila
     const match = detalji.match(/[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi);
     
-    if (!match || match.length === 0) {
-        alert('Greška: Nije pronađena email adresa u tekstu! Molim te provjeri da li si upisao email.');
+    if (!match) {
+        alert('Greška: Nije pronađena email adresa u tekstu!');
         return;
     }
 
     const primaoc = match[0];
-    const tema = document.getElementById('email-tema').value.trim();
-
     btn.disabled = true;
     btn.innerText = '🤖 AI RADI...';
 
