@@ -2,39 +2,54 @@
 <html lang="hr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NH AI</title>
+    <title>NH AI Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-black text-white p-6">
-    <form id="email-forma" class="max-w-xl mx-auto">
-        <input type="text" id="email-tema" placeholder="Tema" class="w-full bg-zinc-900 p-3 mb-4 rounded">
-        <textarea id="email-detalji" placeholder="Natuknice i email..." class="w-full bg-zinc-900 p-3 mb-4 rounded"></textarea>
-        <button type="submit" id="btn-slanje" class="w-full bg-orange-600 p-3 rounded">POŠALJI</button>
-    </form>
-    <div id="ai-gotov-mail" class="max-w-xl mx-auto mt-4 p-4 bg-zinc-900 rounded hidden"></div>
+    <div class="max-w-xl mx-auto bg-zinc-900 p-6 rounded-xl">
+        <form id="email-forma" class="space-y-4">
+            <input type="text" id="email-tema" placeholder="Tema" class="w-full bg-black p-3 rounded border border-zinc-700 text-white">
+            <textarea id="email-detalji" placeholder="Natuknice i email..." class="w-full bg-black p-3 rounded border border-zinc-700 text-white"></textarea>
+            <button type="submit" id="btn-slanje" class="w-full bg-orange-600 p-3 rounded font-bold hover:bg-orange-700 transition">POŠALJI</button>
+        </form>
+        <div id="ai-gotov-mail" class="mt-4 p-4 bg-black rounded hidden border border-emerald-500 text-sm"></div>
+    </div>
 
     <script>
-        const API_KEY = 'TVOJ_SUPABASE_ANON_KLJUC';
+        const AI_EDGE_URL = 'https://mpgbpgmsorunfbdskbwn.supabase.co/functions/v1/POSALJI_MAIL';
+        const API_KEY = 'TVOJ_SUPABASE_ANON_KLJUC'; // OVDJE UPISI SVOJ KLJUC
+
         document.getElementById('email-forma').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const btn = document.getElementById('btn-slanje');
             const detalji = document.getElementById('email-detalji').value;
             const match = detalji.match(/[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi);
             
-            if (!match) return alert('Nema emaila u tekstu!');
+            if (!match) return alert('Nije pronađen email u tekstu!');
 
-            const res = await fetch('https://mpgbpgmsorunfbdskbwn.supabase.co/functions/v1/POSALJI_MAIL', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + API_KEY, 'apikey': API_KEY },
-                body: JSON.stringify({ 
-                    tema: document.getElementById('email-tema').value, 
-                    detalji: detalji, 
-                    primaoc: match[0] 
-                })
-            });
-            const data = await res.json();
-            document.getElementById('ai-gotov-mail').innerText = data.tekst || data.error;
-            document.getElementById('ai-gotov-mail').classList.remove('hidden');
+            btn.disabled = true;
+            btn.innerText = 'AI RADI...';
+
+            try {
+                const res = await fetch(AI_EDGE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + API_KEY, 'apikey': API_KEY },
+                    body: JSON.stringify({ 
+                        tema: document.getElementById('email-tema').value, 
+                        detalji: detalji, 
+                        primaoc: match[0] 
+                    })
+                });
+                const data = await res.json();
+                const div = document.getElementById('ai-gotov-mail');
+                div.innerText = data.tekst || data.error || "Uspješno";
+                div.classList.remove('hidden');
+            } catch (err) {
+                alert('Greška: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'POŠALJI';
+            }
         });
     </script>
 </body>
