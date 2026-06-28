@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <title>NH AI Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-white p-6">
+    <div class="max-w-xl mx-auto bg-zinc-900 p-6 rounded-xl">
+        <form id="email-forma" class="space-y-4">
+            <input type="text" id="email-tema" placeholder="Tema" class="w-full bg-black p-3 rounded border border-zinc-700 text-white">
+            <textarea id="email-detalji" placeholder="Natuknice i email..." class="w-full bg-black p-3 rounded border border-zinc-700 text-white"></textarea>
+            <button type="submit" id="btn-slanje" class="w-full bg-orange-600 p-3 rounded font-bold hover:bg-orange-700 transition">POŠALJI</button>
+        </form>
+        <div id="ai-rezultat" class="mt-4 p-4 bg-black rounded hidden border border-emerald-500 text-sm"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://mpgbpgmsorunfbdskbwn.supabase.co/functions/v1/POSALJI_MAIL';
+        const API_KEY = 'sb_publishable_PIRKTE7AzJKSBwLjPB04yg_laTBEEb6'; // OVDJE STAVI SVOJ KLJUČ
+
+        document.getElementById('email-forma').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-slanje');
+            const detalji = document.getElementById('email-detalji').value;
+            
+            // 1. Sigurno traženje emaila
+            const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi;
+            const match = detalji.match(emailRegex);
+            
+            // 2. Provjera: ako nije pronađen email, prekini izvršavanje i javi grešku
+            if (!match || match.length === 0) {
+                const rezDiv = document.getElementById('ai-rezultat');
+                rezDiv.innerText = "Greška: Nije pronađena email adresa u natuknicama.";
+                rezDiv.classList.remove('hidden');
+                rezDiv.classList.replace('border-emerald-500', 'border-red-500');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = 'ŠALJEM...';
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + API_KEY,
+                        'apikey': API_KEY
+                    },
+                    body: JSON.stringify({ 
+                        tema: document.getElementById('email-tema').value, 
+                        detalji: detalji, 
+                        primaoc: match[0] 
+                    })
+                });
+
+                const data = await response.json();
+                const rezDiv = document.getElementById('ai-rezultat');
+                rezDiv.innerText = "Odgovor servera: " + JSON.stringify(data);
+                rezDiv.classList.remove('hidden');
+                rezDiv.classList.replace('border-red-500', 'border-emerald-500');
+            } catch (err) {
+                alert('Greška pri slanju: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'POŠALJI';
+            }
+        });
+    </script>
+</body>
+</html>
